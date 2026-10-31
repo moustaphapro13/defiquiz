@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#140f2e">
+<title>Défi Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#140f2e; --bg2:#1f1747; --card:#2a2160; --card2:#352a78;
+  --txt:#f4f1ff; --mute:#a99fd6; --acc:#ffcc3d; --good:#2fd18b; --bad:#ff5d73;
+  --me:#4fb3ff; --opp:#ff7a59;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at 20% 0%,#2e2170 0%,var(--bg) 55%);color:var(--txt);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:440px;min-height:100vh;padding:18px 16px 40px;position:relative}
+h1,h2,h3,.disp{font-family:"Baloo 2",system-ui,sans-serif}
+button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
+.screen{display:none;animation:fade .3s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:26px;background:var(--card2);border:2px solid var(--me);flex:none}
+.av.opp{border-color:var(--opp)}
+.top .who{flex:1;min-width:0}
+.top .name{font-weight:700;font-size:16px}
+.top .lvl{color:var(--mute);font-size:13px}
+.xpbar{height:6px;background:#0007;border-radius:9px;margin-top:5px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),#ff9f1c);border-radius:9px;transition:width .6s}
+.iconbtn{width:42px;height:42px;border-radius:12px;background:var(--card);display:grid;place-items:center;font-size:20px}
+.brand{font-family:"Baloo 2";font-weight:800;font-size:30px;letter-spacing:.5px;line-height:1}
+.brand span{color:var(--acc)}
+.proto{display:inline-block;font-size:11px;color:var(--bg);background:var(--acc);padding:2px 8px;border-radius:20px;font-weight:700;margin-left:6px;vertical-align:middle}
+.sub{color:var(--mute);font-size:14px;margin:6px 0 18px}
+
+/* themes */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.theme{background:var(--card);border-radius:18px;padding:16px 14px;text-align:left;position:relative;overflow:hidden;transition:transform .15s}
+.theme:active{transform:scale(.97)}
+.theme .emo{font-size:34px}
+.theme .tn{font-family:"Baloo 2";font-weight:700;font-size:18px;margin-top:6px}
+.theme .tl{font-size:12px;color:var(--mute)}
+.theme::after{content:"";position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:var(--c);opacity:.35}
+
+.tabs{display:flex;gap:8px;margin:22px 0 12px}
+.tab{flex:1;padding:10px;border-radius:12px;background:var(--card);font-weight:600;font-size:14px;color:var(--mute)}
+.tab.on{background:var(--acc);color:var(--bg)}
+.panel{background:var(--card);border-radius:18px;padding:14px}
+.row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #ffffff12}
+.row:last-child{border:0}
+.row .rk{width:24px;text-align:center;font-weight:700;color:var(--mute)}
+.row .av{width:36px;height:36px;font-size:19px;border-width:0}
+.row .rn{flex:1;font-weight:600;font-size:14px}
+.row .rs{font-weight:700;color:var(--acc)}
+.row.me{background:#4fb3ff1f;border-radius:10px}
+
+/* matchmaking */
+.mm{text-align:center;padding-top:40px}
+.vs{display:flex;justify-content:space-around;align-items:center;margin:40px 0}
+.vs .p{display:flex;flex-direction:column;align-items:center;gap:8px;width:120px}
+.vs .av{width:84px;height:84px;font-size:44px;border-width:3px}
+.vs .vsx{font-family:"Baloo 2";font-weight:800;font-size:36px;color:var(--acc)}
+.spin{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.pn{font-weight:700}
+.pl{font-size:12px;color:var(--mute)}
+
+/* game */
+.hud{display:flex;align-items:center;gap:10px}
+.hud .av{width:42px;height:42px;font-size:22px}
+.hud .sc{font-family:"Baloo 2";font-weight:800;font-size:28px;width:52px;text-align:center}
+.hud .mid{flex:1;text-align:center}
+.timer{font-family:"Baloo 2";font-weight:800;font-size:34px;line-height:1}
+.qn{font-size:12px;color:var(--mute)}
+.bars{display:flex;gap:6px;margin:10px 0 0;height:8px}
+.bars div{flex:1;background:#0006;border-radius:9px;overflow:hidden;display:flex;align-items:flex-end}
+.bars i{display:block;width:100%;background:var(--me);transition:height .4s;border-radius:9px}
+.bars .o i{background:var(--opp)}
+.tbar{height:6px;background:#0006;border-radius:9px;margin:14px 0 0;overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--acc);width:100%}
+.question{background:var(--card);border-radius:18px;padding:22px 16px;margin:18px 0 14px;min-height:120px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:19px;line-height:1.35}
+.dbl{display:block;font-size:12px;color:var(--acc);margin-bottom:6px;letter-spacing:1px}
+.answers{display:grid;gap:10px}
+.ans{background:var(--card2);border-radius:14px;padding:15px 14px;font-weight:600;font-size:16px;text-align:left;position:relative;transition:background .2s,transform .1s;border:2px solid transparent}
+.ans:active{transform:scale(.98)}
+.ans.good{background:var(--good);color:#06281a}
+.ans.bad{background:var(--bad)}
+.ans.mine{border-color:#fff}
+.ans .dot{position:absolute;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%}
+.ans .dot.m{right:14px;background:var(--me);box-shadow:0 0 0 2px #fff}
+.ans .dot.o{right:32px;background:var(--opp);box-shadow:0 0 0 2px #fff}
+.pop{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:"Baloo 2";font-weight:800;font-size:44px;color:var(--acc);pointer-events:none;animation:pop .8s forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-90%)}}
+
+/* result */
+.res{text-align:center;padding-top:20px}
+.res h2{font-size:44px;line-height:1}
+.res .w{color:var(--good)}.res .l{color:var(--bad)}.res .d{color:var(--acc)}
+.final{display:flex;justify-content:space-around;align-items:center;margin:26px 0}
+.final .sc{font-family:"Baloo 2";font-weight:800;font-size:44px}
+.gain{background:var(--card);border-radius:18px;padding:16px;margin:12px 0;text-align:left}
+.gain .g{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+.gain .g b{color:var(--acc)}
+.btn{display:block;width:100%;padding:16px;border-radius:16px;font-weight:800;font-size:17px;font-family:"Baloo 2";margin-top:10px}
+.btn.p{background:var(--acc);color:var(--bg)}
+.btn.s{background:var(--card)}
+.recap{margin-top:12px;text-align:left}
+.recap .rq{background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:13px}
+.recap .rq b{display:block;font-size:14px;margin-bottom:3px}
+.recap .ok{color:var(--good)}.recap .ko{color:var(--bad)}
+
+/* profile */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--card);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-family:"Baloo 2";font-size:24px}
+.stat span{font-size:12px;color:var(--mute)}
+.field{width:100%;padding:12px 14px;border-radius:12px;border:0;background:var(--card2);color:var(--txt);font:inherit;font-size:16px;margin:6px 0 12px}
+.emos{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.emos button{width:44px;height:44px;border-radius:12px;background:var(--card2);font-size:24px}
+.emos button.on{outline:3px solid var(--acc)}
+.label{font-size:13px;color:var(--mute);font-weight:600}
+.back{color:var(--mute);font-weight:600;margin-bottom:12px;display:inline-block}
+.note{font-size:12px;color:var(--mute);text-align:center;margin-top:18px;line-height:1.5}
+</style>
+<style>
+.sheet .btn{margin-top:12px}
+.err{background:#ff5d7333;border:1px solid var(--bad);border-radius:12px;padding:12px;font-size:14px;margin:12px 0;display:none}
+.share{background:var(--card);border-radius:14px;padding:14px;margin:12px 0;text-align:left}
+.share input{width:100%;padding:10px;border-radius:10px;border:0;background:var(--card2);color:var(--txt);font:inherit;font-size:13px;margin:8px 0}
+.mini{font-size:12px;padding:6px 10px;border-radius:9px;background:var(--card2);font-weight:600}
+.center{text-align:center}
+.loading{padding-top:45vh;text-align:center;color:var(--mute)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section class="screen on" id="boot"><div class="loading spin">Connexion…</div></section>
+
+  <section class="screen" id="setup">
+    <h2 style="font-size:26px;margin-bottom:10px">Configuration manquante</h2>
+    <p class="sub">Renseigne <b>SUPABASE_URL</b> et <b>SUPABASE_ANON_KEY</b> en haut du script de ce fichier (voir README).</p>
+  </section>
+
+  <!-- ACCUEIL -->
+  <section class="screen" id="home">
+    <div class="top">
+      <div class="av" id="hAv">🦊</div>
+      <div class="who">
+        <div class="name" id="hName">Joueur</div>
+        <div class="lvl" id="hLvl">Niveau 1</div>
+        <div class="xpbar"><i id="hXp" style="width:0%"></i></div>
+      </div>
+      <button class="iconbtn" id="toProfile" aria-label="Profil">👤</button>
+    </div>
+    <div class="brand">Défi<span>Quiz</span></div>
+    <p class="sub">Choisis un thème : affronte un joueur au hasard ou défie un ami. Plus tu réponds vite, plus tu marques.</p>
+    <div class="err" id="hErr"></div>
+    <div class="grid" id="themes"></div>
+    <div class="tabs">
+      <button class="tab on" data-tab="lb">🏆 Classement</button>
+      <button class="tab" data-tab="duels">⚔️ Mes duels</button>
+    </div>
+    <div class="panel" id="panel"></div>
+  </section>
+
+  <!-- CHOIX DU MODE -->
+  <section class="screen sheet" id="mode">
+    <button class="back" id="mBack">← Retour</button>
+    <div class="center" style="padding-top:30px">
+      <div style="font-size:64px" id="mEmo"></div>
+      <h2 style="font-size:32px" id="mName"></h2>
+      <p class="sub">7 questions · 10 secondes chacune · dernière question à points doublés</p>
+    </div>
+    <button class="btn p" id="mRandom">🎲 Adversaire au hasard</button>
+    <button class="btn s" id="mFriend">🤝 Défier un ami (lien)</button>
+  </section>
+
+  <!-- MATCHMAKING -->
+  <section class="screen" id="match">
+    <div class="mm">
+      <div class="disp" style="font-size:22px;font-weight:700" id="mmTheme"></div>
+      <div class="vs">
+        <div class="p"><div class="av" id="mmMe"></div><div class="pn" id="mmMeN"></div><div class="pl" id="mmMeL"></div></div>
+        <div class="vsx">VS</div>
+        <div class="p"><div class="av opp spin" id="mmOpp">❔</div><div class="pn" id="mmOppN">Recherche…</div><div class="pl" id="mmOppL">&nbsp;</div></div>
+      </div>
+      <div class="sub" id="mmMsg">Recherche d'un adversaire…</div>
+      <div class="err" id="mmErr"></div>
+      <button class="btn s" id="mmBack" style="display:none">Accueil</button>
+    </div>
+  </section>
+
+  <!-- JEU -->
+  <section class="screen" id="game">
+    <div class="hud">
+      <div class="av" id="gMe"></div>
+      <div class="sc" id="gMeS" style="color:var(--me)">0</div>
+      <div class="mid"><div class="timer" id="gT">10</div><div class="qn" id="gQn">Question 1/7</div></div>
+      <div class="sc" id="gOppS" style="color:var(--opp)">0</div>
+      <div class="av opp" id="gOpp"></div>
+    </div>
+    <div class="tbar"><i id="gTbar"></i></div>
+    <div class="question" id="gQ"></div>
+    <div class="answers" id="gA"></div>
+  </section>
+
+  <!-- RÉSULTAT -->
+  <section class="screen" id="result">
+    <div class="res">
+      <h2 id="rTitle"></h2>
+      <div class="final">
+        <div class="p center"><div class="av" id="rMe" style="margin:0 auto 6px"></div><div class="sc" id="rMeS" style="color:var(--me)"></div></div>
+        <div class="disp" style="font-size:22px;color:var(--mute)">–</div>
+        <div class="p center"><div class="av opp" id="rOpp" style="margin:0 auto 6px"></div><div class="sc" id="rOppS" style="color:var(--opp)"></div></div>
+      </div>
+      <div id="rShare"></div>
+      <div class="gain" id="rGain"></div>
+      <button class="btn p" id="rAgain">Rejouer ce thème</button>
+      <button class="btn s" id="rHome">Accueil</button>
+      <div class="recap" id="rRecap"></div>
+    </div>
+  </section>
+
+  <!-- PROFIL -->
+  <section class="screen" id="profile">
+    <button class="back" id="pBack">← Retour</button>
+    <h2 style="font-size:28px">Mon profil</h2>
+    <div class="stats" id="pStats"></div>
+    <div class="label">Pseudo</div>
+    <input class="field" id="pName" maxlength="16">
+    <div class="label">Avatar</div>
+    <div class="emos" id="pEmos"></div>
+    <button class="btn p" id="pSave" style="margin-bottom:18px">Enregistrer</button>
+    <div class="label" style="margin-bottom:8px">Niveaux par thème</div>
+    <div class="panel" id="pThemes"></div>
+    <p class="note">Compte invité lié à ce navigateur. (La connexion Google / e-mail pour garder ton compte sur plusieurs appareils arrive bientôt.)</p>
+  </section>
+</div>
+
+<script>
+/* ====== CONFIG : à remplir avec les infos de ton projet Supabase ====== */
+const SUPABASE_URL = "https://hiiqejxhqskdgasvsooy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_vMtmqMW2ERNTHRNWRHZR9A_UXyV-6zJ";
+/* ===================================================================== */
+
+const THEMES = {"culture":{"n":"Culture G","e":"🧠","c":"#ffcc3d"},"geo":{"n":"Géographie","e":"🌍","c":"#2fd18b"},"histoire":{"n":"Histoire","e":"🏛️","c":"#c58bff"},"sciences":{"n":"Sciences","e":"🔬","c":"#4fb3ff"},"sport":{"n":"Sport","e":"⚽","c":"#ff7a59"},"cuisine":{"n":"Cuisine","e":"🍕","c":"#ff5d73"}};
+const AVATARS = ["🦊","🐼","🦁","🐯","🐸","🦄","🐙","🐲","🦅","🚀","⚡","🍀","👾","🤖","😎","🔥"];
+const TIME = 10;
+
+const $ = id => document.getElementById(id);
+const show = id => { document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id)); window.scrollTo(0,0); };
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lvlOf = xp => { let l=1, need=100, x=xp||0; while(x>=need){ x-=need; l++; need=Math.round(need*1.25); } return {l, x, need}; };
+const pts = (t, last) => (t==null ? 0 : Math.round(20 - Math.min(10, Math.max(0.3, t)))) * (last?2:1); // identique au serveur
+const errMsg = e => (e && (e.message || e.error_description)) || String(e);
+const showErr = (id, e) => { const el=$(id); el.textContent = "⚠️ " + errMsg(e); el.style.display="block"; };
+const hideErr = id => { $(id).style.display="none"; };
+const duelLink = id => location.origin + location.pathname + "?duel=" + id;
+
+let sb, me, P = null, tab = "lb";
+
+/* ---------------- DÉMARRAGE ---------------- */
+async function boot(){
+  if(!SUPABASE_URL.startsWith("https://")) return show("setup");
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let { data:{ session } } = await sb.auth.getSession();
+  if(!session){
+    const r = await sb.auth.signInAnonymously();
+    if(r.error){ show("setup"); $("setup").querySelector(".sub").textContent = "Connexion impossible : " + r.error.message + " (as-tu activé « Allow anonymous sign-ins » dans Supabase ?)"; return; }
+    session = r.data.session;
+  }
+  me = session.user.id;
+  await loadProfile();
+  const duel = new URLSearchParams(location.search).get("duel");
+  if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
+  renderHome(); show("home");
+}
+async function loadProfile(){
+  for(let i=0;i<5;i++){
+    const { data } = await sb.from("profiles").select("*").eq("id", me).maybeSingle();
+    if(data){ P = data; return; }
+    await sleep(400); // le profil est créé par un trigger juste après l'inscription
+  }
+  P = {pseudo:"Joueur", avatar:"🦊", xp:0, wins:0, losses:0, draws:0};
+}
+
+/* ---------------- ACCUEIL ---------------- */
+async function renderHome(){
+  const L = lvlOf(P.xp);
+  $("hAv").textContent = P.avatar; $("hName").textContent = P.pseudo;
+  $("hLvl").textContent = `Niveau ${L.l} · ${P.wins} victoires`;
+  $("hXp").style.width = (L.x/L.need*100)+"%";
+  const { data: ts } = await sb.from("theme_stats").select("*").eq("user_id", me);
+  const tmap = Object.fromEntries((ts||[]).map(t=>[t.theme,t]));
+  $("themes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
+    const s = tmap[k] || {xp:0, played:0};
+    return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played} parties</div></button>`;
+  }).join("");
+  document.querySelectorAll(".theme").forEach(b=>b.onclick=()=>openMode(b.dataset.k));
+  renderPanel();
+}
+async function renderPanel(){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===tab));
+  $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  if(tab==="lb"){
+    const { data, error } = await sb.rpc("leaderboard", { p_days: 7 });
+    if(error) return $("panel").textContent = errMsg(error);
+    $("panel").innerHTML = `<div class="label" style="margin-bottom:6px">Points cette semaine</div>` + (data.length ?
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}</div><div class="rs">${r.points}</div></div>`).join("")
+      : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué cette semaine. Sois le premier !</p>`);
+  } else {
+    const { data, error } = await sb.from("matches")
+      .select("id,theme,private,p1,p2,p1_score,p2_score,p2_answers,created_at,a:profiles!matches_p1_fkey(pseudo,avatar),b:profiles!matches_p2_fkey(pseudo,avatar)")
+      .or(`p1.eq.${me},p2.eq.${me}`).not("p1_score","is",null).order("created_at", {ascending:false}).limit(20);
+    if(error) return $("panel").textContent = errMsg(error);
+    if(!data.length) return $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun duel pour l'instant. Lance-toi !</p>`;
+    $("panel").innerHTML = data.map(m=>{
+      const iAmP1 = m.p1===me, opp = iAmP1 ? m.b : m.a, th = THEMES[m.theme] || {e:"❓", n:m.theme};
+      const mine = iAmP1 ? m.p1_score : m.p2_score, his = iAmP1 ? m.p2_score : m.p1_score;
+      if(m.p2_score==null){
+        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?esc(opp.avatar):"❔"}</div><div class="rn">${m.private?"Défi ami":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
+      }
+      const res = mine>his?"✅":mine<his?"❌":"🤝";
+      return `<div class="row"><div class="rk">${res}</div><div class="av">${esc(opp?.avatar||"❔")}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${th.e} ${th.n}</span></div><div class="rs">${mine} – ${his}</div></div>`;
+    }).join("");
+    $("panel").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(duelLink(b.dataset.copy), b));
+  }
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ tab=t.dataset.tab; renderPanel(); });
+
+async function copy(text, btn){
+  try{ await navigator.clipboard.writeText(text); if(btn){ const o=btn.textContent; btn.textContent="Copié ✔"; setTimeout(()=>btn.textContent=o,1500); } }
+  catch(e){ if(btn) btn.textContent="Copie impossible : sélectionne le lien"; }
+}
+
+/* ---------------- LANCEMENT D'UN DUEL ---------------- */
+let curTheme = null;
+function openMode(k){
+  curTheme = k;
+  $("mEmo").textContent = THEMES[k].e; $("mName").textContent = THEMES[k].n;
+  show("mode");
+}
+$("mBack").onclick = () => show("home");
+$("mRandom").onclick = () => launch(() => sb.rpc("start_match", { p_theme: curTheme, p_private: false }), curTheme);
+$("mFriend").onclick = () => launch(() => sb.rpc("start_match", { p_theme: curTheme, p_private: true }), curTheme);
+function joinDuel(id){ return launch(() => sb.rpc("join_match", { p_id: id }), null); }
+
+async function launch(call, k){
+  hideErr("mmErr"); $("mmBack").style.display="none";
+  $("mmTheme").textContent = k ? `${THEMES[k].e} ${THEMES[k].n}` : "⚔️ Défi d'un ami";
+  $("mmMe").textContent = P.avatar; $("mmMeN").textContent = P.pseudo; $("mmMeL").textContent = `Niveau ${lvlOf(P.xp).l}`;
+  $("mmOpp").textContent = "❔"; $("mmOpp").classList.add("spin");
+  $("mmOppN").textContent = "Recherche…"; $("mmOppL").innerHTML = "&nbsp;";
+  $("mmMsg").textContent = "Recherche d'un adversaire…";
+  show("match");
+  const [{ data, error }] = await Promise.all([call(), sleep(1200)]);
+  if(error){ showErr("mmErr", error); $("mmMsg").textContent=""; $("mmBack").style.display="block"; return; }
+  const M = data;
+  $("mmTheme").textContent = `${THEMES[M.theme].e} ${THEMES[M.theme].n}`;
+  $("mmOpp").classList.remove("spin");
+  if(M.opponent){
+    $("mmOpp").textContent = M.opponent.avatar; $("mmOppN").textContent = M.opponent.pseudo;
+    $("mmOppL").textContent = `Niveau ${lvlOf(M.opponent.xp).l}`;
+    $("mmMsg").textContent = "Adversaire trouvé ! Tu joues contre sa partie enregistrée.";
+  } else {
+    $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = M.private ? "Ton ami" : "Prochain joueur";
+    $("mmMsg").textContent = M.private ? "Joue ta partie, puis envoie le lien à ton ami pour qu'il relève le défi."
+                                       : "Personne n'attend sur ce thème : tu joues en premier, le prochain joueur affrontera ton score.";
+  }
+  await sleep(2200);
+  play(M);
+}
+$("mmBack").onclick = () => { renderHome(); show("home"); };
+
+/* ---------------- PARTIE ---------------- */
+let tick = null;
+function play(M){
+  const qs = M.questions, N = qs.length, ghost = M.ghost;
+  const G = { i:0, me:0, op:0, answers:[], log:[] };
+  $("gMe").textContent = P.avatar; $("gOpp").textContent = M.opponent ? M.opponent.avatar : "⏳";
+  $("gMeS").textContent = 0; $("gOppS").textContent = ghost ? 0 : "?";
+  show("game");
+
+  const nextQ = () => {
+    if(G.i >= N) return finishMatch(M, G);
+    const Q = qs[G.i], last = G.i===N-1, good = Q.answer;
+    const opts = shuffle([good, ...Q.wrong]);
+    $("gQn").textContent = `Question ${G.i+1}/${N}`;
+    $("gQ").innerHTML = (last?`<div><span class="dbl">⭐ DERNIÈRE QUESTION · POINTS DOUBLÉS</span>`:"<div>") + esc(Q.question) + "</div>";
+    $("gA").innerHTML = opts.map((o,j)=>`<button class="ans" data-j="${j}">${esc(o)}</button>`).join("");
+    const btns = [...document.querySelectorAll(".ans")];
+    const g = ghost ? ghost[G.i] : null;              // réponse enregistrée de l'adversaire
+    const oppT = g && g.c!=null ? Math.min(TIME, g.t) : null;
+    let mine = null, oppDone = !g || g.c==null, done = false;
+    const start = performance.now();
+
+    const finish = () => {
+      if(done) return; done = true;
+      clearInterval(tick);
+      btns.forEach(b=>b.disabled=true);
+      const gi = opts.indexOf(good);
+      btns[gi].classList.add("good");
+      if(mine && mine.c!==good && mine.c!=null) btns[opts.indexOf(mine.c)].classList.add("bad");
+      if(mine && mine.c!=null) btns[opts.indexOf(mine.c)].insertAdjacentHTML("beforeend",'<span class="dot m"></span>');
+      if(g && g.c!=null && opts.includes(g.c)) btns[opts.indexOf(g.c)].insertAdjacentHTML("beforeend",'<span class="dot o"></span>');
+      const ans = mine || { c:null, t:TIME };
+      const mp = ans.c===good ? pts(ans.t, last) : 0;
+      const op = g && g.c===good ? pts(g.t, last) : 0;
+      G.answers.push({ c: ans.c, t: Math.round(ans.t*100)/100 });
+      G.me += mp; G.op += op;
+      G.log.push({ q:Q.question, good, mine:ans.c, ok: ans.c===good, mp, op });
+      if(mp){ const p=document.createElement("div"); p.className="pop"; p.textContent="+"+mp; $("game").appendChild(p); setTimeout(()=>p.remove(),900); }
+      $("gMeS").textContent = G.me; if(ghost) $("gOppS").textContent = G.op;
+      G.i++; setTimeout(nextQ, 1700);
+    };
+    btns.forEach(b=>b.onclick=()=>{
+      if(mine || done) return;
+      mine = { c: opts[+b.dataset.j], t: (performance.now()-start)/1000 };
+      b.classList.add("mine"); btns.forEach(x=>x.disabled=true);
+      if(oppDone || (oppT!=null && mine.t>=oppT)) setTimeout(finish, 350);
+    });
+    tick = setInterval(()=>{
+      const el = (performance.now()-start)/1000, left = Math.max(0, TIME-el);
+      $("gT").textContent = Math.ceil(left);
+      $("gTbar").style.width = (left/TIME*100)+"%";
+      if(!oppDone && el>=oppT){ oppDone = true; if(mine) setTimeout(finish, 350); }
+      if(left<=0) finish();
+    }, 50);
+  };
+  nextQ();
+}
+
+async function finishMatch(M, G){
+  $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = "";
+  const { data: R, error } = await sb.rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
+  const oldLvl = lvlOf(P.xp).l;
+  await loadProfile();
+  $("rMe").textContent = P.avatar; $("rOpp").textContent = M.opponent ? M.opponent.avatar : "⏳";
+  $("rShare").innerHTML = "";
+  if(error){
+    $("rTitle").innerHTML = '<span class="l">Erreur</span>';
+    $("rMeS").textContent = G.me; $("rOppS").textContent = "?";
+    $("rGain").innerHTML = `<div class="g"><span>${esc(errMsg(error))}</span></div>`;
+  } else if(R.status==="done"){
+    const w = R.score>R.opp_score, d = R.score===R.opp_score;
+    $("rTitle").innerHTML = w?'<span class="w">Victoire !</span>':d?'<span class="d">Égalité</span>':'<span class="l">Défaite</span>';
+    $("rMeS").textContent = R.score; $("rOppS").textContent = R.opp_score;
+    $("rGain").innerHTML = `
+      <div class="g"><span>Bonnes réponses</span><b>${G.log.filter(x=>x.ok).length}/${G.log.length}</b></div>
+      <div class="g"><span>Points de match</span><b>+${R.score} XP</b></div>
+      <div class="g"><span>Bonus ${w?'victoire':d?'égalité':'participation'}</span><b>+${R.bonus} XP</b></div>
+      ${lvlOf(P.xp).l>oldLvl?`<div class="g"><span>🚀 Niveau global</span><b>Niveau ${lvlOf(P.xp).l} !</b></div>`:""}`;
+  } else {
+    $("rTitle").innerHTML = '<span class="d">Score envoyé !</span>';
+    $("rMeS").textContent = R.score; $("rOppS").textContent = "?";
+    $("rGain").innerHTML = `
+      <div class="g"><span>Bonnes réponses</span><b>${G.log.filter(x=>x.ok).length}/${G.log.length}</b></div>
+      <div class="g"><span>Points de match</span><b>+${R.score} XP</b></div>
+      <div class="g"><span>Résultat final</span><b>dans « Mes duels »</b></div>`;
+    if(M.private){
+      const link = duelLink(M.id);
+      $("rShare").innerHTML = `<div class="share"><b>Envoie ce lien à ton ami :</b><input readonly value="${esc(link)}" onclick="this.select()"><button class="btn p" id="rCopy" style="margin-top:4px">📋 Copier le lien</button></div>`;
+      $("rCopy").onclick = e => copy(link, e.target);
+    }
+  }
+  $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x=>
+    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${M.ghost?` / adv. +${x.op}`:""}</div>`).join("");
+  $("rAgain").onclick = () => openMode(M.theme);
+  show("result");
+}
+$("rHome").onclick = () => { renderHome(); show("home"); };
+
+/* ---------------- PROFIL ---------------- */
+let pickAv = null;
+async function renderProfile(){
+  const n = P.wins+P.losses+P.draws;
+  $("pStats").innerHTML = `<div class="stat"><b>${n}</b><span>Duels finis</span></div><div class="stat"><b>${P.wins}</b><span>Victoires</span></div><div class="stat"><b>${n?Math.round(P.wins/n*100):0}%</b><span>Ratio</span></div>`;
+  $("pName").value = P.pseudo; pickAv = P.avatar;
+  const drawAv = () => {
+    $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}">${a}</button>`).join("");
+    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ pickAv=b.textContent; drawAv(); });
+  };
+  drawAv();
+  const { data: ts } = await sb.from("theme_stats").select("*").eq("user_id", me);
+  const tmap = Object.fromEntries((ts||[]).map(t=>[t.theme,t]));
+  $("pThemes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
+    const L = lvlOf((tmap[k]||{}).xp||0);
+    return `<div class="row"><div class="av">${t.e}</div><div class="rn">${t.n}<div class="xpbar"><i style="width:${L.x/L.need*100}%"></i></div></div><div class="rs">Niv. ${L.l}</div></div>`;
+  }).join("");
+}
+$("pSave").onclick = async e => {
+  const { error } = await sb.rpc("update_profile", { p_pseudo: $("pName").value, p_avatar: pickAv });
+  e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
+  await loadProfile(); setTimeout(()=>e.target.textContent="Enregistrer", 1500);
+};
+$("toProfile").onclick = () => { renderProfile(); show("profile"); };
+$("pBack").onclick = () => { renderHome(); show("home"); };
+
+boot().catch(e => { show("setup"); $("setup").querySelector(".sub").textContent = "Erreur : " + errMsg(e); });
+</script>
+</body>
+</html>
