@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#140f2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Défi Quiz">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <title>Défi Quiz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -136,6 +143,14 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .mini{font-size:12px;padding:6px 10px;border-radius:9px;background:var(--card2);font-weight:600}
 .center{text-align:center}
 .loading{padding-top:45vh;text-align:center;color:var(--mute)}
+.chips{display:flex;gap:8px;margin:8px 0;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;padding:8px 12px;border-radius:20px;background:var(--card);font-weight:600;font-size:13px;color:var(--mute)}
+.chips button.on{background:var(--acc);color:var(--bg)}
+.offbar{background:#ffcc3d22;border:1px solid var(--acc);color:var(--acc);border-radius:12px;padding:10px 12px;font-size:13px;margin:0 0 14px;line-height:1.4}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.stats.s3{grid-template-columns:repeat(3,1fr)}
+.stat small{display:block;font-size:11px;color:var(--mute);margin-top:2px}
 </style>
 </head>
 <body>
@@ -160,7 +175,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <button class="iconbtn" id="toProfile" aria-label="Profil">👤</button>
     </div>
     <div class="brand">Défi<span>Quiz</span></div>
-    <p class="sub">Choisis un thème : affronte un joueur au hasard ou défie un ami. Plus tu réponds vite, plus tu marques.</p>
+    <p class="sub">Choisis un thème : joue en solo, même sans Internet, ou affronte un joueur en direct. Plus tu réponds vite, plus tu marques.</p>
+    <div class="offbar" id="offbar" style="display:none">📴 Hors ligne : le mode solo reste disponible, ta progression sera synchronisée au retour de la connexion.</div>
     <div class="err" id="hErr"></div>
     <div class="grid" id="themes"></div>
     <div class="tabs">
@@ -178,9 +194,13 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <h2 style="font-size:32px" id="mName"></h2>
       <p class="sub">7 questions · 10 secondes chacune · dernière question à points doublés</p>
     </div>
-    <button class="btn p" id="mRandom">⚡ Duel en direct · adversaire au hasard</button>
-    <button class="btn s" id="mFriend">🤝 Duel en direct avec un ami</button>
-    <p class="note">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
+    <div class="label" style="margin-top:6px">🎯 Solo · fonctionne sans Internet</div>
+    <div class="chips" id="mDiff"></div>
+    <button class="btn p" id="mSolo">🎯 Jouer en solo</button>
+    <div class="label" style="margin-top:22px">⚔️ Duel en direct</div>
+    <button class="btn s" id="mRandom">⚡ Adversaire au hasard</button>
+    <button class="btn s" id="mFriend">🤝 Défier un ami</button>
+    <p class="note" id="mNote">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
   </section>
 
   <!-- MATCHMAKING -->
@@ -236,7 +256,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
   <section class="screen" id="profile">
     <button class="back" id="pBack">← Retour</button>
     <h2 style="font-size:28px">Mon profil</h2>
-    <div class="stats" id="pStats"></div>
+    <div class="stats s3" id="pStats"></div>
     <div class="label">Pseudo</div>
     <input class="field" id="pName" maxlength="16">
     <div class="label">Avatar</div>
@@ -244,7 +264,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <button class="btn p" id="pSave" style="margin-bottom:18px">Enregistrer</button>
     <div class="label" style="margin-bottom:8px">Niveaux par thème</div>
     <div class="panel" id="pThemes"></div>
-    <p class="note">Compte invité lié à ce navigateur. (La connexion Google / e-mail pour garder ton compte sur plusieurs appareils arrive bientôt.)</p>
+    <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Défi Quiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
   </section>
 </div>
 
@@ -304,24 +324,101 @@ async function rpc(name, args){
   return r;
 }
 
+/* ---------------- STOCKAGE LOCAL (hors ligne) ---------------- */
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+// Banque de secours intégrée : permet de jouer en solo dès la 1re ouverture, même sans réseau
+const FALLBACK = [["culture",1,"Combien de côtés a un hexagone ?","6",["5","8","7"]],["culture",1,"Qui a écrit « Les Misérables » ?","Victor Hugo",["Émile Zola","Alexandre Dumas","Gustave Flaubert"]],["culture",1,"Qui a peint « La Joconde » ?","Léonard de Vinci",["Michel-Ange","Raphaël","Botticelli"]],["culture",2,"Combien de minutes y a-t-il dans une journée ?","1 440",["1 240","1 640","2 400"]],["culture",1,"Quel instrument possède généralement 88 touches ?","Le piano",["L'orgue","L'accordéon","Le clavecin"]],["culture",1,"Bleu + jaune donne…","Vert",["Violet","Orange","Marron"]],["culture",1,"Combien de jours compte une année bissextile ?","366",["365","364","367"]],["culture",1,"Quel monument a été construit pour l'Exposition universelle de 1889 ?","La tour Eiffel",["L'Arc de triomphe","Le Sacré-Cœur","Le Grand Palais"]],["culture",1,"Qui a écrit « Le Petit Prince » ?","Antoine de Saint-Exupéry",["Jules Verne","Marcel Pagnol","Albert Camus"]],["culture",2,"Quelle langue compte le plus de locuteurs natifs ?","Le mandarin",["L'anglais","L'espagnol","L'hindi"]],["geo",2,"Quelle est la capitale de l'Australie ?","Canberra",["Sydney","Melbourne","Perth"]],["geo",1,"Quel est le plus long fleuve de France ?","La Loire",["La Seine","Le Rhône","La Garonne"]],["geo",2,"Quel pays est le plus peuplé du monde ?","L'Inde",["La Chine","Les États-Unis","L'Indonésie"]],["geo",1,"Quel est le plus haut sommet d'Afrique ?","Le Kilimandjaro",["Le mont Kenya","Le Toubkal","Le Ras Dashen"]],["geo",1,"Quelle est la capitale du Canada ?","Ottawa",["Toronto","Montréal","Vancouver"]],["geo",1,"Quel est le plus grand océan ?","L'océan Pacifique",["L'océan Atlantique","L'océan Indien","L'océan Arctique"]],["geo",1,"Quel est le plus grand désert chaud du monde ?","Le Sahara",["Le Gobi","Le Kalahari","L'Atacama"]],["geo",1,"Quelle est la monnaie du Japon ?","Le yen",["Le won","Le yuan","Le baht"]],["geo",1,"Dans quel pays se trouve Marrakech ?","Le Maroc",["L'Algérie","La Tunisie","L'Égypte"]],["geo",2,"Quelle est la capitale du Brésil ?","Brasília",["Rio de Janeiro","São Paulo","Salvador"]],["histoire",1,"En quelle année a eu lieu la prise de la Bastille ?","1789",["1776","1799","1815"]],["histoire",1,"Qui a été le premier homme à marcher sur la Lune ?","Neil Armstrong",["Buzz Aldrin","Youri Gagarine","John Glenn"]],["histoire",1,"En quelle année le mur de Berlin est-il tombé ?","1989",["1991","1985","1961"]],["histoire",1,"Quelle bataille marque la défaite finale de Napoléon en 1815 ?","Waterloo",["Austerlitz","Iéna","Trafalgar"]],["histoire",1,"Qui fut le premier président de la Ve République ?","Charles de Gaulle",["Georges Pompidou","Vincent Auriol","René Coty"]],["histoire",1,"Dans quel pays se trouvent les pyramides de Gizeh ?","L'Égypte",["Le Soudan","Le Mexique","La Libye"]],["histoire",2,"Dans quelle ville Jeanne d'Arc a-t-elle été brûlée ?","Rouen",["Orléans","Reims","Paris"]],["histoire",1,"En quelle année Christophe Colomb atteint-il l'Amérique ?","1492",["1515","1453","1498"]],["histoire",1,"En quelle année se termine la Seconde Guerre mondiale en Europe ?","1945",["1944","1946","1918"]],["histoire",2,"Quel général romain a franchi le Rubicon ?","Jules César",["Pompée","Auguste","Marc Antoine"]],["sciences",1,"Quel est le symbole chimique de l'or ?","Au",["Ag","Or","Go"]],["sciences",1,"Quelle planète est la plus proche du Soleil ?","Mercure",["Vénus","Mars","La Terre"]],["sciences",2,"Combien d'os compte le squelette d'un adulte ?","206",["186","212","256"]],["sciences",1,"Quelle est la formule chimique de l'eau ?","H₂O",["CO₂","O₂","H₂O₂"]],["sciences",2,"Quelle est environ la vitesse de la lumière ?","300 000 km/s",["30 000 km/s","3 000 km/s","3 000 000 km/s"]],["sciences",1,"Quel gaz les plantes absorbent-elles pour la photosynthèse ?","Le dioxyde de carbone",["L'oxygène","L'azote","L'hélium"]],["sciences",1,"Quelle est la plus grande planète du système solaire ?","Jupiter",["Saturne","Neptune","Uranus"]],["sciences",3,"Combien de chromosomes possède une cellule humaine ?","46",["23","44","48"]],["sciences",2,"Quelle est l'unité de la résistance électrique ?","L'ohm",["Le volt","L'ampère","Le watt"]],["sciences",1,"Qui a formulé la théorie de la relativité ?","Albert Einstein",["Isaac Newton","Niels Bohr","Max Planck"]],["sport",1,"Combien de joueurs par équipe sur un terrain de football ?","11",["10","12","9"]],["sport",1,"Quel pays a remporté la Coupe du monde de football 2018 ?","La France",["La Croatie","La Belgique","Le Brésil"]],["sport",1,"Quel pays a remporté la Coupe du monde de football 2022 ?","L'Argentine",["La France","Le Maroc","La Croatie"]],["sport",1,"Quelle ville a accueilli les Jeux olympiques d'été 2024 ?","Paris",["Los Angeles","Tokyo","Londres"]],["sport",1,"Quel tournoi du Grand Chelem se joue sur terre battue ?","Roland-Garros",["Wimbledon","L'US Open","L'Open d'Australie"]],["sport",2,"Combien de points vaut un essai au rugby à XV ?","5",["3","4","7"]],["sport",1,"Combien de joueurs par équipe sur un terrain de basket ?","5",["6","7","4"]],["sport",1,"Dans quelle course cycliste le leader porte-t-il le maillot jaune ?","Le Tour de France",["Le Giro","La Vuelta","Paris-Roubaix"]],["sport",3,"Quel est le record du monde du 100 m d'Usain Bolt ?","9,58 s",["9,63 s","9,69 s","9,72 s"]],["sport",1,"Dans quel sport Teddy Riner est-il champion ?","Le judo",["La lutte","Le karaté","La boxe"]],["cuisine",1,"De quel pays la pizza est-elle originaire ?","L'Italie",["La Grèce","L'Espagne","La France"]],["cuisine",1,"Quel est l'ingrédient principal du guacamole ?","L'avocat",["Le concombre","Le petit pois","La courgette"]],["cuisine",1,"Quel fromage normand est célèbre dans le monde entier ?","Le camembert",["Le comté","Le roquefort","Le reblochon"]],["cuisine",1,"De quel pays viennent les sushis ?","Le Japon",["La Chine","La Corée","La Thaïlande"]],["cuisine",2,"Quelle est l'épice la plus chère au monde ?","Le safran",["La vanille","La cardamome","La cannelle"]],["cuisine",1,"De quel pays la paella est-elle originaire ?","L'Espagne",["Le Portugal","Le Mexique","L'Italie"]],["cuisine",1,"Quel est l'ingrédient de base du houmous ?","Le pois chiche",["La lentille","Le haricot blanc","La fève"]],["cuisine",1,"De quelle région française vient la ratatouille ?","La Provence",["La Bretagne","L'Alsace","La Normandie"]],["cuisine",2,"Avec quel lait est fabriqué le roquefort ?","Le lait de brebis",["Le lait de vache","Le lait de chèvre","Le lait de bufflonne"]],["cuisine",3,"Quel pays est le premier producteur mondial de café ?","Le Brésil",["La Colombie","L'Éthiopie","Le Vietnam"]],["culture",1,"Combien de couleurs compte-t-on traditionnellement dans un arc-en-ciel ?","7",["6","5","8"]],["culture",1,"Combien de pattes a une araignée ?","8",["6","10","12"]],["culture",1,"Quel est le plus grand animal du monde ?","La baleine bleue",["L'éléphant d'Afrique","Le requin-baleine","La girafe"]],["culture",1,"Combien de cases compte un échiquier ?","64",["81","100","48"]],["culture",1,"De quelle couleur était le cheval blanc d'Henri IV ?","Blanc",["Noir","Gris","Marron"]],["culture",1,"Quel oiseau est le symbole de la paix ?","La colombe",["L'aigle","Le hibou","Le corbeau"]],["culture",1,"Combien de mois de l'année comptent 31 jours ?","7",["6","5","8"]],["culture",2,"Qui a composé « La Lettre à Élise » ?","Ludwig van Beethoven",["Wolfgang Amadeus Mozart","Frédéric Chopin","Jean-Sébastien Bach"]],["culture",2,"Qui a écrit « Roméo et Juliette » ?","William Shakespeare",["Molière","Jean Racine","Victor Hugo"]],["culture",2,"Quel peintre s'est tranché une partie de l'oreille ?","Vincent van Gogh",["Pablo Picasso","Claude Monet","Salvador Dalí"]],["culture",2,"Dans quelle ville se trouve le musée du Prado ?","Madrid",["Barcelone","Lisbonne","Séville"]],["culture",2,"Quel chiffre romain représente 50 ?","L",["C","D","V"]],["culture",2,"Qui a écrit la fable « Le Corbeau et le Renard » (1668) ?","Jean de La Fontaine",["Charles Perrault","Molière","Nicolas Boileau"]],["culture",2,"Qui est l'auteur de « Germinal » ?","Émile Zola",["Honoré de Balzac","Guy de Maupassant","Stendhal"]],["culture",3,"Combien de symphonies Beethoven a-t-il achevées ?","9",["7","11","5"]],["culture",3,"Qui a peint « Le Radeau de la Méduse » ?","Théodore Géricault",["Eugène Delacroix","Jacques-Louis David","Gustave Courbet"]],["culture",3,"Quel philosophe a écrit « Ainsi parlait Zarathoustra » ?","Friedrich Nietzsche",["Emmanuel Kant","Hegel","Arthur Schopenhauer"]],["culture",3,"En quelle année les frères Lumière ont-ils organisé la première projection publique payante ?","1895",["1885","1901","1912"]],["culture",3,"Quel compositeur a écrit le « Boléro » ?","Maurice Ravel",["Claude Debussy","Erik Satie","Camille Saint-Saëns"]],["culture",3,"Quel écrivain français a reçu le prix Nobel de littérature en 1957 ?","Albert Camus",["Jean-Paul Sartre","André Gide","François Mauriac"]],["geo",1,"Quelle est la capitale de l'Italie ?","Rome",["Milan","Naples","Turin"]],["geo",1,"Quelle est la capitale de l'Espagne ?","Madrid",["Barcelone","Séville","Valence"]],["geo",1,"Dans quel pays se trouve la tour de Pise ?","L'Italie",["L'Espagne","La Grèce","La France"]],["geo",1,"Quelle est la capitale de l'Allemagne ?","Berlin",["Munich","Francfort","Hambourg"]],["geo",1,"Quel océan sépare l'Europe de l'Amérique du Nord ?","L'océan Atlantique",["L'océan Pacifique","L'océan Indien","L'océan Arctique"]],["geo",1,"Quelle est la capitale du Japon ?","Tokyo",["Kyoto","Osaka","Séoul"]],["geo",1,"Quel est le plus haut sommet du monde ?","L'Everest",["Le K2","Le mont Blanc","Le Kilimandjaro"]],["geo",2,"Quel fleuve traverse Londres ?","La Tamise",["La Seine","Le Danube","Le Rhin"]],["geo",2,"Quelle est la capitale de la Turquie ?","Ankara",["Istanbul","Izmir","Antalya"]],["geo",2,"Quel est le plus grand pays du monde par la superficie ?","La Russie",["Le Canada","La Chine","Les États-Unis"]],["geo",2,"Quel est le plus long fleuve d'Afrique ?","Le Nil",["Le Congo","Le Niger","Le Zambèze"]],["geo",2,"Avec combien de pays la France métropolitaine a-t-elle une frontière terrestre ?","8",["6","7","9"]],["geo",2,"Quelle est la capitale de la Nouvelle-Zélande ?","Wellington",["Auckland","Christchurch","Queenstown"]],["geo",2,"Quel détroit sépare l'Europe de l'Afrique ?","Le détroit de Gibraltar",["Le Bosphore","Le détroit de Messine","Le détroit d'Ormuz"]],["geo",2,"Quel est le plus petit pays du monde ?","Le Vatican",["Monaco","Saint-Marin","Le Liechtenstein"]],["geo",3,"Quelle est la capitale du Kazakhstan ?","Astana",["Almaty","Bichkek","Tachkent"]],["geo",3,"Quel est le plus grand lac d'Afrique ?","Le lac Victoria",["Le lac Tanganyika","Le lac Malawi","Le lac Tchad"]],["geo",3,"Quel fleuve traverse Bagdad ?","Le Tigre",["L'Euphrate","Le Jourdain","Le Nil"]],["geo",3,"Quelle est l'altitude approximative du mont Blanc ?","Environ 4 800 m",["Environ 4 300 m","Environ 5 200 m","Environ 3 900 m"]],["geo",3,"Dans quel pays se trouve le désert d'Atacama ?","Le Chili",["Le Pérou","L'Argentine","Le Mexique"]],["histoire",1,"Quel roi de France était surnommé le « Roi-Soleil » ?","Louis XIV",["Louis XVI","François Ier","Henri IV"]],["histoire",1,"En quelle année a commencé la Première Guerre mondiale ?","1914",["1912","1916","1918"]],["histoire",1,"Quel empereur français est mort en exil à Sainte-Hélène ?","Napoléon Ier",["Napoléon III","Charlemagne","Louis XVIII"]],["histoire",1,"Quel peuple a construit le Colisée ?","Les Romains",["Les Grecs","Les Égyptiens","Les Gaulois"]],["histoire",1,"Quel roi de France a été guillotiné en 1793 ?","Louis XVI",["Louis XV","Louis XIV","Charles X"]],["histoire",1,"En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?","1969",["1965","1972","1959"]],["histoire",1,"Quel paquebot a coulé en 1912 après avoir heurté un iceberg ?","Le Titanic",["Le Lusitania","Le Britannic","Le Normandie"]],["histoire",2,"Qui a été couronné empereur d'Occident en l'an 800 ?","Charlemagne",["Clovis","Pépin le Bref","Charles Martel"]],["histoire",2,"En quelle année a commencé la Seconde Guerre mondiale ?","1939",["1937","1940","1941"]],["histoire",2,"Quel pharaon a été découvert dans une tombe presque intacte en 1922 ?","Toutânkhamon",["Ramsès II","Khéops","Akhenaton"]],["histoire",2,"Quelle reine de France a été guillotinée en 1793 ?","Marie-Antoinette",["Catherine de Médicis","Anne d'Autriche","Marie de Médicis"]],["histoire",2,"Quel président américain a été assassiné à Dallas en 1963 ?","John F. Kennedy",["Abraham Lincoln","Richard Nixon","Lyndon Johnson"]],["histoire",2,"En quelle année les Françaises ont-elles voté pour la première fois ?","1945",["1936","1918","1958"]],["histoire",2,"Quelle ville était la capitale de l'Empire byzantin ?","Constantinople",["Rome","Athènes","Alexandrie"]],["histoire",3,"En quelle année a eu lieu la bataille d'Alésia ?","52 av. J.-C.",["44 av. J.-C.","27 av. J.-C.","79 apr. J.-C."]],["histoire",3,"Qui a fondé l'Empire mongol ?","Gengis Khan",["Kubilai Khan","Tamerlan","Attila"]],["histoire",3,"Quel traité a mis fin à la Première Guerre mondiale avec l'Allemagne ?","Le traité de Versailles",["Le traité de Paris","Les traités de Westphalie","Le traité de Rome"]],["histoire",3,"En quelle année a eu lieu la bataille de Marignan ?","1515",["1415","1492","1610"]],["histoire",3,"Quel roi de France a signé l'édit de Nantes en 1598 ?","Henri IV",["Louis XIII","François Ier","Henri III"]],["histoire",3,"En quelle année l'esclavage a-t-il été définitivement aboli en France ?","1848",["1789","1794","1871"]],["sciences",1,"Combien de planètes compte le système solaire ?","8",["9","7","10"]],["sciences",1,"Quelle planète est surnommée la « planète rouge » ?","Mars",["Vénus","Jupiter","Mercure"]],["sciences",1,"À quelle température l'eau bout-elle au niveau de la mer ?","100 °C",["90 °C","120 °C","80 °C"]],["sciences",1,"Quel organe pompe le sang dans le corps ?","Le cœur",["Le foie","Les poumons","Les reins"]],["sciences",1,"Quel est le satellite naturel de la Terre ?","La Lune",["Phobos","Titan","Europe"]],["sciences",1,"Combien de pattes a un insecte ?","6",["8","4","10"]],["sciences",2,"Quel est l'os le plus long du corps humain ?","Le fémur",["Le tibia","L'humérus","Le radius"]],["sciences",2,"Quel est le symbole chimique du fer ?","Fe",["Fr","Ir","F"]],["sciences",2,"Quel est le gaz le plus abondant dans l'air ?","L'azote",["L'oxygène","Le dioxyde de carbone","L'argon"]],["sciences",2,"Qui a découvert la pénicilline ?","Alexander Fleming",["Louis Pasteur","Marie Curie","Robert Koch"]],["sciences",2,"Combien de temps met la lumière du Soleil pour atteindre la Terre ?","Environ 8 minutes",["Environ 8 secondes","Environ 1 heure","Environ 1 journée"]],["sciences",2,"Quel est le plus grand organe du corps humain ?","La peau",["Le foie","Le cerveau","Les intestins"]],["sciences",2,"Quelle est la formule chimique du sel de table ?","NaCl",["KCl","NaOH","CaCO₃"]],["sciences",2,"Quelle particule porte une charge électrique négative ?","L'électron",["Le proton","Le neutron","Le photon"]],["sciences",2,"Quelle est la vitesse approximative du son dans l'air ?","340 m/s",["34 m/s","1 200 m/s","3 400 m/s"]],["sciences",3,"Quel est le numéro atomique du carbone ?","6",["12","8","14"]],["sciences",3,"Qui a publié le premier tableau périodique des éléments en 1869 ?","Dmitri Mendeleïev",["Antoine Lavoisier","John Dalton","Niels Bohr"]],["sciences",3,"Quelle est la planète la plus chaude du système solaire ?","Vénus",["Mercure","Mars","Jupiter"]],["sciences",3,"Combien de dents compte la dentition complète d'un adulte ?","32",["28","30","36"]],["sciences",3,"Quel métal est liquide à température ambiante ?","Le mercure",["Le plomb","Le gallium","L'étain"]],["sport",1,"Combien de joueurs par équipe sur un terrain de volley-ball ?","6",["5","7","4"]],["sport",1,"Quel sport pratique Kylian Mbappé ?","Le football",["Le basket-ball","Le rugby","Le handball"]],["sport",1,"Combien de temps dure un match de football, hors prolongations ?","90 minutes",["80 minutes","100 minutes","120 minutes"]],["sport",1,"Dans quel sport utilise-t-on un volant ?","Le badminton",["Le tennis","Le squash","Le tennis de table"]],["sport",1,"Tous les combien d'années ont lieu les Jeux olympiques d'été ?","4 ans",["2 ans","3 ans","5 ans"]],["sport",1,"Dans quel pays est né le judo ?","Le Japon",["La Chine","La Corée du Sud","Le Brésil"]],["sport",1,"Combien d'anneaux figurent sur le drapeau olympique ?","5",["4","6","7"]],["sport",2,"Quel joueur détient le record de victoires à Roland-Garros ?","Rafael Nadal",["Roger Federer","Novak Djokovic","Björn Borg"]],["sport",2,"Dans quel pays sont nés les Jeux olympiques antiques ?","La Grèce",["L'Italie","L'Égypte","La Turquie"]],["sport",2,"Quel pays a remporté le plus de Coupes du monde de football ?","Le Brésil",["L'Allemagne","L'Italie","L'Argentine"]],["sport",2,"Quelle est la distance officielle d'un marathon ?","42,195 km",["40 km","42 km","45,5 km"]],["sport",2,"Quel club de football est surnommé « les Verts » ?","L'AS Saint-Étienne",["Le FC Nantes","L'OGC Nice","L'Olympique lyonnais"]],["sport",2,"En quelle année la France a-t-elle gagné sa première Coupe du monde de football ?","1998",["1984","2006","2018"]],["sport",2,"Combien de sets faut-il gagner pour remporter un match masculin en Grand Chelem ?","3",["2","4","5"]],["sport",3,"Quel nageur détient le record de médailles d'or olympiques ?","Michael Phelps",["Mark Spitz","Ian Thorpe","Léon Marchand"]],["sport",3,"Dans quel pays se trouve le circuit de Spa-Francorchamps ?","La Belgique",["Les Pays-Bas","Le Luxembourg","La Suisse"]],["sport",3,"Combien de trous compte un parcours de golf standard ?","18",["9","12","21"]],["sport",3,"Quel Français a remporté cinq Tours de France, le dernier en 1985 ?","Bernard Hinault",["Jacques Anquetil","Laurent Fignon","Raymond Poulidor"]],["sport",3,"En quelle année ont eu lieu les premiers Jeux olympiques modernes ?","1896",["1900","1924","1888"]],["sport",3,"Quelle ville française a accueilli les Jeux olympiques d'hiver de 1992 ?","Albertville",["Grenoble","Chamonix","Annecy"]],["cuisine",1,"Avec quel fruit fabrique-t-on le cidre ?","La pomme",["La poire","Le raisin","La cerise"]],["cuisine",1,"Quel est l'ingrédient principal d'une omelette ?","Les œufs",["La farine","Le lait","Le fromage"]],["cuisine",1,"Quelle céréale utilise-t-on pour faire un risotto ?","Le riz",["Le blé","L'orge","Le maïs"]],["cuisine",1,"De quel pays les tacos sont-ils originaires ?","Le Mexique",["L'Espagne","L'Argentine","Le Pérou"]],["cuisine",1,"Quelle boisson obtient-on en infusant des feuilles de théier ?","Le thé",["Le café","Le chocolat chaud","La chicorée"]],["cuisine",1,"Un croque-monsieur contient du pain, du jambon et…","Du fromage",["Du poulet","Du thon","De la salade"]],["cuisine",1,"Quel aliment est fabriqué par les abeilles ?","Le miel",["La confiture","Le sirop d'érable","La mélasse"]],["cuisine",2,"Quel fruit sec est la base de la pâte d'amande ?","L'amande",["La noisette","La noix","La pistache"]],["cuisine",2,"De quel pays le kimchi est-il originaire ?","La Corée",["Le Japon","La Chine","Le Vietnam"]],["cuisine",2,"Quel fromage utilise-t-on traditionnellement dans la tartiflette ?","Le reblochon",["Le comté","La raclette","Le beaufort"]],["cuisine",2,"Quelle ville a donné son nom à une moutarde célèbre ?","Dijon",["Lyon","Reims","Bordeaux"]],["cuisine",2,"Quel est l'ingrédient de base du tzatziki ?","Le yaourt",["La mayonnaise","Le lait de coco","La crème de sésame"]],["cuisine",2,"Quel plat alsacien est à base de chou fermenté ?","La choucroute",["Le baeckeoffe","La flammekueche","Le kouglof"]],["cuisine",2,"Le wasabi accompagne traditionnellement…","Les sushis",["La pizza","Le couscous","La paella"]],["cuisine",3,"Quelle épice donne sa couleur jaune au curry ?","Le curcuma",["Le safran","Le paprika","Le cumin"]],["cuisine",3,"De quel pays la feta AOP est-elle originaire ?","La Grèce",["La Turquie","L'Italie","Chypre"]],["cuisine",3,"Quel chef lyonnais était surnommé le « pape de la gastronomie » ?","Paul Bocuse",["Alain Ducasse","Joël Robuchon","Auguste Escoffier"]],["cuisine",3,"De quelle région française vient le cassoulet ?","L'Occitanie",["La Bretagne","La Normandie","L'Alsace"]],["cuisine",3,"De quel pays le gruyère AOP est-il originaire ?","La Suisse",["La France","L'Allemagne","L'Autriche"]],["cuisine",3,"Quel champignon est surnommé le « diamant noir » ?","La truffe noire",["Le cèpe","La morille","La girolle"]]];
+const DEFAULT_P = {pseudo:"Joueur", avatar:"🦊", xp:0, wins:0, losses:0, draws:0};
+let ONLINE = false;
+let LOC = LS.get("dq_local", null) || { solo:{ games:0, correct:0, answered:0, byTheme:{} }, queue:[], seen:[] };
+const saveLoc = () => LS.set("dq_local", LOC);
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("délai dépassé")), ms))]);
+
+function getBank(){
+  const b = LS.get("dq_bank", null);
+  if(b && b.qs && b.qs.length) return b.qs;
+  return FALLBACK.map(([theme, difficulty, question, answer, wrong]) => ({ id:null, theme, difficulty, question, answer, wrong }));
+}
+async function refreshBank(){
+  if(!ONLINE) return;
+  const { data, error } = await sb.from("questions").select("id,theme,difficulty,question,answer,wrong").limit(10000);
+  if(!error && data && data.length) LS.set("dq_bank", { at: Date.now(), qs: data });
+}
+
 /* ---------------- DÉMARRAGE ---------------- */
 async function boot(){
-  if(!SUPABASE_URL.startsWith("https://")) return show("setup");
+  P = LS.get("dq_profile", null) || { ...DEFAULT_P };
+  if(typeof supabase === "undefined") return goOffline();     // bibliothèque non chargée : pas de réseau
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  try { await ensureAuth(); }
-  catch(e){ show("setup"); $("setup").querySelector(".sub").textContent = "Connexion impossible : " + errMsg(e) + ". Réessaie dans un instant."; return; }
+  if(navigator.onLine === false) return goOffline();
+  try { await withTimeout(ensureAuth(), 8000); }
+  catch(e){ return goOffline(); }
+  setOnline(true);
   await loadProfile();
+  refreshBank(); flushQueue();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   renderHome(); show("home");
 }
+function setOnline(v){
+  ONLINE = v;
+  $("offbar").style.display = v ? "none" : "block";
+}
+function goOffline(){
+  setOnline(false);
+  if(new URLSearchParams(location.search).get("duel")){
+    $("offbar").textContent = "📴 Pas de connexion : le défi de ton ami s'ouvrira dès que tu seras de nouveau en ligne. En attendant, le mode solo est disponible.";
+  }
+  renderHome(); show("home");
+}
+async function reconnect(){
+  if(ONLINE) return;
+  if(typeof supabase === "undefined"){ location.reload(); return; }
+  if(!sb) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  try { await withTimeout(ensureAuth(), 8000); } catch(e){ return; }
+  setOnline(true);
+  await loadProfile(); await flushQueue(); refreshBank();
+  const duel = new URLSearchParams(location.search).get("duel");
+  if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
+  if($("home").classList.contains("on")) renderHome();
+}
+window.addEventListener("online", () => setTimeout(reconnect, 1000));
+window.addEventListener("offline", () => setOnline(false));
+document.addEventListener("visibilitychange", () => { if(!document.hidden && !ONLINE) reconnect(); });
+
 async function loadProfile(){
+  if(!ONLINE) return;
   for(let i=0;i<5;i++){
     const { data } = await sb.from("profiles").select("*").eq("id", me).maybeSingle();
-    if(data){ P = data; return; }
+    if(data){ P = data; LS.set("dq_profile", P); return; }
     await sleep(400); // le profil est créé par un trigger juste après l'inscription
   }
-  P = {pseudo:"Joueur", avatar:"🦊", xp:0, wins:0, losses:0, draws:0};
+}
+
+/* File de synchronisation des parties solo jouées hors ligne */
+let flushing = false;
+async function flushQueue(){
+  if(!ONLINE || flushing || !LOC.queue.length) return { synced:0 };
+  flushing = true; let synced = 0;
+  try {
+    while(LOC.queue.length){
+      const g = LOC.queue[0];
+      const { data, error } = await rpc("submit_solo", { p_id:g.id, p_theme:g.theme, p_difficulty:g.difficulty,
+                                                         p_qids:g.qids, p_answers:g.answers, p_played_at:g.played_at });
+      if(error){
+        if(/invalide|limite/i.test(errMsg(error))){ LOC.queue.shift(); saveLoc(); continue; }  // refus définitif
+        break;                                                                                   // réseau : on réessaiera
+      }
+      LOC.queue.shift(); saveLoc(); synced++;
+    }
+  } finally { flushing = false; }
+  if(synced) await loadProfile();
+  return { synced };
 }
 
 /* ---------------- ACCUEIL ---------------- */
@@ -330,35 +427,50 @@ async function renderHome(){
   $("hAv").textContent = P.avatar; $("hName").textContent = P.pseudo;
   $("hLvl").textContent = `Niveau ${L.l} · ${P.wins} victoires`;
   $("hXp").style.width = (L.x/L.need*100)+"%";
-  const { data: ts } = await sb.from("theme_stats").select("*").eq("user_id", me);
-  const tmap = Object.fromEntries((ts||[]).map(t=>[t.theme,t]));
+  let tmap = LS.get("dq_tstats", {});
+  if(ONLINE){
+    const { data: ts } = await sb.from("theme_stats").select("*").eq("user_id", me);
+    if(ts){ tmap = Object.fromEntries(ts.map(t=>[t.theme,t])); LS.set("dq_tstats", tmap); }
+  }
   $("themes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
     const s = tmap[k] || {xp:0, played:0};
-    return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played} parties</div></button>`;
+    const pend = LOC.queue.filter(g => g.theme === k).length;
+    return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played + pend} parties</div></button>`;
   }).join("");
   document.querySelectorAll(".theme").forEach(b=>b.onclick=()=>openMode(b.dataset.k));
   renderPanel();
 }
+let lbDays = 7, lbTheme = null;
 async function renderPanel(){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===tab));
+  if(!ONLINE){
+    $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">📴 ${tab==="lb"?"Le classement":"L'historique des duels"} sera disponible au retour de la connexion.</p>`;
+    return;
+  }
   $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
   if(tab==="lb"){
-    const { data, error } = await rpc("leaderboard", { p_days: 7 });
+    const { data, error } = await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme });
     if(error) return $("panel").textContent = errMsg(error);
-    $("panel").innerHTML = `<div class="label" style="margin-bottom:6px">Points cette semaine</div>` + (data.length ?
-      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}</div><div class="rs">${r.points}</div></div>`).join("")
-      : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué cette semaine. Sois le premier !</p>`);
+    const per = [[1,"Aujourd'hui"],[7,"Semaine"],[30,"Mois"],[null,"Depuis toujours"]];
+    const chips = `<div class="chips">${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
+      `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${t.e}</button>`).join("")}</div>`;
+    $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
+      : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué sur cette période. Sois le premier !</p>`);
+    $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : +b.dataset.d; renderPanel(); });
+    $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; renderPanel(); });
   } else {
     const { data, error } = await sb.from("matches")
       .select("id,theme,private,p1,p2,p1_score,p2_score,p2_answers,created_at,a:profiles!matches_p1_fkey(pseudo,avatar),b:profiles!matches_p2_fkey(pseudo,avatar)")
-      .or(`p1.eq.${me},p2.eq.${me}`).not("p1_score","is",null).order("created_at", {ascending:false}).limit(20);
+      .or(`p1.eq.${me},p2.eq.${me}`).order("created_at", {ascending:false}).limit(30);
     if(error) return $("panel").textContent = errMsg(error);
-    if(!data.length) return $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun duel pour l'instant. Lance-toi !</p>`;
-    $("panel").innerHTML = data.map(m=>{
+    const list = (data||[]).filter(m => (m.p1===me ? m.p1_score : m.p2_score) != null);
+    if(!list.length) return $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun duel pour l'instant. Lance-toi !</p>`;
+    $("panel").innerHTML = list.map(m=>{
       const iAmP1 = m.p1===me, opp = iAmP1 ? m.b : m.a, th = THEMES[m.theme] || {e:"❓", n:m.theme};
       const mine = iAmP1 ? m.p1_score : m.p2_score, his = iAmP1 ? m.p2_score : m.p1_score;
-      if(m.p2_score==null){
-        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?esc(opp.avatar):"❔"}</div><div class="rn">${m.private?"Défi ami":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
+      if(his==null){
+        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?esc(opp.avatar):"❔"}</div><div class="rn">${m.private?"Défi ami en attente":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private&&iAmP1?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
       }
       const res = mine>his?"✅":mine<his?"❌":"🤝";
       return `<div class="row"><div class="rk">${res}</div><div class="av">${esc(opp?.avatar||"❔")}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${th.e} ${th.n}</span></div><div class="rs">${mine} – ${his}</div></div>`;
@@ -367,6 +479,64 @@ async function renderPanel(){
   }
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ tab=t.dataset.tab; renderPanel(); });
+
+/* ---------------- MODE SOLO (100 % local) ---------------- */
+const DIFFS = [[0,"🎲 Mélange"],[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]];
+let soloDiff = LS.get("dq_diff", 0);
+function renderDiff(){
+  $("mDiff").innerHTML = DIFFS.map(([d,l])=>`<button data-d="${d}" class="${d===soloDiff?'on':''}">${l}</button>`).join("");
+  $("mDiff").querySelectorAll("button").forEach(b=>b.onclick=()=>{ soloDiff=+b.dataset.d; LS.set("dq_diff", soloDiff); renderDiff(); });
+}
+function pickSolo(k, diff, n = 7){
+  const seen = new Set(LOC.seen);
+  const pool = getBank().filter(q => q.theme === k);
+  const rank = q => (diff ? Math.abs((q.difficulty||1) - diff) * 10 : 0) + (seen.has(q.question) ? 5 : 0) + Math.random() * 4;
+  let picked = pool.map(q => [rank(q), q]).sort((a,b) => a[0]-b[0]).slice(0, n).map(x => x[1]);
+  if(!diff) picked.sort((a,b) => (a.difficulty||1) - (b.difficulty||1));   // mélange : du plus facile au plus dur
+  return picked;
+}
+function startSolo(k){
+  const qs = pickSolo(k, soloDiff);
+  if(qs.length < 5){ alert("Pas assez de questions pour ce thème."); return; }
+  LOC.seen = [...qs.map(q=>q.question), ...LOC.seen].slice(0, 80); saveLoc();
+  const M = { id: uuid(), theme: k, role:"p1", solo:true, difficulty: soloDiff || 2,
+              questions: qs.map(q => ({ id:q.id, question:q.question, answer:q.answer, wrong:q.wrong })) };
+  play(M, null);
+}
+
+async function finishSolo(M, G){
+  const N = M.questions.length, score = G.me, correct = G.log.filter(x=>x.ok).length;
+  const st = LOC.solo, bt = st.byTheme[M.theme] || (st.byTheme[M.theme] = { played:0, best:0 });
+  const record = score > bt.best && bt.played > 0;
+  st.games++; st.correct += correct; st.answered += N; bt.played++; bt.best = Math.max(bt.best, score);
+  const syncable = M.questions.every(q => q.id != null);
+  if(syncable) LOC.queue.push({ id:M.id, theme:M.theme, difficulty:M.difficulty, qids:M.questions.map(q=>q.id),
+                                answers:G.answers, played_at:new Date().toISOString() });
+  saveLoc();
+  let synced = false;
+  if(ONLINE && syncable){ $("gQ").innerHTML = "<div>Enregistrement…</div>"; $("gA").innerHTML = ""; await flushQueue(); synced = !LOC.queue.some(g => g.id === M.id); }
+  const xp = Math.round(score / 2);
+  const stars = correct >= 7 ? "⭐⭐⭐" : correct >= 5 ? "⭐⭐" : correct >= 3 ? "⭐" : "";
+  $("rTitle").innerHTML = `<span class="${correct>=4?'w':'d'}">${correct===N?"Sans faute !":correct>=5?"Bravo !":correct>=3?"Pas mal !":"Courage !"}</span>`;
+  $("rMe").textContent = P.avatar; $("rMeS").textContent = score;
+  $("rOpp").textContent = "🎯"; $("rOppS").textContent = `${correct}/${N}`;
+  $("rGain").innerHTML = `
+    <div class="g"><span>Bonnes réponses</span><b>${correct}/${N} ${stars}</b></div>
+    <div class="g"><span>Difficulté</span><b>${(DIFFS.find(d=>d[0]===soloDiff)||DIFFS[0])[1]}</b></div>
+    <div class="g"><span>Record solo ${THEMES[M.theme].n}</span><b>${bt.best}${record?" 🎉 nouveau !":""}</b></div>
+    <div class="g"><span>XP</span><b>${!syncable ? "non comptée (banque de secours)" : synced ? `+${xp} XP ✔` : `+${xp} XP · au retour du réseau`}</b></div>`;
+  const shareTxt = `J'ai fait ${score} points (${correct}/${N}) en ${THEMES[M.theme].n} sur Défi Quiz 🎯 Tu fais mieux ?`;
+  const link = location.origin + location.pathname;
+  $("rShare").innerHTML = `<button class="btn s" id="rBrag">📤 Partager mon score</button>`;
+  $("rBrag").onclick = async e => {
+    if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:shareTxt, url:link }); return; } catch(er){ if(er && er.name==="AbortError") return; } }
+    copy(shareTxt + " " + link, e.target);
+  };
+  $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
+    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · +${x.mp}</div>`).join("");
+  $("rAgain").onclick = () => startSolo(M.theme);
+  show("result");
+}
 
 async function copy(text, btn){
   try{ await navigator.clipboard.writeText(text); if(btn){ const o=btn.textContent; btn.textContent="Copié ✔"; setTimeout(()=>btn.textContent=o,1500); } }
@@ -378,9 +548,14 @@ let curTheme = null, LV = null;   // LV = duel en direct en cours (canal temps r
 function openMode(k){
   curTheme = k;
   $("mEmo").textContent = THEMES[k].e; $("mName").textContent = THEMES[k].n;
+  renderDiff();
+  $("mRandom").disabled = $("mFriend").disabled = !ONLINE;
+  $("mNote").textContent = ONLINE ? "Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite."
+                                  : "📴 Les duels demandent une connexion Internet. Le solo, lui, marche partout.";
   show("mode");
 }
 $("mBack").onclick = () => show("home");
+$("mSolo").onclick = () => startSolo(curTheme);
 $("mRandom").onclick = () => startLive(curTheme, false);
 $("mFriend").onclick = () => startLive(curTheme, true);
 function joinDuel(id){ return startLive(null, false, id); }
@@ -550,8 +725,8 @@ function play(M, lv){
   let driver = !lv || lv.host, cur = null;
   const send = p => { if(lv && !lv.oppGone && LV === lv) lv.ch.send({ type:"broadcast", event:"g", payload:p }); };
 
-  $("gMe").textContent = P.avatar; $("gOpp").textContent = opp ? opp.avatar : "⏳";
-  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : "?"; $("gOppSt").textContent = "";
+  $("gMe").textContent = P.avatar; $("gOpp").textContent = opp ? opp.avatar : (M.solo ? "🎯" : "⏳");
+  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo ? "" : "?"); $("gOppSt").textContent = M.solo ? "Solo" : "";
   show("game");
 
   function showQ(i){
@@ -651,6 +826,7 @@ function play(M, lv){
 }
 
 async function finishMatch(M, G, opp, lv){
+  if(M.solo) return finishSolo(M, G);
   $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = ""; $("gOppSt").textContent = "";
   let { data: R, error } = await rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
   // En direct : on attend quelques secondes le score officiel de l'adversaire
@@ -708,22 +884,44 @@ $("rHome").onclick = () => { renderHome(); show("home"); };
 /* ---------------- PROFIL ---------------- */
 let pickAv = null;
 async function renderProfile(){
-  const n = P.wins+P.losses+P.draws;
-  $("pStats").innerHTML = `<div class="stat"><b>${n}</b><span>Duels finis</span></div><div class="stat"><b>${P.wins}</b><span>Victoires</span></div><div class="stat"><b>${n?Math.round(P.wins/n*100):0}%</b><span>Ratio</span></div>`;
+  const n = P.wins + P.losses + P.draws, S = LOC.solo;
+  const stat = (v, l, s) => `<div class="stat"><b>${v}</b><span>${l}</span>${s?`<small>${s}</small>`:""}</div>`;
+  const drawStats = (x) => {
+    const answered = x ? x.answered : S.answered, correct = x ? x.correct : S.correct;
+    const fav = x && x.fav_theme && THEMES[x.fav_theme];
+    const soloBest = Math.max(x ? x.solo_best : 0, ...Object.values(S.byTheme).map(t => t.best), 0);
+    $("pStats").innerHTML =
+      stat(n, "Duels finis") + stat(P.wins, "Victoires", `${P.losses} déf. · ${P.draws} nuls`) + stat(`${n ? Math.round(P.wins/n*100) : 0}%`, "Ratio") +
+      stat(answered ? Math.round(correct/answered*100) + "%" : "–", "Bonnes rép.", `${correct}/${answered}`) +
+      stat(x ? x.best_streak : "–", "Meilleure série", x && x.current_streak ? `en cours : ${x.current_streak}` : "") +
+      stat(x && x.avg_time != null ? x.avg_time + " s" : "–", "Temps moyen", "bonnes réponses") +
+      stat(Math.max(S.games, x ? x.solo_games : 0), "Parties solo") + stat(soloBest, "Record solo") +
+      stat(fav ? fav.e : "–", "Thème préféré", fav ? fav.n : "");
+  };
+  drawStats(null);
   $("pName").value = P.pseudo; pickAv = P.avatar;
+  $("pName").disabled = $("pSave").disabled = !ONLINE;
   const drawAv = () => {
     $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}">${a}</button>`).join("");
-    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ pickAv=b.textContent; drawAv(); });
+    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ if(ONLINE){ pickAv=b.textContent; drawAv(); } });
   };
   drawAv();
-  const { data: ts } = await sb.from("theme_stats").select("*").eq("user_id", me);
-  const tmap = Object.fromEntries((ts||[]).map(t=>[t.theme,t]));
+  let tmap = LS.get("dq_tstats", {});
+  if(ONLINE){
+    const [{ data: ts }, { data: x }] = await Promise.all([
+      sb.from("theme_stats").select("*").eq("user_id", me), rpc("my_stats", {})]);
+    if(ts){ tmap = Object.fromEntries(ts.map(t=>[t.theme,t])); LS.set("dq_tstats", tmap); }
+    if(x){ LS.set("dq_mystats", x); drawStats(x); }
+  } else {
+    const x = LS.get("dq_mystats", null); if(x) drawStats(x);
+  }
   $("pThemes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
-    const L = lvlOf((tmap[k]||{}).xp||0);
-    return `<div class="row"><div class="av">${t.e}</div><div class="rn">${t.n}<div class="xpbar"><i style="width:${L.x/L.need*100}%"></i></div></div><div class="rs">Niv. ${L.l}</div></div>`;
+    const L = lvlOf((tmap[k]||{}).xp||0), so = S.byTheme[k];
+    return `<div class="row"><div class="av">${t.e}</div><div class="rn">${t.n}<div class="xpbar"><i style="width:${L.x/L.need*100}%"></i></div>${so?`<span class="pl">Record solo : ${so.best}</span>`:""}</div><div class="rs">Niv. ${L.l}</div></div>`;
   }).join("");
 }
 $("pSave").onclick = async e => {
+  if(!ONLINE) return;
   const { error } = await rpc("update_profile", { p_pseudo: $("pName").value, p_avatar: pickAv });
   e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
   await loadProfile(); setTimeout(()=>e.target.textContent="Enregistrer", 1500);
@@ -731,7 +929,11 @@ $("pSave").onclick = async e => {
 $("toProfile").onclick = () => { renderProfile(); show("profile"); };
 $("pBack").onclick = () => { renderHome(); show("home"); };
 
-boot().catch(e => { show("setup"); $("setup").querySelector(".sub").textContent = "Erreur : " + errMsg(e); });
+if("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+boot().catch(e => { console.error(e); goOffline(); });
 </script>
 </body>
 </html>
