@@ -151,6 +151,20 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .stats.s3{grid-template-columns:repeat(3,1fr)}
 .stat small{display:block;font-size:11px;color:var(--mute);margin-top:2px}
+.top{gap:8px}
+.iconbtn{position:relative;flex:none}
+.badge{position:absolute;top:-5px;right:-5px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 6px;font-family:Inter,sans-serif}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(420px,92vw);background:var(--card2);border:1px solid var(--acc);border-radius:16px;padding:14px;z-index:50;box-shadow:0 10px 30px #000a;display:none;animation:fade .25s}
+.toast .tt{display:flex;gap:10px;align-items:center;font-weight:600}
+.toast .ta{display:flex;gap:8px;margin-top:12px}
+.toast .ta button{flex:1;padding:11px;border-radius:12px;font-weight:700;background:var(--card)}
+.toast .ta button.p{background:var(--acc);color:var(--bg)}
+.on-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-left:6px;vertical-align:middle}
+.mini.p{background:var(--acc);color:var(--bg)}
+.mini.d{color:var(--bad)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.sec{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:12px 4px 4px}
+.row.unread{background:#ffcc3d14;border-radius:10px}
 </style>
 </head>
 <body>
@@ -172,6 +186,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
         <div class="lvl" id="hLvl">Niveau 1</div>
         <div class="xpbar"><i id="hXp" style="width:0%"></i></div>
       </div>
+      <button class="iconbtn" id="toFriends" aria-label="Amis">👥<span class="badge" id="fBadge" style="display:none">0</span></button>
+      <button class="iconbtn" id="toNotifs" aria-label="Notifications">🔔<span class="badge" id="nBadge" style="display:none">0</span></button>
       <button class="iconbtn" id="toProfile" aria-label="Profil">👤</button>
     </div>
     <div class="brand">Défi<span>Quiz</span></div>
@@ -252,11 +268,43 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     </div>
   </section>
 
+  <!-- AMIS -->
+  <section class="screen" id="friends">
+    <button class="back" id="fBack">← Retour</button>
+    <h2 style="font-size:28px">Amis</h2>
+    <div class="share" style="display:flex;align-items:center;gap:8px;margin:10px 0">
+      <span>Ton code ami :</span><b class="disp" id="fCode" style="color:var(--acc);font-size:22px;flex:1"></b>
+      <button class="mini" id="fCopy">Copier</button>
+    </div>
+    <input class="field" id="fSearch" placeholder="🔎 Pseudo ou code ami…" autocomplete="off">
+    <div class="panel" id="fResults" style="display:none;margin-bottom:12px"></div>
+    <div class="panel" id="fList"></div>
+  </section>
+
+  <!-- NOTIFICATIONS -->
+  <section class="screen" id="notifs">
+    <button class="back" id="nBack">← Retour</button>
+    <h2 style="font-size:28px;margin-bottom:10px">Notifications</h2>
+    <div class="panel" id="nList"></div>
+  </section>
+
+  <!-- DÉFIER UN AMI : CHOIX DU THÈME -->
+  <section class="screen" id="invite">
+    <button class="back" id="iBack">← Retour</button>
+    <div class="center" style="padding:10px 0 16px">
+      <div class="av opp" id="iAv" style="margin:0 auto 8px;width:72px;height:72px;font-size:40px"></div>
+      <h2 style="font-size:26px" id="iName"></h2>
+      <p class="sub">Choisis le thème du duel en direct</p>
+    </div>
+    <div class="grid" id="iThemes"></div>
+  </section>
+
   <!-- PROFIL -->
   <section class="screen" id="profile">
     <button class="back" id="pBack">← Retour</button>
     <h2 style="font-size:28px">Mon profil</h2>
     <div class="stats s3" id="pStats"></div>
+    <div class="share" id="pAccount" style="margin:0 0 16px"></div>
     <div class="label">Pseudo</div>
     <input class="field" id="pName" maxlength="16">
     <div class="label">Avatar</div>
@@ -267,6 +315,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Défi Quiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
   </section>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 /* ====== CONFIG : à remplir avec les infos de ton projet Supabase ====== */
@@ -309,7 +359,7 @@ async function ensureAuth(force){
     if(r.error) throw r.error;
     session = r.data.session;
   }
-  if(me && me !== session.user.id){ me = session.user.id; await loadProfile(); }
+  if(me && me !== session.user.id){ me = session.user.id; await loadProfile(); if(NOTIF_CH){ stopSocial(); startSocial(); } }
   me = session.user.id;
   return session;
 }
@@ -360,13 +410,14 @@ async function boot(){
   catch(e){ return goOffline(); }
   setOnline(true);
   await loadProfile();
-  refreshBank(); flushQueue();
+  startSocial(); refreshBank(); flushQueue();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   renderHome(); show("home");
 }
 function setOnline(v){
   ONLINE = v;
+  if(!v) stopSocial();
   $("offbar").style.display = v ? "none" : "block";
 }
 function goOffline(){
@@ -382,7 +433,7 @@ async function reconnect(){
   if(!sb) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   try { await withTimeout(ensureAuth(), 8000); } catch(e){ return; }
   setOnline(true);
-  await loadProfile(); await flushQueue(); refreshBank();
+  await loadProfile(); startSocial(); await flushQueue(); refreshBank();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   if($("home").classList.contains("on")) renderHome();
@@ -437,10 +488,11 @@ async function renderHome(){
     const pend = LOC.queue.filter(g => g.theme === k).length;
     return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played + pend} parties</div></button>`;
   }).join("");
-  document.querySelectorAll(".theme").forEach(b=>b.onclick=()=>openMode(b.dataset.k));
+  document.querySelectorAll("#themes .theme").forEach(b=>b.onclick=()=>openMode(b.dataset.k));
+  if(ONLINE) refreshBadges();
   renderPanel();
 }
-let lbDays = 7, lbTheme = null;
+let lbDays = 7, lbTheme = null, lbFriends = false;
 async function renderPanel(){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===tab));
   if(!ONLINE){
@@ -449,14 +501,15 @@ async function renderPanel(){
   }
   $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
   if(tab==="lb"){
-    const { data, error } = await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme });
+    const { data, error } = await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme, p_friends: lbFriends });
     if(error) return $("panel").textContent = errMsg(error);
     const per = [[1,"Aujourd'hui"],[7,"Semaine"],[30,"Mois"],[null,"Depuis toujours"]];
-    const chips = `<div class="chips">${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
+    const chips = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">👥 Amis</button>${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
       `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${t.e}</button>`).join("")}</div>`;
-    $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
+    $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbFriends?" · entre amis":""}${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
       data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
       : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué sur cette période. Sois le premier !</p>`);
+    $("panel").querySelector("[data-f]").onclick = () => { lbFriends = !lbFriends; renderPanel(); };
     $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : +b.dataset.d; renderPanel(); });
     $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; renderPanel(); });
   } else {
@@ -882,8 +935,309 @@ async function finishMatch(M, G, opp, lv){
 $("rHome").onclick = () => { renderHome(); show("home"); };
 
 /* ---------------- PROFIL ---------------- */
+/* ---------------- SOCIAL : notifications en direct, présence, amis ---------------- */
+let NOTIF_CH = null, PRES_CH = null, ONLINE_IDS = new Set(), PROFILE_CACHE = {};
+const ago = d => { const s = (Date.now() - new Date(d)) / 1000;
+  return s < 60 ? "à l'instant" : s < 3600 ? `il y a ${Math.floor(s/60)} min` : s < 86400 ? `il y a ${Math.floor(s/3600)} h` : `il y a ${Math.floor(s/86400)} j`; };
+const inGame = () => ["game","match"].some(id => $(id).classList.contains("on"));
+
+function startSocial(){
+  if(!ONLINE || NOTIF_CH) return;
+  NOTIF_CH = sb.channel("notif-" + me)
+    .on("postgres_changes", { event:"INSERT", schema:"public", table:"notifications", filter:`user_id=eq.${me}` }, ({ new: n }) => onNotif(n))
+    .subscribe();
+  PRES_CH = sb.channel("online", { config: { presence: { key: me } } })
+    .on("presence", { event:"sync" }, () => {
+      ONLINE_IDS = new Set(Object.keys(PRES_CH.presenceState()));
+      if($("friends").classList.contains("on")) renderFriendList();
+    })
+    .subscribe(async s => { if(s === "SUBSCRIBED") await PRES_CH.track({ at: Date.now() }); });
+  refreshBadges();
+}
+function stopSocial(){
+  [NOTIF_CH, PRES_CH].forEach(c => { if(c) try { sb.removeChannel(c); } catch(e){} });
+  NOTIF_CH = PRES_CH = null; ONLINE_IDS = new Set();
+}
+async function refreshBadges(){
+  if(!ONLINE) return;
+  const [{ count: n }, { count: f }] = await Promise.all([
+    sb.from("notifications").select("id", { count:"exact", head:true }).eq("user_id", me).eq("read", false),
+    sb.from("friendships").select("requester", { count:"exact", head:true }).eq("addressee", me).eq("status", "pending")]);
+  setBadge("nBadge", n || 0); setBadge("fBadge", f || 0);
+}
+function setBadge(id, n){ const b = $(id); b.textContent = n > 9 ? "9+" : n; b.style.display = n ? "block" : "none"; }
+async function actorOf(id){
+  if(!id) return { pseudo:"Un joueur", avatar:"👤" };
+  if(PROFILE_CACHE[id]) return PROFILE_CACHE[id];
+  const { data } = await sb.from("profiles").select("id,pseudo,avatar,xp").eq("id", id).maybeSingle();
+  return (PROFILE_CACHE[id] = data || { pseudo:"Un joueur", avatar:"👤" });
+}
+function notifText(n, a){
+  const th = n.data && THEMES[n.data.theme];
+  return ({
+    duel_invite:     `⚔️ <b>${esc(a.pseudo)}</b> te défie en direct${th ? ` en ${th.e} ${th.n}` : ""} !`,
+    duel_declined:   `🙅 <b>${esc(a.pseudo)}</b> a refusé ton duel.`,
+    friend_request:  `👋 <b>${esc(a.pseudo)}</b> veut devenir ton ami.`,
+    friend_accepted: `🎉 <b>${esc(a.pseudo)}</b> a accepté ta demande d'ami.`
+  })[n.type] || "Nouvelle notification";
+}
+
+/* Toast */
+let toastTimer = null;
+function toast(html, actions = [], ms = 6000){
+  const t = $("toast");
+  t.innerHTML = `<div class="tt">${html}</div>` + (actions.length ? `<div class="ta">${actions.map((a,i)=>`<button class="${a.primary?'p':''}" data-i="${i}">${a.label}</button>`).join("")}</div>` : "");
+  t.querySelectorAll("button").forEach(b => b.onclick = () => { hideToast(); actions[+b.dataset.i].run(); });
+  t.style.display = "block";
+  clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, ms);
+}
+function hideToast(){ $("toast").style.display = "none"; }
+
+async function acceptInvite(n){
+  rpc("mark_notifications_read", { p_ids: [n.id] });
+  startLive(null, false, n.data.match_id);
+}
+async function onNotif(n){
+  const a = await actorOf(n.actor);
+  refreshBadges();
+  if($("notifs").classList.contains("on")) renderNotifs();
+  if($("friends").classList.contains("on")) renderFriendList();
+  const txt = `<div class="av" style="width:40px;height:40px;font-size:22px">${esc(a.avatar)}</div><div>${notifText(n, a)}</div>`;
+  if(n.type === "duel_invite"){
+    if(inGame()) return toast(txt + "", [], 5000);
+    return toast(txt, [
+      { label:"Refuser", run: () => rpc("decline_invite", { p_match: n.data.match_id }) },
+      { label:"⚔️ Jouer !", primary:true, run: () => acceptInvite(n) }], 30000);
+  }
+  if(n.type === "friend_request"){
+    return toast(txt, [
+      { label:"Refuser", run: async () => { await rpc("respond_friend_request", { p_requester:n.actor, p_accept:false }); refreshBadges(); } },
+      { label:"Accepter", primary:true, run: async () => { await rpc("respond_friend_request", { p_requester:n.actor, p_accept:true }); refreshBadges(); } }], 15000);
+  }
+  if(n.type === "duel_declined" && LV && LV.M.id === (n.data && n.data.match_id) && !LV.started){
+    leaveLive();
+    $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = "🙅";
+    $("mmMsg").textContent = `${a.pseudo} a refusé le duel.`; $("mmShare").innerHTML = "";
+    ["mmSolo","mmCancel"].forEach(id => $(id).style.display = "none"); $("mmBack").style.display = "block";
+    return;
+  }
+  toast(txt, [], 5000);
+}
+
+/* Écran notifications */
+async function renderNotifs(){
+  $("nList").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const { data, error } = await sb.from("notifications").select("*").eq("user_id", me).order("created_at", { ascending:false }).limit(50);
+  if(error) return $("nList").textContent = errMsg(error);
+  if(!data.length) return $("nList").innerHTML = `<p class="sub center" style="margin:6px 0">Rien de neuf pour l'instant.</p>`;
+  const actors = await Promise.all(data.map(n => actorOf(n.actor)));
+  $("nList").innerHTML = data.map((n, i) => {
+    const fresh = Date.now() - new Date(n.created_at) < 10*60*1000;
+    let acts = "";
+    if(n.type === "duel_invite" && !n.read && fresh) acts = `<button class="mini p" data-act="join" data-i="${i}">Jouer</button>`;
+    if(n.type === "friend_request" && !n.read) acts = `<button class="mini p" data-act="acc" data-i="${i}">Accepter</button><button class="mini" data-act="dec" data-i="${i}">Refuser</button>`;
+    return `<div class="row ${n.read?'':'unread'}"><div class="av">${esc(actors[i].avatar)}</div><div class="rn" style="font-weight:500">${notifText(n, actors[i])}<br><span class="pl">${ago(n.created_at)}</span></div><div class="acts">${acts}</div></div>`;
+  }).join("");
+  $("nList").querySelectorAll("[data-act]").forEach(b => b.onclick = async () => {
+    const n = data[+b.dataset.i];
+    if(b.dataset.act === "join") return acceptInvite(n);
+    await rpc("respond_friend_request", { p_requester:n.actor, p_accept: b.dataset.act === "acc" });
+    renderNotifs(); refreshBadges();
+  });
+  // les invitations à jouer restent actives : on ne marque lues que les autres
+  const ids = data.filter(n => !n.read && !(n.type === "duel_invite" || n.type === "friend_request")).map(n => n.id);
+  if(ids.length){ await rpc("mark_notifications_read", { p_ids: ids }); refreshBadges(); }
+}
+$("toNotifs").onclick = () => { if(!ONLINE) return toast("📴 Les notifications reviennent avec la connexion."); renderNotifs(); show("notifs"); };
+$("nBack").onclick = () => { renderHome(); show("home"); };
+
+/* Écran amis */
+let FRIENDS = [];
+async function renderFriends(){
+  $("fCode").textContent = P.friend_code || "—";
+  $("fSearch").value = ""; $("fResults").style.display = "none";
+  await renderFriendList();
+}
+async function renderFriendList(){
+  const { data, error } = await rpc("list_friends", {});
+  if(error) return $("fList").textContent = errMsg(error);
+  FRIENDS = data || [];
+  const by = r => FRIENDS.filter(f => f.relation === r);
+  const row = (f, acts, extra = "") => `<div class="row"><div class="av">${esc(f.avatar)}</div><div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id)?'<span class="on-dot" title="en ligne"></span>':""}<br><span class="pl">Niveau ${lvlOf(f.xp).l}${extra}</span></div><div class="acts">${acts}</div></div>`;
+  const friends = by("friend").sort((a,b) => ONLINE_IDS.has(b.id) - ONLINE_IDS.has(a.id));
+  let html = "";
+  if(by("received").length) html += `<div class="sec">Demandes reçues</div>` + by("received").map(f => row(f,
+      `<button class="mini p" data-act="acc" data-id="${f.id}">Accepter</button><button class="mini" data-act="dec" data-id="${f.id}">Refuser</button>`)).join("");
+  html += `<div class="sec">Mes amis (${friends.length})</div>` + (friends.length ? friends.map(f => row(f,
+      `<button class="mini p" data-act="duel" data-id="${f.id}">⚔️ Défier</button><button class="mini" data-act="more" data-id="${f.id}">⋯</button>`,
+      ` · face-à-face ${f.wins_vs}V ${f.losses_vs}D${f.draws_vs?` ${f.draws_vs}N`:""}`)).join("")
+    : `<p class="sub" style="margin:6px 4px">Ajoute tes potes avec leur pseudo ou leur code ami 👆</p>`);
+  if(by("sent").length) html += `<div class="sec">Demandes envoyées</div>` + by("sent").map(f => row(f, `<button class="mini" data-act="cancel" data-id="${f.id}">Annuler</button>`)).join("");
+  if(by("blocked").length) html += `<div class="sec">Bloqués</div>` + by("blocked").map(f => row(f, `<button class="mini" data-act="unblock" data-id="${f.id}">Débloquer</button>`)).join("");
+  $("fList").innerHTML = html;
+  $("fList").querySelectorAll("[data-act]").forEach(b => b.onclick = () => friendAction(b.dataset.act, FRIENDS.find(f => f.id === b.dataset.id), b));
+  refreshBadges();
+}
+async function friendAction(act, f, btn){
+  if(act === "duel") return openInvite(f);
+  if(act === "more"){
+    return toast(`<div class="av" style="width:40px;height:40px;font-size:22px">${esc(f.avatar)}</div><div><b>${esc(f.pseudo)}</b><br><span class="pl">Code ${esc(f.friend_code)}</span></div>`, [
+      { label:"Retirer des amis", run: async () => { if(confirm(`Retirer ${f.pseudo} de tes amis ?`)){ await rpc("remove_friend", { p_other:f.id }); renderFriendList(); } } },
+      { label:"🚫 Bloquer", run: async () => { if(confirm(`Bloquer ${f.pseudo} ? Il ne pourra plus te trouver ni te défier.`)){ await rpc("block_user", { p_other:f.id }); renderFriendList(); } } }], 10000);
+  }
+  btn.disabled = true;
+  const call = { acc:["respond_friend_request",{ p_requester:f.id, p_accept:true }], dec:["respond_friend_request",{ p_requester:f.id, p_accept:false }],
+                 cancel:["remove_friend",{ p_other:f.id }], unblock:["unblock_user",{ p_other:f.id }] }[act];
+  const { error } = await rpc(call[0], call[1]);
+  if(error) toast("⚠️ " + esc(errMsg(error)));
+  renderFriendList();
+}
+let searchTimer = null;
+$("fSearch").oninput = () => {
+  clearTimeout(searchTimer);
+  const q = $("fSearch").value.trim();
+  if(q.length < 2){ $("fResults").style.display = "none"; return; }
+  searchTimer = setTimeout(async () => {
+    const { data, error } = await rpc("search_players", { p_q: q });
+    $("fResults").style.display = "block";
+    if(error) return $("fResults").textContent = errMsg(error);
+    if(!data.length) return $("fResults").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun joueur trouvé.</p>`;
+    const lab = { none:`<button class="mini p" data-add>➕ Ajouter</button>`, sent:`<span class="pl">Demande envoyée</span>`,
+                  received:`<button class="mini p" data-add>Accepter</button>`, friend:`<span class="pl">Ami ✓</span>` };
+    $("fResults").innerHTML = data.map((p, i) => `<div class="row" data-i="${i}"><div class="av">${esc(p.avatar)}</div><div class="rn">${esc(p.pseudo)}<br><span class="pl">Niveau ${lvlOf(p.xp).l} · code ${esc(p.friend_code)}</span></div><div class="acts">${lab[p.relation]||""}</div></div>`).join("");
+    $("fResults").querySelectorAll("[data-add]").forEach(b => b.onclick = async () => {
+      const p = data[+b.closest(".row").dataset.i]; b.disabled = true;
+      const { data: st, error } = await rpc("send_friend_request", { p_target: p.id });
+      if(error){ toast("⚠️ " + esc(errMsg(error))); b.disabled = false; return; }
+      b.outerHTML = `<span class="pl">${st === "friend" ? "Ami ✓" : "Demande envoyée"}</span>`;
+      renderFriendList();
+    });
+  }, 300);
+};
+$("fCopy").onclick = e => copy(P.friend_code || "", e.target);
+$("toFriends").onclick = () => { if(!ONLINE) return toast("📴 Tes amis seront là au retour de la connexion."); renderFriends(); show("friends"); };
+$("fBack").onclick = () => { renderHome(); show("home"); };
+
+/* Défier un ami : choix du thème puis salon en direct */
+let invFriend = null;
+function openInvite(f){
+  invFriend = f;
+  $("iAv").textContent = f.avatar; $("iName").textContent = f.pseudo + (ONLINE_IDS.has(f.id) ? " 🟢" : "");
+  $("iThemes").innerHTML = Object.entries(THEMES).map(([k,t]) =>
+    `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div></button>`).join("");
+  $("iThemes").querySelectorAll(".theme").forEach(b => b.onclick = () => inviteFriend(invFriend, b.dataset.k));
+  show("invite");
+}
+$("iBack").onclick = () => { renderFriends(); show("friends"); };
+async function inviteFriend(f, k){
+  leaveLive();
+  mmReset(k);
+  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = f.avatar; $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "invitation envoyée";
+  $("mmMsg").textContent = "Envoi de l'invitation…";
+  const { data: M, error } = await rpc("invite_friend", { p_friend: f.id, p_theme: k });
+  if(error) return mmFail(error);
+  liveLobby(M);
+  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = f.avatar; $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "⏳ invité";
+  $("mmMsg").textContent = `${f.pseudo} a reçu ton invitation${ONLINE_IDS.has(f.id) ? "" : " (il n'est pas en ligne : il la verra en ouvrant l'appli)"}. Le duel démarre dès qu'il accepte.`;
+}
+
+/* ---------------- COMPTE ---------------- */
+const authMsg = e => {
+  const m = errMsg(e);
+  if(/already|exists|registered/i.test(m)) return "Cet e-mail est déjà utilisé. Utilise « J'ai déjà un compte ».";
+  if(/invalid login|invalid credentials/i.test(m)) return "E-mail ou mot de passe incorrect.";
+  if(/password/i.test(m) && /least|short|characters/i.test(m)) return "Mot de passe trop court (6 caractères minimum).";
+  if(/email/i.test(m) && /invalid/i.test(m)) return "Adresse e-mail invalide.";
+  if(/confirm/i.test(m)) return "Confirme d'abord ton adresse e-mail (regarde tes mails).";
+  return m;
+};
+async function switchAccount(){
+  stopSocial(); leaveLive();
+  LS.set("dq_tstats", {}); LS.set("dq_mystats", null);
+  const { data:{ session } } = await sb.auth.getSession();
+  me = session.user.id; P = { ...DEFAULT_P };
+  await loadProfile(); startSocial(); refreshBank();
+  renderProfile();
+}
+async function renderAccount(){
+  const el = $("pAccount");
+  if(!ONLINE){ el.innerHTML = `<b>Compte</b><div class="pl">📴 Disponible au retour de la connexion.</div>`; return; }
+  const { data:{ session } } = await sb.auth.getSession();
+  const u = session && session.user;
+  if(u && !u.is_anonymous && u.email){
+    el.innerHTML = `<b>✅ Compte sauvegardé</b><div class="pl" style="margin:4px 0 6px">${esc(u.email)} · ta progression te suit sur tous tes appareils.</div>
+      <input class="field" id="aNewPass" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password" style="margin:4px 0">
+      <button class="btn s" id="aPw" style="font-size:15px">🔑 Définir / changer mon mot de passe</button>
+      <button class="btn s" id="aOut">Se déconnecter</button>
+      <button class="btn s" id="aDel" style="color:var(--bad);font-size:14px">Supprimer mon compte</button>`;
+    $("aPw").onclick = async e => {
+      const pw = $("aNewPass").value;
+      if(pw.length < 6) return toast("⚠️ Mot de passe trop court (6 caractères minimum).");
+      const { error } = await sb.auth.updateUser({ password: pw });
+      toast(error ? "⚠️ " + esc(authMsg(error)) : "🔑 Mot de passe enregistré.");
+      if(!error) $("aNewPass").value = "";
+    };
+    $("aOut").onclick = async () => {
+      if(!confirm("Te déconnecter ? Tu pourras revenir avec ton e-mail et ton mot de passe.")) return;
+      await sb.auth.signOut(); await ensureAuth(); await switchAccount();
+    };
+    $("aDel").onclick = async () => {
+      if(!confirm("Supprimer définitivement ton compte, ta progression, tes amis et tes duels ?")) return;
+      if(!confirm("Dernière confirmation : cette action est irréversible.")) return;
+      const { error } = await rpc("delete_my_account", {});
+      if(error) return toast("⚠️ " + esc(errMsg(error)));
+      await sb.auth.signOut({ scope:"local" });
+      LOC = { solo:{ games:0, correct:0, answered:0, byTheme:{} }, queue:[], seen:[] }; saveLoc();
+      await ensureAuth(); await switchAccount(); toast("Compte supprimé.");
+    };
+    return;
+  }
+  el.innerHTML = `<b>💾 Sauvegarde ta progression</b>
+    <div class="pl" style="margin:4px 0 8px">Tu joues en invité : si tu changes de téléphone ou vides ton navigateur, tu perds tout. Crée ton compte pour retrouver ton niveau, tes amis et tes stats partout.</div>
+    <input class="field" id="aEmail" type="email" placeholder="E-mail" autocomplete="email" style="margin:4px 0">
+    <input class="field" id="aPass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="new-password" style="margin:4px 0 8px">
+    <div class="err" id="aErr"></div>
+    <button class="btn p" id="aSave">Créer mon compte</button>
+    <button class="btn s" id="aLogin" style="font-size:15px">J'ai déjà un compte : me connecter</button>`;
+  const vals = () => ({ email: $("aEmail").value.trim().toLowerCase(), password: $("aPass").value });
+  const fail = e => { $("aErr").textContent = "⚠️ " + authMsg(e); $("aErr").style.display = "block"; };
+  $("aSave").onclick = async e => {
+    hideErr("aErr");
+    const { email, password } = vals();
+    if(!/^\S+@\S+\.\S+$/.test(email)) return fail("Adresse e-mail invalide.");
+    if(password.length < 6) return fail("Mot de passe trop court (6 caractères minimum).");
+    e.target.disabled = true; e.target.textContent = "Création…";
+    let r = await sb.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
+    if(!r.error && r.data && r.data.user && r.data.user.email === email) r = await sb.auth.updateUser({ password });
+    else if(!r.error){
+      // confirmation d'e-mail activée : le compte sera actif après le clic dans le mail
+      e.target.disabled = false; e.target.textContent = "Créer mon compte";
+      $("pAccount").innerHTML = `<b>📧 Vérifie tes mails</b><div class="pl" style="margin:4px 0">Un lien de confirmation a été envoyé à <b>${esc(email)}</b>. Clique dessus, puis reviens ici pour choisir ton mot de passe.</div>`;
+      return;
+    }
+    e.target.disabled = false; e.target.textContent = "Créer mon compte";
+    if(r.error) return fail(r.error);
+    await sb.auth.refreshSession();
+    toast("✅ Compte créé ! Ta progression est sauvegardée.");
+    renderAccount();
+  };
+  $("aLogin").onclick = async e => {
+    hideErr("aErr");
+    const { email, password } = vals();
+    if(!email || !password) return fail("Entre ton e-mail et ton mot de passe ci-dessus.");
+    if(P.xp > 0 && !confirm("Ta partie invitée actuelle sera remplacée par ton compte. Continuer ?")) return;
+    e.target.disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    e.target.disabled = false;
+    if(error) return fail(error);
+    await switchAccount(); toast("👋 Content de te revoir !");
+  };
+}
+
+/* ---------------- PROFIL ---------------- */
 let pickAv = null;
 async function renderProfile(){
+  renderAccount();
   const n = P.wins + P.losses + P.draws, S = LOC.solo;
   const stat = (v, l, s) => `<div class="stat"><b>${v}</b><span>${l}</span>${s?`<small>${s}</small>`:""}</div>`;
   const drawStats = (x) => {
