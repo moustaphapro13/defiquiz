@@ -268,17 +268,44 @@ const duelLink = id => location.origin + location.pathname + "?duel=" + id;
 
 let sb, me, P = null, tab = "lb";
 
+/* ---------------- CONNEXION ----------------
+   Garantit qu'on a une session valide avant chaque appel au serveur.
+   Si la session a été perdue (jeton expiré, panne passagère, Safari qui
+   vide le stockage…), on la rafraîchit, sinon on recrée un compte invité. */
+async function ensureAuth(force){
+  let { data:{ session } } = await sb.auth.getSession();
+  const expiring = session && session.expires_at && session.expires_at*1000 < Date.now() + 60000;
+  if(session && (force || expiring)){
+    const r = await sb.auth.refreshSession();
+    session = r.error ? null : r.data.session;
+  }
+  if(!session){
+    let r;
+    for(let i=0;i<3;i++){ r = await sb.auth.signInAnonymously(); if(!r.error) break; await sleep(800*(i+1)); }
+    if(r.error) throw r.error;
+    session = r.data.session;
+  }
+  if(me && me !== session.user.id){ me = session.user.id; await loadProfile(); }
+  me = session.user.id;
+  return session;
+}
+const isAuthErr = e => e && /permission denied|JWT|not authenticated|non connecté|401/i.test(errMsg(e) + " " + (e.code||""));
+async function rpc(name, args){
+  try { await ensureAuth(); } catch(e){ return { data:null, error:e }; }
+  let r = await sb.rpc(name, args);
+  if(r.error && isAuthErr(r.error)){
+    try { await ensureAuth(true); } catch(e){ return { data:null, error:e }; }
+    r = await sb.rpc(name, args);
+  }
+  return r;
+}
+
 /* ---------------- DÉMARRAGE ---------------- */
 async function boot(){
   if(!SUPABASE_URL.startsWith("https://")) return show("setup");
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  let { data:{ session } } = await sb.auth.getSession();
-  if(!session){
-    const r = await sb.auth.signInAnonymously();
-    if(r.error){ show("setup"); $("setup").querySelector(".sub").textContent = "Connexion impossible : " + r.error.message + " (as-tu activé « Allow anonymous sign-ins » dans Supabase ?)"; return; }
-    session = r.data.session;
-  }
-  me = session.user.id;
+  try { await ensureAuth(); }
+  catch(e){ show("setup"); $("setup").querySelector(".sub").textContent = "Connexion impossible : " + errMsg(e) + ". Réessaie dans un instant."; return; }
   await loadProfile();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
@@ -312,7 +339,7 @@ async function renderPanel(){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===tab));
   $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
   if(tab==="lb"){
-    const { data, error } = await sb.rpc("leaderboard", { p_days: 7 });
+    const { data, error } = await rpc("leaderboard", { p_days: 7 });
     if(error) return $("panel").textContent = errMsg(error);
     $("panel").innerHTML = `<div class="label" style="margin-bottom:6px">Points cette semaine</div>` + (data.length ?
       data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}</div><div class="rs">${r.points}</div></div>`).join("")
@@ -350,9 +377,9 @@ function openMode(k){
   show("mode");
 }
 $("mBack").onclick = () => show("home");
-$("mRandom").onclick = () => launch(() => sb.rpc("start_match", { p_theme: curTheme, p_private: false }), curTheme);
-$("mFriend").onclick = () => launch(() => sb.rpc("start_match", { p_theme: curTheme, p_private: true }), curTheme);
-function joinDuel(id){ return launch(() => sb.rpc("join_match", { p_id: id }), null); }
+$("mRandom").onclick = () => launch(() => rpc("start_match", { p_theme: curTheme, p_private: false }), curTheme);
+$("mFriend").onclick = () => launch(() => rpc("start_match", { p_theme: curTheme, p_private: true }), curTheme);
+function joinDuel(id){ return launch(() => rpc("join_match", { p_id: id }), null); }
 
 async function launch(call, k){
   hideErr("mmErr"); $("mmBack").style.display="none";
@@ -441,7 +468,7 @@ function play(M){
 
 async function finishMatch(M, G){
   $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = "";
-  const { data: R, error } = await sb.rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
+  const { data: R, error } = await rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
   const oldLvl = lvlOf(P.xp).l;
   await loadProfile();
   $("rMe").textContent = P.avatar; $("rOpp").textContent = M.opponent ? M.opponent.avatar : "⏳";
@@ -498,7 +525,7 @@ async function renderProfile(){
   }).join("");
 }
 $("pSave").onclick = async e => {
-  const { error } = await sb.rpc("update_profile", { p_pseudo: $("pName").value, p_avatar: pickAv });
+  const { error } = await rpc("update_profile", { p_pseudo: $("pName").value, p_avatar: pickAv });
   e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
   await loadProfile(); setTimeout(()=>e.target.textContent="Enregistrer", 1500);
 };
