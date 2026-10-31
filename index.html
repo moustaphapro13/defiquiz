@@ -178,8 +178,9 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <h2 style="font-size:32px" id="mName"></h2>
       <p class="sub">7 questions · 10 secondes chacune · dernière question à points doublés</p>
     </div>
-    <button class="btn p" id="mRandom">🎲 Adversaire au hasard</button>
-    <button class="btn s" id="mFriend">🤝 Défier un ami (lien)</button>
+    <button class="btn p" id="mRandom">⚡ Duel en direct · adversaire au hasard</button>
+    <button class="btn s" id="mFriend">🤝 Duel en direct avec un ami</button>
+    <p class="note">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
   </section>
 
   <!-- MATCHMAKING -->
@@ -192,7 +193,10 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
         <div class="p"><div class="av opp spin" id="mmOpp">❔</div><div class="pn" id="mmOppN">Recherche…</div><div class="pl" id="mmOppL">&nbsp;</div></div>
       </div>
       <div class="sub" id="mmMsg">Recherche d'un adversaire…</div>
+      <div id="mmShare"></div>
       <div class="err" id="mmErr"></div>
+      <button class="btn p" id="mmSolo" style="display:none">▶️ Jouer sans attendre (il jouera après)</button>
+      <button class="btn s" id="mmCancel" style="display:none">Annuler</button>
       <button class="btn s" id="mmBack" style="display:none">Accueil</button>
     </div>
   </section>
@@ -202,7 +206,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <div class="hud">
       <div class="av" id="gMe"></div>
       <div class="sc" id="gMeS" style="color:var(--me)">0</div>
-      <div class="mid"><div class="timer" id="gT">10</div><div class="qn" id="gQn">Question 1/7</div></div>
+      <div class="mid"><div class="timer" id="gT">10</div><div class="qn" id="gQn">Question 1/7</div><div class="qn" id="gOppSt" style="color:var(--opp);min-height:15px"></div></div>
       <div class="sc" id="gOppS" style="color:var(--opp)">0</div>
       <div class="av opp" id="gOpp"></div>
     </div>
@@ -370,137 +374,332 @@ async function copy(text, btn){
 }
 
 /* ---------------- LANCEMENT D'UN DUEL ---------------- */
-let curTheme = null;
+let curTheme = null, LV = null;   // LV = duel en direct en cours (canal temps réel)
 function openMode(k){
   curTheme = k;
   $("mEmo").textContent = THEMES[k].e; $("mName").textContent = THEMES[k].n;
   show("mode");
 }
 $("mBack").onclick = () => show("home");
-$("mRandom").onclick = () => launch(() => rpc("start_match", { p_theme: curTheme, p_private: false }), curTheme);
-$("mFriend").onclick = () => launch(() => rpc("start_match", { p_theme: curTheme, p_private: true }), curTheme);
-function joinDuel(id){ return launch(() => rpc("join_match", { p_id: id }), null); }
+$("mRandom").onclick = () => startLive(curTheme, false);
+$("mFriend").onclick = () => startLive(curTheme, true);
+function joinDuel(id){ return startLive(null, false, id); }
 
-async function launch(call, k){
-  hideErr("mmErr"); $("mmBack").style.display="none";
+function mmReset(k){
+  hideErr("mmErr"); ["mmBack","mmSolo","mmCancel"].forEach(id=>$(id).style.display="none"); $("mmShare").innerHTML = "";
   $("mmTheme").textContent = k ? `${THEMES[k].e} ${THEMES[k].n}` : "⚔️ Défi d'un ami";
   $("mmMe").textContent = P.avatar; $("mmMeN").textContent = P.pseudo; $("mmMeL").textContent = `Niveau ${lvlOf(P.xp).l}`;
   $("mmOpp").textContent = "❔"; $("mmOpp").classList.add("spin");
   $("mmOppN").textContent = "Recherche…"; $("mmOppL").innerHTML = "&nbsp;";
-  $("mmMsg").textContent = "Recherche d'un adversaire…";
   show("match");
-  const [{ data, error }] = await Promise.all([call(), sleep(1200)]);
-  if(error){ showErr("mmErr", error); $("mmMsg").textContent=""; $("mmBack").style.display="block"; return; }
-  const M = data;
+}
+function mmOpp(o){
+  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = o.avatar;
+  $("mmOppN").textContent = o.pseudo; $("mmOppL").textContent = `Niveau ${lvlOf(o.xp).l}`;
+}
+function mmFail(e){ showErr("mmErr", e); $("mmMsg").textContent = ""; $("mmBack").style.display = "block"; }
+$("mmBack").onclick = () => { leaveLive(); renderHome(); show("home"); };
+
+async function startLive(k, priv, joinId){
+  leaveLive();
+  mmReset(k);
+  $("mmMsg").textContent = joinId ? "Connexion au duel…" : priv ? "Création du salon…" : "Recherche d'un adversaire en direct…";
+  const { data: M, error } = joinId ? await rpc("join_match", { p_id: joinId })
+                                    : await rpc("start_live", { p_theme: k, p_private: priv });
+  if(error) return mmFail(error);
   $("mmTheme").textContent = `${THEMES[M.theme].e} ${THEMES[M.theme].n}`;
+  if(!M.live) return asyncIntro(M);     // lien d'un ami qui a joué sans attendre → duel différé
+  liveLobby(M);
+}
+
+// Repli quand personne n'est dispo en direct : partie enregistrée (différé)
+async function launchAsync(k){
+  mmReset(k);
+  $("mmMsg").textContent = "Personne n'est dispo en direct : recherche d'une partie enregistrée…";
+  const [{ data: M, error }] = await Promise.all([rpc("start_match", { p_theme: k, p_private: false }), sleep(900)]);
+  if(error) return mmFail(error);
+  asyncIntro(M);
+}
+async function asyncIntro(M){
   $("mmOpp").classList.remove("spin");
   if(M.opponent){
-    $("mmOpp").textContent = M.opponent.avatar; $("mmOppN").textContent = M.opponent.pseudo;
-    $("mmOppL").textContent = `Niveau ${lvlOf(M.opponent.xp).l}`;
-    $("mmMsg").textContent = "Adversaire trouvé ! Tu joues contre sa partie enregistrée.";
+    mmOpp(M.opponent);
+    $("mmMsg").textContent = "Adversaire trouvé ! Tu joues contre sa partie enregistrée, à son rythme.";
   } else {
-    $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = M.private ? "Ton ami" : "Prochain joueur";
-    $("mmMsg").textContent = M.private ? "Joue ta partie, puis envoie le lien à ton ami pour qu'il relève le défi."
-                                       : "Personne n'attend sur ce thème : tu joues en premier, le prochain joueur affrontera ton score.";
+    $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = M.private ? "Ton ami" : "Prochain joueur"; $("mmOppL").innerHTML = "&nbsp;";
+    $("mmMsg").textContent = M.private ? "Tu joues en premier : ton ami jouera ensuite avec le lien."
+                                       : "Personne n'est dispo pour l'instant : tu joues en premier, le prochain joueur affrontera ton score.";
   }
   await sleep(2200);
-  play(M);
+  play(M, null);
 }
-$("mmBack").onclick = () => { renderHome(); show("home"); };
 
-/* ---------------- PARTIE ---------------- */
+function shareBox(link){
+  return `<div class="share"><b>Envoie ce lien à ton ami :</b><input readonly value="${esc(link)}" onclick="this.select()">`+
+         `<button class="btn p" data-act="share" style="margin-top:4px">📤 Envoyer le lien</button></div>`;
+}
+function wireShare(root, link){
+  root.querySelectorAll("[data-act=share]").forEach(b => b.onclick = async () => {
+    if(navigator.share){
+      try { await navigator.share({ title:"Défi Quiz", text:"Je te défie sur Défi Quiz ! ⚔️", url: link }); return; }
+      catch(e){ if(e && e.name === "AbortError") return; }
+    }
+    copy(link, b);
+  });
+}
+
+/* ---------------- SALON EN DIRECT ---------------- */
+function liveLobby(M){
+  const host = M.role === "p1";
+  const lv = LV = { M, host, ch:null, opp: M.opponent || null, started:false, oppGone:false, onMsg:null, onGone:null, buf:[], timers:[] };
+  const ch = lv.ch = sb.channel("live-" + M.id, { config: { presence: { key: me }, broadcast: { self: false } } });
+  ch.on("presence", { event: "sync" }, () => {
+      if(LV !== lv) return;
+      const st = ch.presenceState(), k = Object.keys(st).find(x => x !== me);
+      if(k && !lv.started){ lv.opp = st[k][0]; mmOpp(lv.opp); if(host) beginLive(lv); }
+    })
+    .on("presence", { event: "leave" }, ({ key }) => {
+      if(LV === lv && key !== me && lv.started){ lv.oppGone = true; lv.onGone && lv.onGone(); }
+    })
+    .on("broadcast", { event: "g" }, ({ payload }) => {
+      if(LV !== lv) return;
+      if(payload.type === "start"){ if(!host && !lv.started) beginLive(lv); return; }
+      if(lv.onMsg) lv.onMsg(payload); else lv.buf.push(payload);
+    })
+    .subscribe(async status => {
+      if(status === "SUBSCRIBED") await ch.track({ pseudo: P.pseudo, avatar: P.avatar, xp: P.xp });
+      if((status === "CHANNEL_ERROR" || status === "TIMED_OUT") && !lv.started && LV === lv){
+        leaveLive(); mmFail("connexion en direct impossible, réessaie");
+      }
+    });
+
+  const cancel = async () => { leaveLive(); await rpc("cancel_live", { p_id: M.id, p_mode: "delete" }); renderHome(); show("home"); };
+
+  if(host && M.private){
+    const link = duelLink(M.id);
+    $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = "Ton ami";
+    $("mmMsg").textContent = "Salon créé ! Envoie le lien à ton ami : le duel démarre tout seul dès qu'il arrive.";
+    $("mmShare").innerHTML = shareBox(link); wireShare($("mmShare"), link);
+    $("mmSolo").style.display = "block"; $("mmCancel").style.display = "block";
+    $("mmSolo").onclick = async () => {
+      leaveLive();
+      await rpc("cancel_live", { p_id: M.id, p_mode: "async" });
+      M.live = false; asyncIntro(M);
+    };
+    $("mmCancel").onclick = cancel;
+  } else if(host){
+    let left = 20;
+    $("mmCancel").style.display = "block"; $("mmCancel").onclick = cancel;
+    $("mmMsg").textContent = `Recherche d'un adversaire en direct… ${left} s`;
+    const t = setInterval(async () => {
+      if(lv.started || LV !== lv){ clearInterval(t); return; }
+      left--; $("mmMsg").textContent = `Recherche d'un adversaire en direct… ${Math.max(0,left)} s`;
+      if(left === 0){
+        clearInterval(t);
+        const { data: deleted } = await rpc("cancel_live", { p_id: M.id, p_mode: "delete" });
+        if(lv.started || LV !== lv) return;
+        if(deleted){ leaveLive(); launchAsync(M.theme); }
+        else lv.timers.push(setTimeout(() => { if(!lv.started && LV === lv){ leaveLive(); launchAsync(M.theme); } }, 8000));
+      }
+    }, 1000);
+    lv.timers.push(t);
+  } else {
+    if(M.opponent) mmOpp(M.opponent);
+    $("mmMsg").textContent = "Connexion à ton adversaire…";
+    lv.timers.push(setTimeout(() => {
+      if(!lv.started && LV === lv){ leaveLive(); mmFail("ton adversaire ne répond pas (il a peut-être quitté le salon)."); }
+    }, 15000));
+  }
+}
+function leaveLive(){
+  const lv = LV; if(!lv) return; LV = null;
+  lv.timers.forEach(t => { clearInterval(t); clearTimeout(t); });
+  try { sb.removeChannel(lv.ch); } catch(e){}
+}
+async function beginLive(lv){
+  lv.started = true;
+  lv.timers.forEach(t => { clearInterval(t); clearTimeout(t); }); lv.timers = [];
+  ["mmSolo","mmCancel","mmBack"].forEach(id => $(id).style.display = "none"); $("mmShare").innerHTML = "";
+  if(lv.host) lv.ch.send({ type:"broadcast", event:"g", payload:{ type:"start" } });
+  for(let n = 3; n > 0; n--){
+    $("mmMsg").innerHTML = `C'est parti dans<br><span class="disp" style="font-size:56px;color:var(--acc);line-height:1.2">${n}</span>`;
+    await sleep(1000);
+  }
+  if(LV === lv) play(lv.M, lv);
+}
+
+/* ---------------- PARTIE ----------------
+   - En direct : l'hôte pilote (même question au même moment pour les deux,
+     même ordre des réponses) ; chacun envoie sa réponse à l'autre.
+   - En différé : on rejoue la partie enregistrée de l'adversaire.        */
+function seededShuffle(arr, seed){
+  let h = 2166136261 >>> 0;
+  for(const c of seed){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const r = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  const a = [...arr];
+  for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
 let tick = null;
-function play(M){
+function play(M, lv){
   const qs = M.questions, N = qs.length, ghost = M.ghost;
-  const G = { i:0, me:0, op:0, answers:[], log:[] };
-  $("gMe").textContent = P.avatar; $("gOpp").textContent = M.opponent ? M.opponent.avatar : "⏳";
-  $("gMeS").textContent = 0; $("gOppS").textContent = ghost ? 0 : "?";
+  const opp = lv ? lv.opp : M.opponent;
+  const hasOpp = !!(lv || ghost);
+  const G = { me:0, op:0, answers:[], log:[], oppAns:{}, ended:false };
+  let driver = !lv || lv.host, cur = null;
+  const send = p => { if(lv && !lv.oppGone && LV === lv) lv.ch.send({ type:"broadcast", event:"g", payload:p }); };
+
+  $("gMe").textContent = P.avatar; $("gOpp").textContent = opp ? opp.avatar : "⏳";
+  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : "?"; $("gOppSt").textContent = "";
   show("game");
 
-  const nextQ = () => {
-    if(G.i >= N) return finishMatch(M, G);
-    const Q = qs[G.i], last = G.i===N-1, good = Q.answer;
-    const opts = shuffle([good, ...Q.wrong]);
-    $("gQn").textContent = `Question ${G.i+1}/${N}`;
-    $("gQ").innerHTML = (last?`<div><span class="dbl">⭐ DERNIÈRE QUESTION · POINTS DOUBLÉS</span>`:"<div>") + esc(Q.question) + "</div>";
-    $("gA").innerHTML = opts.map((o,j)=>`<button class="ans" data-j="${j}">${esc(o)}</button>`).join("");
+  function showQ(i){
+    if(G.ended || (cur && cur.i >= i)) return;
+    clearInterval(tick);
+    const Q = qs[i], last = i === N-1, good = Q.answer;
+    const opts = seededShuffle([good, ...Q.wrong], M.id + ":" + i);
+    $("gQn").textContent = `Question ${i+1}/${N}`;
+    $("gQ").innerHTML = (last ? `<div><span class="dbl">⭐ DERNIÈRE QUESTION · POINTS DOUBLÉS</span>` : "<div>") + esc(Q.question) + "</div>";
+    $("gA").innerHTML = opts.map((o,j) => `<button class="ans" data-j="${j}">${esc(o)}</button>`).join("");
+    $("gOppSt").textContent = (lv && lv.oppGone) ? "Adversaire déconnecté" : "";
     const btns = [...document.querySelectorAll(".ans")];
-    const g = ghost ? ghost[G.i] : null;              // réponse enregistrée de l'adversaire
-    const oppT = g && g.c!=null ? Math.min(TIME, g.t) : null;
-    let mine = null, oppDone = !g || g.c==null, done = false;
-    const start = performance.now();
-
-    const finish = () => {
-      if(done) return; done = true;
-      clearInterval(tick);
-      btns.forEach(b=>b.disabled=true);
-      const gi = opts.indexOf(good);
-      btns[gi].classList.add("good");
-      if(mine && mine.c!==good && mine.c!=null) btns[opts.indexOf(mine.c)].classList.add("bad");
-      if(mine && mine.c!=null) btns[opts.indexOf(mine.c)].insertAdjacentHTML("beforeend",'<span class="dot m"></span>');
-      if(g && g.c!=null && opts.includes(g.c)) btns[opts.indexOf(g.c)].insertAdjacentHTML("beforeend",'<span class="dot o"></span>');
-      const ans = mine || { c:null, t:TIME };
-      const mp = ans.c===good ? pts(ans.t, last) : 0;
-      const op = g && g.c===good ? pts(g.t, last) : 0;
-      G.answers.push({ c: ans.c, t: Math.round(ans.t*100)/100 });
-      G.me += mp; G.op += op;
-      G.log.push({ q:Q.question, good, mine:ans.c, ok: ans.c===good, mp, op });
-      if(mp){ const p=document.createElement("div"); p.className="pop"; p.textContent="+"+mp; $("game").appendChild(p); setTimeout(()=>p.remove(),900); }
-      $("gMeS").textContent = G.me; if(ghost) $("gOppS").textContent = G.op;
-      G.i++; setTimeout(nextQ, 1700);
-    };
-    btns.forEach(b=>b.onclick=()=>{
-      if(mine || done) return;
-      mine = { c: opts[+b.dataset.j], t: (performance.now()-start)/1000 };
-      b.classList.add("mine"); btns.forEach(x=>x.disabled=true);
-      if(oppDone || (oppT!=null && mine.t>=oppT)) setTimeout(finish, 350);
+    cur = { i, Q, last, good, opts, btns, mine:null, revealed:false, next:false, start: performance.now() };
+    btns.forEach(b => b.onclick = () => {
+      if(cur.i !== i || cur.mine || cur.revealed) return;
+      const el = (performance.now() - cur.start) / 1000; if(el > TIME) return;
+      cur.mine = { c: opts[+b.dataset.j], t: el };
+      b.classList.add("mine"); btns.forEach(x => x.disabled = true);
+      send({ type:"ans", i, c: cur.mine.c, t: el });
     });
-    tick = setInterval(()=>{
-      const el = (performance.now()-start)/1000, left = Math.max(0, TIME-el);
-      $("gT").textContent = Math.ceil(left);
-      $("gTbar").style.width = (left/TIME*100)+"%";
-      if(!oppDone && el>=oppT){ oppDone = true; if(mine) setTimeout(finish, 350); }
-      if(left<=0) finish();
-    }, 50);
-  };
-  nextQ();
+    if(G.oppAns[i] && lv) $("gOppSt").textContent = "✓ a répondu";
+    tick = setInterval(loop, 50);
+  }
+  function oppReady(el){
+    if(!hasOpp) return true;
+    if(lv) return lv.oppGone || G.oppAns[cur.i] != null;
+    const g = ghost[cur.i]; return !g || g.c == null || el >= g.t;
+  }
+  function loop(){
+    if(!cur || cur.revealed) return;
+    const el = (performance.now() - cur.start) / 1000, left = Math.max(0, TIME - el);
+    $("gT").textContent = Math.ceil(left);
+    $("gTbar").style.width = (left / TIME * 100) + "%";
+    if(left <= 0 && !cur.mine) cur.btns.forEach(b => b.disabled = true);
+    if(driver && ((cur.mine && oppReady(el)) || el >= TIME + (lv ? 0.6 : 0))){
+      const i = cur.i; reveal(i); send({ type:"reveal", i });
+    }
+  }
+  function reveal(i){
+    if(!cur || cur.i !== i || cur.revealed) return;
+    cur.revealed = true; clearInterval(tick);
+    const { btns, opts, good, last, Q } = cur;
+    btns.forEach(b => b.disabled = true);
+    btns[opts.indexOf(good)].classList.add("good");
+    const ans = cur.mine || { c:null, t:TIME };
+    if(ans.c != null && ans.c !== good) btns[opts.indexOf(ans.c)].classList.add("bad");
+    if(ans.c != null) btns[opts.indexOf(ans.c)].insertAdjacentHTML("beforeend", '<span class="dot m"></span>');
+    const o = lv ? G.oppAns[i] : (ghost ? ghost[i] : null);
+    if(o && o.c != null && opts.includes(o.c)) btns[opts.indexOf(o.c)].insertAdjacentHTML("beforeend", '<span class="dot o"></span>');
+    const mp = ans.c === good ? pts(ans.t, last) : 0;
+    const op = o && o.c === good ? pts(o.t, last) : 0;
+    G.answers[i] = { c: ans.c, t: Math.round(Math.min(ans.t, TIME) * 100) / 100 };
+    G.me += mp; G.op += op;
+    G.log[i] = { q: Q.question, good, mine: ans.c, ok: ans.c === good, mp, op };
+    if(mp){ const p = document.createElement("div"); p.className = "pop"; p.textContent = "+" + mp; $("game").appendChild(p); setTimeout(() => p.remove(), 900); }
+    $("gMeS").textContent = G.me; if(hasOpp) $("gOppS").textContent = G.op;
+    if(!(lv && lv.oppGone)) $("gOppSt").textContent = "";
+    if(driver) scheduleNext();
+  }
+  function scheduleNext(){
+    if(!cur || cur.next) return; cur.next = true;
+    const i = cur.i;
+    setTimeout(() => {
+      if(G.ended) return;
+      if(i + 1 < N){ send({ type:"q", i: i+1 }); showQ(i + 1); }
+      else { send({ type:"end" }); end(); }
+    }, 1800);
+  }
+  function end(){
+    if(G.ended) return; G.ended = true; clearInterval(tick);
+    for(let i = 0; i < N; i++) if(!G.answers[i]) G.answers[i] = { c:null, t:TIME };
+    G.log = G.log.filter(Boolean);
+    finishMatch(M, G, opp, lv);
+  }
+
+  if(lv){
+    lv.onMsg = p => {
+      if(p.type === "ans"){
+        G.oppAns[p.i] = { c: p.c, t: p.t };
+        if(cur && cur.i === p.i && !cur.revealed) $("gOppSt").textContent = "✓ a répondu";
+      }
+      else if(p.type === "q" && !driver) showQ(p.i);
+      else if(p.type === "reveal" && !driver) reveal(p.i);
+      else if(p.type === "end" && !driver){ if(cur && !cur.revealed) reveal(cur.i); end(); }
+    };
+    lv.onGone = () => {
+      if(G.ended) return;
+      $("gOppSt").textContent = "Adversaire déconnecté";
+      if(!driver){ driver = true; if(!cur) showQ(0); else if(cur.revealed) scheduleNext(); }
+    };
+    const buf = lv.buf; lv.buf = [];
+    if(driver){ send({ type:"q", i:0 }); showQ(0); }
+    buf.forEach(p => lv.onMsg(p));
+  } else {
+    showQ(0);
+  }
 }
 
-async function finishMatch(M, G){
-  $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = "";
-  const { data: R, error } = await rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
+async function finishMatch(M, G, opp, lv){
+  $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = ""; $("gOppSt").textContent = "";
+  let { data: R, error } = await rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
+  // En direct : on attend quelques secondes le score officiel de l'adversaire
+  if(!error && R.status === "waiting" && lv){
+    $("gQ").innerHTML = "<div>En attente du score de ton adversaire…</div>";
+    for(let k = 0; k < 20; k++){
+      await sleep(1000);
+      const { data: m } = await sb.from("matches").select("p1,p1_score,p2_score").eq("id", M.id).maybeSingle();
+      if(m && m.p1_score != null && m.p2_score != null){
+        const mine = m.p1 === me ? m.p1_score : m.p2_score, his = m.p1 === me ? m.p2_score : m.p1_score;
+        R = { score: mine, opp_score: his, status: "done", bonus: mine > his ? 50 : mine === his ? 25 : 10 };
+        break;
+      }
+    }
+  }
+  leaveLive();
   const oldLvl = lvlOf(P.xp).l;
   await loadProfile();
-  $("rMe").textContent = P.avatar; $("rOpp").textContent = M.opponent ? M.opponent.avatar : "⏳";
+  $("rMe").textContent = P.avatar; $("rOpp").textContent = opp ? opp.avatar : "⏳";
   $("rShare").innerHTML = "";
+  const good = G.log.filter(x => x.ok).length;
   if(error){
     $("rTitle").innerHTML = '<span class="l">Erreur</span>';
     $("rMeS").textContent = G.me; $("rOppS").textContent = "?";
     $("rGain").innerHTML = `<div class="g"><span>${esc(errMsg(error))}</span></div>`;
-  } else if(R.status==="done"){
-    const w = R.score>R.opp_score, d = R.score===R.opp_score;
-    $("rTitle").innerHTML = w?'<span class="w">Victoire !</span>':d?'<span class="d">Égalité</span>':'<span class="l">Défaite</span>';
+  } else if(R.status === "done"){
+    const w = R.score > R.opp_score, d = R.score === R.opp_score;
+    $("rTitle").innerHTML = w ? '<span class="w">Victoire !</span>' : d ? '<span class="d">Égalité</span>' : '<span class="l">Défaite</span>';
     $("rMeS").textContent = R.score; $("rOppS").textContent = R.opp_score;
     $("rGain").innerHTML = `
-      <div class="g"><span>Bonnes réponses</span><b>${G.log.filter(x=>x.ok).length}/${G.log.length}</b></div>
+      <div class="g"><span>Bonnes réponses</span><b>${good}/${G.log.length}</b></div>
       <div class="g"><span>Points de match</span><b>+${R.score} XP</b></div>
-      <div class="g"><span>Bonus ${w?'victoire':d?'égalité':'participation'}</span><b>+${R.bonus} XP</b></div>
-      ${lvlOf(P.xp).l>oldLvl?`<div class="g"><span>🚀 Niveau global</span><b>Niveau ${lvlOf(P.xp).l} !</b></div>`:""}`;
+      <div class="g"><span>Bonus ${w ? 'victoire' : d ? 'égalité' : 'participation'}</span><b>+${R.bonus} XP</b></div>
+      ${lvlOf(P.xp).l > oldLvl ? `<div class="g"><span>🚀 Niveau global</span><b>Niveau ${lvlOf(P.xp).l} !</b></div>` : ""}`;
   } else {
     $("rTitle").innerHTML = '<span class="d">Score envoyé !</span>';
     $("rMeS").textContent = R.score; $("rOppS").textContent = "?";
     $("rGain").innerHTML = `
-      <div class="g"><span>Bonnes réponses</span><b>${G.log.filter(x=>x.ok).length}/${G.log.length}</b></div>
+      <div class="g"><span>Bonnes réponses</span><b>${good}/${G.log.length}</b></div>
       <div class="g"><span>Points de match</span><b>+${R.score} XP</b></div>
       <div class="g"><span>Résultat final</span><b>dans « Mes duels »</b></div>`;
-    if(M.private){
+    if(M.private && !lv){
       const link = duelLink(M.id);
-      $("rShare").innerHTML = `<div class="share"><b>Envoie ce lien à ton ami :</b><input readonly value="${esc(link)}" onclick="this.select()"><button class="btn p" id="rCopy" style="margin-top:4px">📋 Copier le lien</button></div>`;
-      $("rCopy").onclick = e => copy(link, e.target);
+      $("rShare").innerHTML = shareBox(link); wireShare($("rShare"), link);
     }
   }
-  $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x=>
-    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${M.ghost?` / adv. +${x.op}`:""}</div>`).join("");
+  const hasOpp = !!(lv || M.ghost);
+  $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
+    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${hasOpp?` / adv. +${x.op}`:""}</div>`).join("");
   $("rAgain").onclick = () => openMode(M.theme);
   show("result");
 }
