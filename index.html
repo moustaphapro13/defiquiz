@@ -154,6 +154,38 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .top{gap:8px}
 .iconbtn{position:relative;flex:none}
 .av{overflow:hidden}
+.ic{vertical-align:-4px;flex:none}
+.art{display:inline-block;vertical-align:middle;flex:none}
+.theme .emo{height:48px}
+.theme::after{opacity:.16!important}
+.tabs .tab{font-size:13px;padding:10px 4px;display:flex;align-items:center;justify-content:center;gap:5px}
+.medal{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:800;color:#2a2160}
+.medal.m1{background:linear-gradient(#ffe27a,#e0a91d)}.medal.m2{background:linear-gradient(#f2f5fa,#a9b4c4)}.medal.m3{background:linear-gradient(#f0b98a,#b8723d)}
+.ok .ic,.ok{color:var(--good)}.ko .ic{color:var(--bad)}
+.daily{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:linear-gradient(120deg,#ff5d73 0%,#c94fd6 55%,#7a5cff 100%);border-radius:20px;padding:14px;margin:0 0 14px;color:#fff;box-shadow:0 8px 24px #ff5d7333}
+.daily b{font-family:"Baloo 2";font-size:20px;display:block;line-height:1.1}
+.daily span.s{font-size:12.5px;opacity:.92;display:block;margin-top:2px}
+.daily .tag{margin-left:auto;background:#fff;color:#2a2160;font-weight:800;font-size:13px;padding:8px 12px;border-radius:12px;white-space:nowrap}
+.daily:disabled{filter:grayscale(.7);opacity:.6}
+.qtheme{display:block;font-size:12px;color:var(--mute);margin-bottom:6px;font-weight:600}
+.stars svg{vertical-align:-2px;margin-left:1px}
+.chathead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.chathead .who{flex:1}
+.msgs{display:flex;flex-direction:column;gap:8px;min-height:50vh;max-height:60vh;overflow-y:auto;padding:12px;background:var(--card);border-radius:18px}
+.bub{max-width:78%;padding:10px 14px;border-radius:18px;font-weight:600;font-size:15px;line-height:1.3;background:var(--card2);align-self:flex-start;border-bottom-left-radius:6px}
+.bub.me{align-self:flex-end;background:var(--me);color:#06223a;border-bottom-left-radius:18px;border-bottom-right-radius:6px}
+.bub small{display:block;font-size:10.5px;font-weight:500;opacity:.65;margin-top:3px}
+.bub.duel{background:linear-gradient(120deg,#ff7a59,#ffcc3d);color:#2a1606}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.quick button{padding:9px 13px;border-radius:20px;background:var(--card2);font-weight:600;font-size:14px}
+.quick button:active{background:var(--acc);color:var(--bg)}
+.chatb{position:relative}
+.chatb .badge{top:-7px;right:-7px}
+.achs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 18px}
+.ach{text-align:center;font-size:11px;color:var(--mute);line-height:1.2}
+.ach .b{width:58px;height:58px;margin:0 auto 4px}
+.ach.on{color:var(--txt);font-weight:600}
+.ach.off .b{opacity:.55}
 .av img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-row{display:flex;align-items:center;gap:12px;margin:8px 0 14px}
 .photo-row .av{width:72px;height:72px;font-size:38px}
@@ -184,24 +216,26 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
   <!-- ACCUEIL -->
   <section class="screen" id="home">
     <div class="top">
-      <div class="av" id="hAv">🦊</div>
+      <div class="av" id="hAv"></div>
       <div class="who">
         <div class="name" id="hName">Joueur</div>
         <div class="lvl" id="hLvl">Niveau 1</div>
         <div class="xpbar"><i id="hXp" style="width:0%"></i></div>
       </div>
-      <button class="iconbtn" id="toFriends" aria-label="Amis">👥<span class="badge" id="fBadge" style="display:none">0</span></button>
-      <button class="iconbtn" id="toNotifs" aria-label="Notifications">🔔<span class="badge" id="nBadge" style="display:none">0</span></button>
-      <button class="iconbtn" id="toProfile" aria-label="Profil">👤</button>
+      <button class="iconbtn" id="toFriends" aria-label="Amis"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="users"></svg><span class="badge" id="fBadge" style="display:none">0</span></button>
+      <button class="iconbtn" id="toNotifs" aria-label="Notifications"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="bell"></svg><span class="badge" id="nBadge" style="display:none">0</span></button>
+      <button class="iconbtn" id="toProfile" aria-label="Profil"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="user"></svg></button>
     </div>
     <div class="brand">Défi<span>Quiz</span></div>
     <p class="sub">Choisis un thème : joue en solo, même sans Internet, ou affronte un joueur en direct. Plus tu réponds vite, plus tu marques.</p>
-    <div class="offbar" id="offbar" style="display:none">📴 Hors ligne : le mode solo reste disponible, ta progression sera synchronisée au retour de la connexion.</div>
+    <div class="offbar" id="offbar" style="display:none">Hors ligne : le mode solo reste disponible, ta progression sera synchronisée au retour de la connexion.</div>
     <div class="err" id="hErr"></div>
+    <button class="daily" id="dailyCard"></button>
     <div class="grid" id="themes"></div>
     <div class="tabs">
-      <button class="tab on" data-tab="lb">🏆 Classement</button>
-      <button class="tab" data-tab="duels">⚔️ Mes duels</button>
+      <button class="tab on" data-tab="lb"><i data-ic="trophy"></i> Classement</button>
+      <button class="tab" data-tab="daily"><i data-ic="sun"></i> Du jour</button>
+      <button class="tab" data-tab="duels"><i data-ic="swords"></i> Duels</button>
     </div>
     <div class="panel" id="panel"></div>
   </section>
@@ -214,12 +248,12 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <h2 style="font-size:32px" id="mName"></h2>
       <p class="sub">7 questions · 10 secondes chacune · dernière question à points doublés</p>
     </div>
-    <div class="label" style="margin-top:6px">🎯 Solo · fonctionne sans Internet</div>
+    <div class="label" style="margin-top:6px"><i data-ic="target"></i> Solo · fonctionne sans Internet</div>
     <div class="chips" id="mDiff"></div>
-    <button class="btn p" id="mSolo">🎯 Jouer en solo</button>
-    <div class="label" style="margin-top:22px">⚔️ Duel en direct</div>
-    <button class="btn s" id="mRandom">⚡ Adversaire au hasard</button>
-    <button class="btn s" id="mFriend">🤝 Défier un ami</button>
+    <button class="btn p" id="mSolo"><i data-ic="play"></i> Jouer en solo</button>
+    <div class="label" style="margin-top:22px"><i data-ic="swords"></i> Duel en direct</div>
+    <button class="btn s" id="mRandom"><i data-ic="bolt"></i> Adversaire au hasard</button>
+    <button class="btn s" id="mFriend"><i data-ic="friend"></i> Défier un ami</button>
     <p class="note" id="mNote">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
   </section>
 
@@ -230,7 +264,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <div class="vs">
         <div class="p"><div class="av" id="mmMe"></div><div class="pn" id="mmMeN"></div><div class="pl" id="mmMeL"></div></div>
         <div class="vsx">VS</div>
-        <div class="p"><div class="av opp spin" id="mmOpp">❔</div><div class="pn" id="mmOppN">Recherche…</div><div class="pl" id="mmOppL">&nbsp;</div></div>
+        <div class="p"><div class="av opp spin" id="mmOpp"></div><div class="pn" id="mmOppN">Recherche…</div><div class="pl" id="mmOppL">&nbsp;</div></div>
       </div>
       <div class="sub" id="mmMsg">Recherche d'un adversaire…</div>
       <div id="mmShare"></div>
@@ -280,7 +314,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <span>Ton code ami :</span><b class="disp" id="fCode" style="color:var(--acc);font-size:22px;flex:1"></b>
       <button class="mini" id="fCopy">Copier</button>
     </div>
-    <input class="field" id="fSearch" placeholder="🔎 Pseudo ou code ami…" autocomplete="off">
+    <input class="field" id="fSearch" placeholder="Pseudo ou code ami…" autocomplete="off">
     <div class="panel" id="fResults" style="display:none;margin-bottom:12px"></div>
     <div class="panel" id="fList"></div>
   </section>
@@ -303,6 +337,19 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <div class="grid" id="iThemes"></div>
   </section>
 
+  <!-- CONVERSATION -->
+  <section class="screen" id="chat">
+    <div class="chathead">
+      <button class="iconbtn" id="cBack" aria-label="Retour"><i data-ic="back"></i></button>
+      <div class="av" id="cAv" style="width:44px;height:44px"></div>
+      <div class="who"><div class="name" id="cName"></div><div class="lvl" id="cStatus"></div></div>
+      <button class="iconbtn" id="cDuel" aria-label="Défier" style="color:var(--acc)"><i data-ic="swords"></i></button>
+    </div>
+    <div class="msgs" id="cMsgs"></div>
+    <div class="label" style="margin-top:12px">Messages rapides</div>
+    <div class="quick" id="cQuick"></div>
+  </section>
+
   <!-- PROFIL -->
   <section class="screen" id="profile">
     <button class="back" id="pBack">← Retour</button>
@@ -315,7 +362,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <div class="photo-row">
       <div class="av" id="pPhoto"></div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <label class="mini p" style="cursor:pointer;text-align:center">📷 Choisir une photo<input type="file" accept="image/*" id="pFile" hidden></label>
+        <label class="mini p" style="cursor:pointer;text-align:center"><i data-ic="camera"></i> Choisir une photo<input type="file" accept="image/*" id="pFile" hidden></label>
         <button class="mini d" id="pPhotoDel">Retirer la photo</button>
       </div>
     </div>
@@ -324,6 +371,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <button class="btn p" id="pSave" style="margin-bottom:18px">Enregistrer</button>
     <div class="label" style="margin-bottom:8px">Niveaux par thème</div>
     <div class="panel" id="pThemes"></div>
+    <div class="label" style="margin:18px 0 8px" id="pAchTitle">Succès</div>
+    <div class="achs" id="pAchs"></div>
     <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Défi Quiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
   </section>
 </div>
@@ -331,13 +380,167 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 <div class="toast" id="toast"></div>
 
 <script>
+/* ================= DESSINS DÉFI QUIZ (SVG faits maison) ================= */
+/* ---- Icônes d'interface (trait, 24×24) ---- */
+const ICONS = {
+  users:   '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.5 14.2c2.9.3 5 2.4 5 5.3"/>',
+  bell:    '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  user:    '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  trophy:  '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11"/><path d="M12 14v3M8.5 20.5h7M9.5 17.5h5v3h-5z"/>',
+  swords:  '<path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6M8 16l-4 4M5 21l-2-2"/>',
+  target:  '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2"/>',
+  bolt:    '<path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/>',
+  friend:  '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M19 8v6M16 11h6"/>',
+  share:   '<path d="M12 3v12M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7.5h14V12"/>',
+  camera:  '<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/>',
+  flag:    '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  chat:    '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>',
+  sun:     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+  medal:   '<circle cx="12" cy="15" r="5.5"/><path d="M8 3l2.5 6.5M16 3l-2.5 6.5"/><path d="M12 12.5l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/>',
+  back:    '<path d="M15 5l-7 7 7 7"/>',
+  check:   '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  x:       '<path d="M6 6l12 12M18 6L6 18"/>',
+  offline: '<path d="M2 8.5a15 15 0 0 1 5-3M22 8.5a15 15 0 0 0-11-3.4M5.5 12a10 10 0 0 1 4-2.2M18.5 12a10 10 0 0 0-2.5-1.7M9 15.5a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1"/><path d="M3 3l18 18"/>',
+  play:    '<path d="M7 4.5v15l12.5-7.5z"/>',
+  copy:    '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  dots:    '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
+  lock:    '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  fire:    '<path d="M12 22c4 0 7-2.7 7-6.8 0-3.7-2.6-5.7-4-8.2-.6 2-1.6 3-3 3.5.4-3-1-6-3.5-8 .2 3.5-1.5 5.2-3 7.2C4.2 11.3 5 13 5 15.2 5 19.3 8 22 12 22z"/>',
+  dice:    '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/>',
+  save:    '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+  search:  '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/>',
+  star:    '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  history: '<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/>',
+  send:    '<path d="M4 12l16-8-6 16-2.5-6.5z"/>',
+  photo:   '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><path d="M3 17l5-5 4 4 3-3 6 6"/>'
+};
+const ic = (n, s = 20, extra = "") =>
+  `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${ICONS[n] || ""}</svg>`;
+
+/* ---- Illustrations des thèmes (64×64) ---- */
+const THEME_ART = {
+  culture: `<circle cx="32" cy="27" r="16" fill="#ffd95a"/><path d="M24 40h16v6a3 3 0 0 1-3 3H27a3 3 0 0 1-3-3z" fill="#b8b2d9"/><path d="M24 44h16" stroke="#8a83b8" stroke-width="2"/>
+    <path d="M27 33c0-4 3-4 3-8m4 8c0-4 3-4 3-8" stroke="#e8a92b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <g stroke="#ffd95a" stroke-width="3" stroke-linecap="round"><path d="M32 4v4M12 13l3 3M52 13l-3 3M6 30h4M54 30h4"/></g>
+    <circle cx="26" cy="22" r="3.5" fill="#fff6c9"/>`,
+  geo: `<circle cx="32" cy="32" r="24" fill="#3d9bff"/>
+    <path d="M18 20c5-3 10-2 12 2s-2 6 1 9-1 8-6 7-5-6-9-8-3-7 2-10z" fill="#38d39f"/>
+    <path d="M38 14c6 1 12 6 13 12-3 1-6-1-8 1s0 6-4 7-6-3-5-7 0-8 4-13z" fill="#38d39f"/>
+    <path d="M37 42c4-1 8 1 9 4-2 4-6 6-10 6-1-4-2-8 1-10z" fill="#38d39f"/>
+    <ellipse cx="32" cy="32" rx="24" ry="9" fill="none" stroke="#ffffff55" stroke-width="2"/><path d="M32 8v48" stroke="#ffffff40" stroke-width="2"/>
+    <circle cx="24" cy="20" r="5" fill="#ffffff35"/>`,
+  histoire: `<path d="M8 22L32 8l24 14z" fill="#d8b4ff"/><rect x="10" y="22" width="44" height="5" rx="1" fill="#c497f5"/>
+    <g fill="#efe3ff"><rect x="13" y="28" width="6" height="20" rx="1"/><rect x="24" y="28" width="6" height="20" rx="1"/><rect x="35" y="28" width="6" height="20" rx="1"/><rect x="46" y="28" width="6" height="20" rx="1"/></g>
+    <rect x="8" y="48" width="48" height="5" rx="1" fill="#c497f5"/><rect x="5" y="53" width="54" height="5" rx="1.5" fill="#a875e6"/>
+    <circle cx="32" cy="17" r="3" fill="#a875e6"/>`,
+  sciences: `<path d="M26 8h12M28 8v14L14 48a5 5 0 0 0 4.5 8h27a5 5 0 0 0 4.5-8L36 22V8" fill="#e6f3ff" stroke="#9ccfff" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M19 40h26l5 8.5a4 4 0 0 1-3.5 6h-29a4 4 0 0 1-3.5-6z" fill="#4fd1c5"/>
+    <circle cx="27" cy="47" r="3" fill="#ffffff90"/><circle cx="36" cy="44" r="2" fill="#ffffff90"/><circle cx="33" cy="51" r="1.6" fill="#ffffff90"/>
+    <circle cx="44" cy="14" r="3" fill="#9ccfff"/><circle cx="50" cy="22" r="2" fill="#9ccfff"/>`,
+  sport: `<circle cx="32" cy="32" r="23" fill="#fff"/>
+    <path d="M32 21l8 6-3 9.5h-10L24 27z" fill="#2a2160"/>
+    <path d="M32 9v12M40 27l11-4M37 36.5l7 9.5M27 36.5l-7 9.5M24 27l-11-4" stroke="#2a2160" stroke-width="2.5"/>
+    <path d="M51 23l3 9-4 8M44 46l-6 7.5M20 46l6 7.5M13 23l-3 9 4 8M28 9.5l4-0.5 4 .5" stroke="#2a2160" stroke-width="2.5" fill="none"/>
+    <circle cx="32" cy="32" r="23" fill="none" stroke="#ffb199" stroke-width="3"/>`,
+  cuisine: `<path d="M32 58L10 16c14-7 30-7 44 0z" fill="#ffd27a"/><path d="M10 16c14-7 30-7 44 0l-3 6c-12-6-26-6-38 0z" fill="#e8994a"/>
+    <path d="M13 22c12-6 26-6 38 0L32 58z" fill="#ffcf5c"/>
+    <g fill="#ff5d73"><circle cx="26" cy="28" r="4.5"/><circle cx="38" cy="30" r="4"/><circle cx="31" cy="41" r="3.8"/></g>
+    <g fill="#2fd18b"><circle cx="34" cy="23" r="1.6"/><circle cx="22" cy="35" r="1.4"/><circle cx="37" cy="38" r="1.5"/></g>`,
+  daily: `<rect x="8" y="12" width="48" height="44" rx="8" fill="#fff"/><path d="M8 20a8 8 0 0 1 8-8h32a8 8 0 0 1 8 8v6H8z" fill="#ff5d73"/>
+    <rect x="18" y="6" width="5" height="12" rx="2.5" fill="#2a2160"/><rect x="41" y="6" width="5" height="12" rx="2.5" fill="#2a2160"/>
+    <path d="M32 31l3.2 6.5 7.1 1-5.2 5 1.3 7.1-6.4-3.4-6.4 3.4 1.3-7.1-5.2-5 7.1-1z" fill="#ffcc3d"/>`,
+  solo: `<circle cx="32" cy="32" r="24" fill="#ff7a59"/><circle cx="32" cy="32" r="17" fill="#fff"/><circle cx="32" cy="32" r="10" fill="#ff7a59"/><circle cx="32" cy="32" r="4" fill="#fff"/>
+    <path d="M32 32L52 12" stroke="#2a2160" stroke-width="3" stroke-linecap="round"/><path d="M52 12l-1-6 6 1-5 5z" fill="#2a2160"/>`,
+  duel: `<g stroke-linecap="round"><path d="M14 50L44 14" stroke="#dfe6ff" stroke-width="5"/><path d="M50 50L20 14" stroke="#dfe6ff" stroke-width="5"/></g>
+    <path d="M44 14l4-6 2 8z" fill="#dfe6ff"/><path d="M20 14l-4-6-2 8z" fill="#dfe6ff"/>
+    <g fill="#ffcc3d"><rect x="8" y="42" width="14" height="5" rx="2.5" transform="rotate(-50 15 44.5)"/><rect x="42" y="42" width="14" height="5" rx="2.5" transform="rotate(50 49 44.5)"/></g>
+    <circle cx="13" cy="52" r="4" fill="#ff7a59"/><circle cx="51" cy="52" r="4" fill="#4fb3ff"/>`
+};
+const art = (k, s = 48) => `<svg class="art" width="${s}" height="${s}" viewBox="0 0 64 64">${THEME_ART[k] || ""}</svg>`;
+
+/* ---- Avatars personnages (100×100) ---- */
+const AV_DEFS = {
+  a01: { n:"Renard",   bg:"#ff9f68", head:"#ff7b39", ears:"tri",   muzzle:"#fff4e6", nose:"#2a2160" },
+  a02: { n:"Panda",    bg:"#9be3c8", head:"#ffffff", ears:"round", earC:"#2a2160", patches:true, nose:"#2a2160" },
+  a03: { n:"Chat",     bg:"#c5b8ff", head:"#9a8fb8", ears:"tri",   muzzle:"#e9e4f7", stripes:true, nose:"#ff8fa3" },
+  a04: { n:"Ours",     bg:"#ffd58a", head:"#9b6a43", ears:"round", muzzle:"#d9b38c", nose:"#2a2160" },
+  a05: { n:"Lapin",    bg:"#ffc1d6", head:"#ffffff", ears:"long",  inner:"#ffb3c8", nose:"#ff6f91" },
+  a06: { n:"Grenouille", bg:"#bdf5a2", head:"#5fcf5a", ears:"frog", nose:null, mouth:"wide" },
+  a07: { n:"Hibou",    bg:"#ffe2a8", head:"#a57548", ears:"tuft",  bigEyes:true, beak:"#ffb02e" },
+  a08: { n:"Pingouin", bg:"#a8dcff", head:"#2a2160", ears:"none",  face:"#ffffff", beak:"#ffb02e" },
+  a09: { n:"Lion",     bg:"#ffe08a", head:"#f2b544", ears:"round", mane:"#c9741e", muzzle:"#ffe9b8", nose:"#6b3a1e" },
+  a10: { n:"Koala",    bg:"#cfe3ee", head:"#a9b4be", ears:"koala", inner:"#e8edf1", bigNose:true },
+  a11: { n:"Robot",    bg:"#b5f0ff", robot:true },
+  a12: { n:"Alien",    bg:"#d6b8ff", alien:true }
+};
+function avatarSVG(code){
+  const d = AV_DEFS[code]; if(!d) return "";
+  let s = `<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="50" r="50" fill="${d.bg}"/>`;
+  const eyes = (y = 50, r = 4.5, c = "#2a2160") => `<circle cx="40" cy="${y}" r="${r}" fill="${c}"/><circle cx="60" cy="${y}" r="${r}" fill="${c}"/><circle cx="41.5" cy="${y-1.5}" r="${r/3}" fill="#fff"/><circle cx="61.5" cy="${y-1.5}" r="${r/3}" fill="#fff"/>`;
+  if(d.robot){
+    return s + `<rect x="47" y="12" width="6" height="12" fill="#6f7c8a"/><circle cx="50" cy="12" r="5" fill="#ff5d73"/>
+      <rect x="22" y="24" width="56" height="50" rx="12" fill="#c3ccd6"/><rect x="29" y="34" width="42" height="22" rx="8" fill="#2a2160"/>
+      <circle cx="40" cy="45" r="5" fill="#4fd1c5"/><circle cx="60" cy="45" r="5" fill="#4fd1c5"/>
+      <rect x="36" y="62" width="28" height="5" rx="2.5" fill="#6f7c8a"/><rect x="14" y="40" width="8" height="16" rx="3" fill="#9aa6b2"/><rect x="78" y="40" width="8" height="16" rx="3" fill="#9aa6b2"/></svg>`;
+  }
+  if(d.alien){
+    return s + `<path d="M50 16c20 0 30 14 30 30 0 18-16 36-30 36S20 64 20 46c0-16 10-30 30-30z" fill="#7be07b"/>
+      <path d="M34 18l-8-10M66 18l8-10" stroke="#5cc25c" stroke-width="3"/><circle cx="26" cy="8" r="4" fill="#ffcc3d"/><circle cx="74" cy="8" r="4" fill="#ffcc3d"/>
+      <ellipse cx="38" cy="48" rx="9" ry="12" fill="#2a2160" transform="rotate(-20 38 48)"/><ellipse cx="62" cy="48" rx="9" ry="12" fill="#2a2160" transform="rotate(20 62 48)"/>
+      <circle cx="36" cy="44" r="3" fill="#fff"/><circle cx="60" cy="44" r="3" fill="#fff"/><path d="M43 68q7 5 14 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+  }
+  if(d.mane) s += `<g fill="${d.mane}">${Array.from({length:12},(_,i)=>{const a=i/12*Math.PI*2;return `<circle cx="${50+Math.cos(a)*30}" cy="${54+Math.sin(a)*30}" r="13"/>`}).join("")}</g>`;
+  // oreilles
+  if(d.ears === "tri") s += `<path d="M22 44L26 14l22 18z" fill="${d.head}"/><path d="M78 44L74 14 52 32z" fill="${d.head}"/><path d="M28 34l1.5-12 10 9z" fill="#ffd2c2"/><path d="M72 34l-1.5-12-10 9z" fill="#ffd2c2"/>`;
+  if(d.ears === "round") s += `<circle cx="27" cy="28" r="12" fill="${d.earC || d.head}"/><circle cx="73" cy="28" r="12" fill="${d.earC || d.head}"/>`;
+  if(d.ears === "long") s += `<ellipse cx="37" cy="20" rx="8" ry="20" fill="${d.head}"/><ellipse cx="63" cy="20" rx="8" ry="20" fill="${d.head}"/><ellipse cx="37" cy="22" rx="4" ry="14" fill="${d.inner}"/><ellipse cx="63" cy="22" rx="4" ry="14" fill="${d.inner}"/>`;
+  if(d.ears === "tuft") s += `<path d="M22 36l2-20 16 12z" fill="${d.head}"/><path d="M78 36l-2-20-16 12z" fill="${d.head}"/>`;
+  if(d.ears === "koala") s += `<circle cx="22" cy="34" r="16" fill="${d.head}"/><circle cx="78" cy="34" r="16" fill="${d.head}"/><circle cx="22" cy="34" r="9" fill="${d.inner}"/><circle cx="78" cy="34" r="9" fill="${d.inner}"/>`;
+  // tête
+  if(d.ears === "frog"){
+    s += `<ellipse cx="50" cy="60" rx="32" ry="24" fill="${d.head}"/><circle cx="34" cy="38" r="12" fill="${d.head}"/><circle cx="66" cy="38" r="12" fill="${d.head}"/>
+      <circle cx="34" cy="38" r="7" fill="#fff"/><circle cx="66" cy="38" r="7" fill="#fff"/><circle cx="35" cy="39" r="4" fill="#2a2160"/><circle cx="67" cy="39" r="4" fill="#2a2160"/>
+      <path d="M32 64q18 12 36 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="3" fill="#ff9fb0" opacity=".7"/><circle cx="70" cy="58" r="3" fill="#ff9fb0" opacity=".7"/></svg>`;
+    return s;
+  }
+  s += `<ellipse cx="50" cy="54" rx="30" ry="28" fill="${d.head}"/>`;
+  if(d.face) s += `<ellipse cx="50" cy="58" rx="22" ry="21" fill="${d.face}"/>`;
+  if(d.stripes) s += `<path d="M44 28v8M50 27v9M56 28v8" stroke="#7d7398" stroke-width="3" stroke-linecap="round"/>`;
+  if(d.patches) s += `<ellipse cx="39" cy="50" rx="8" ry="10" fill="#2a2160" transform="rotate(20 39 50)"/><ellipse cx="61" cy="50" rx="8" ry="10" fill="#2a2160" transform="rotate(-20 61 50)"/>`;
+  if(d.muzzle) s += `<ellipse cx="50" cy="66" rx="15" ry="11" fill="${d.muzzle}"/>`;
+  if(d.bigEyes){
+    s += `<circle cx="38" cy="50" r="11" fill="#fff"/><circle cx="62" cy="50" r="11" fill="#fff"/><circle cx="38" cy="51" r="6" fill="#2a2160"/><circle cx="62" cy="51" r="6" fill="#2a2160"/><circle cx="40" cy="49" r="2" fill="#fff"/><circle cx="64" cy="49" r="2" fill="#fff"/>`;
+  } else s += d.patches ? `<circle cx="40" cy="50" r="3.5" fill="#fff"/><circle cx="60" cy="50" r="3.5" fill="#fff"/>` : eyes(50);
+  if(d.beak) s += `<path d="M44 60h12l-6 9z" fill="${d.beak}"/>`;
+  if(d.bigNose) s += `<ellipse cx="50" cy="62" rx="8" ry="10" fill="#2a2160"/>`;
+  if(d.nose) s += `<ellipse cx="50" cy="61" rx="4.5" ry="3.5" fill="${d.nose}"/><path d="M50 64.5v3M44 69q6 4 12 0" stroke="#2a2160" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  s += `<circle cx="30" cy="62" r="4" fill="#ff8fa3" opacity=".45"/><circle cx="70" cy="62" r="4" fill="#ff8fa3" opacity=".45"/>`;
+  return s + `</svg>`;
+}
+
+/* ---- Badges / succès ---- */
+const BADGE_COLORS = { bronze:["#e3a06b","#b8723d"], silver:["#e6ecf5","#a9b4c4"], gold:["#ffd95a","#e0a91d"], rose:["#ffb3c8","#e86f91"], blue:["#9ccfff","#4f8fe0"] };
+function badgeSVG(symbol, tier, locked){
+  const [a, b] = locked ? ["#3b3270","#2d2560"] : BADGE_COLORS[tier];
+  return `<svg viewBox="0 0 64 64" width="100%" height="100%">
+    <path d="M22 4h8l4 14h-8zM42 4h-8l-4 14h8z" fill="${locked ? "#2d2560" : "#ff5d73"}"/>
+    <circle cx="32" cy="38" r="22" fill="${b}"/><circle cx="32" cy="38" r="17" fill="${a}"/>
+    <g transform="translate(20 26)" fill="none" stroke="${locked ? "#5a4f96" : "#2a2160"}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[locked ? "lock" : symbol] || ""}</g></svg>`;
+}
+
+function hydrateIcons(root = document){
+  root.querySelectorAll("[data-ic]").forEach(el => {
+    if(el.tagName.toLowerCase() === "svg") el.innerHTML = ICONS[el.dataset.ic] || "";
+    else el.outerHTML = ic(el.dataset.ic, 18);
+  });
+}
 /* ====== CONFIG : à remplir avec les infos de ton projet Supabase ====== */
 const SUPABASE_URL = "https://hiiqejxhqskdgasvsooy.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_vMtmqMW2ERNTHRNWRHZR9A_UXyV-6zJ";
 /* ===================================================================== */
 
 const THEMES = {"culture":{"n":"Culture G","e":"🧠","c":"#ffcc3d"},"geo":{"n":"Géographie","e":"🌍","c":"#2fd18b"},"histoire":{"n":"Histoire","e":"🏛️","c":"#c58bff"},"sciences":{"n":"Sciences","e":"🔬","c":"#4fb3ff"},"sport":{"n":"Sport","e":"⚽","c":"#ff7a59"},"cuisine":{"n":"Cuisine","e":"🍕","c":"#ff5d73"}};
-const AVATARS = ["🦊","🐼","🦁","🐯","🐸","🦄","🐙","🐲","🦅","🚀","⚡","🍀","👾","🤖","😎","🔥"];
+const AVATARS = Object.keys(AV_DEFS);
 const TIME = 10;
 
 const $ = id => document.getElementById(id);
@@ -348,12 +551,16 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;"
 const lvlOf = xp => { let l=1, need=100, x=xp||0; while(x>=need){ x-=need; l++; need=Math.round(need*1.25); } return {l, x, need}; };
 const pts = (t, last) => (t==null ? 0 : Math.round(20 - Math.min(10, Math.max(0.3, t)))) * (last?2:1); // identique au serveur
 const errMsg = e => (e && (e.message || e.error_description)) || String(e);
-const showErr = (id, e) => { const el=$(id); el.textContent = "⚠️ " + errMsg(e); el.style.display="block"; };
+const showErr = (id, e) => { const el=$(id); el.textContent = "" + errMsg(e); el.style.display="block"; };
 const hideErr = id => { $(id).style.display="none"; };
 const AVBASE = SUPABASE_URL + "/storage/v1/object/public/avatars/";
-const av = p => !p ? "❔" : p.avatar_url
+const av = p => !p ? ic("user", 22) : p.avatar_url
   ? `<img src="${esc(AVBASE + p.avatar_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-  : esc(p.avatar || "👤");
+  : AV_DEFS[p.avatar] ? avatarSVG(p.avatar) : AV_DEFS[EMOJI2AV[p.avatar]] ? avatarSVG(EMOJI2AV[p.avatar]) : ic("user", 22);
+const EMOJI2AV = {"🦊":"a01","🐼":"a02","🐯":"a03","🦁":"a09","🐸":"a06","🦄":"a05","🐙":"a12","🐲":"a12","🦅":"a07","🚀":"a11","⚡":"a11","🍀":"a06","👾":"a12","🤖":"a11","😎":"a04","🔥":"a01"};
+const WAIT_AV = `<span style="opacity:.6">${ic("user", 30)}</span>`;
+const tname = k => THEMES[k] ? `${art(k, 24)} ${THEMES[k].n}` : "";
+const medal = i => `<span class="medal m${i+1}">${i+1}</span>`;
 const duelLink = id => location.origin + location.pathname + "?duel=" + id;
 
 let sb, me, P = null, tab = "lb";
@@ -376,7 +583,7 @@ async function ensureAuth(force){
     session = r.data.session;
   }
   if(me && me !== session.user.id){ me = session.user.id; await loadProfile(); if(NOTIF_CH){ stopSocial(); startSocial(); } }
-  me = session.user.id;
+  me = session.user.id; IS_GUEST = !!session.user.is_anonymous;
   return session;
 }
 const isAuthErr = e => e && /permission denied|JWT|not authenticated|non connecté|401/i.test(errMsg(e) + " " + (e.code||""));
@@ -397,7 +604,7 @@ const LS = {
 };
 // Banque de secours intégrée : permet de jouer en solo dès la 1re ouverture, même sans réseau
 const FALLBACK = [["culture",1,"Combien de côtés a un hexagone ?","6",["5","8","7"]],["culture",1,"Qui a écrit « Les Misérables » ?","Victor Hugo",["Émile Zola","Alexandre Dumas","Gustave Flaubert"]],["culture",1,"Qui a peint « La Joconde » ?","Léonard de Vinci",["Michel-Ange","Raphaël","Botticelli"]],["culture",2,"Combien de minutes y a-t-il dans une journée ?","1 440",["1 240","1 640","2 400"]],["culture",1,"Quel instrument possède généralement 88 touches ?","Le piano",["L'orgue","L'accordéon","Le clavecin"]],["culture",1,"Bleu + jaune donne…","Vert",["Violet","Orange","Marron"]],["culture",1,"Combien de jours compte une année bissextile ?","366",["365","364","367"]],["culture",1,"Quel monument a été construit pour l'Exposition universelle de 1889 ?","La tour Eiffel",["L'Arc de triomphe","Le Sacré-Cœur","Le Grand Palais"]],["culture",1,"Qui a écrit « Le Petit Prince » ?","Antoine de Saint-Exupéry",["Jules Verne","Marcel Pagnol","Albert Camus"]],["culture",2,"Quelle langue compte le plus de locuteurs natifs ?","Le mandarin",["L'anglais","L'espagnol","L'hindi"]],["geo",2,"Quelle est la capitale de l'Australie ?","Canberra",["Sydney","Melbourne","Perth"]],["geo",1,"Quel est le plus long fleuve de France ?","La Loire",["La Seine","Le Rhône","La Garonne"]],["geo",2,"Quel pays est le plus peuplé du monde ?","L'Inde",["La Chine","Les États-Unis","L'Indonésie"]],["geo",1,"Quel est le plus haut sommet d'Afrique ?","Le Kilimandjaro",["Le mont Kenya","Le Toubkal","Le Ras Dashen"]],["geo",1,"Quelle est la capitale du Canada ?","Ottawa",["Toronto","Montréal","Vancouver"]],["geo",1,"Quel est le plus grand océan ?","L'océan Pacifique",["L'océan Atlantique","L'océan Indien","L'océan Arctique"]],["geo",1,"Quel est le plus grand désert chaud du monde ?","Le Sahara",["Le Gobi","Le Kalahari","L'Atacama"]],["geo",1,"Quelle est la monnaie du Japon ?","Le yen",["Le won","Le yuan","Le baht"]],["geo",1,"Dans quel pays se trouve Marrakech ?","Le Maroc",["L'Algérie","La Tunisie","L'Égypte"]],["geo",2,"Quelle est la capitale du Brésil ?","Brasília",["Rio de Janeiro","São Paulo","Salvador"]],["histoire",1,"En quelle année a eu lieu la prise de la Bastille ?","1789",["1776","1799","1815"]],["histoire",1,"Qui a été le premier homme à marcher sur la Lune ?","Neil Armstrong",["Buzz Aldrin","Youri Gagarine","John Glenn"]],["histoire",1,"En quelle année le mur de Berlin est-il tombé ?","1989",["1991","1985","1961"]],["histoire",1,"Quelle bataille marque la défaite finale de Napoléon en 1815 ?","Waterloo",["Austerlitz","Iéna","Trafalgar"]],["histoire",1,"Qui fut le premier président de la Ve République ?","Charles de Gaulle",["Georges Pompidou","Vincent Auriol","René Coty"]],["histoire",1,"Dans quel pays se trouvent les pyramides de Gizeh ?","L'Égypte",["Le Soudan","Le Mexique","La Libye"]],["histoire",2,"Dans quelle ville Jeanne d'Arc a-t-elle été brûlée ?","Rouen",["Orléans","Reims","Paris"]],["histoire",1,"En quelle année Christophe Colomb atteint-il l'Amérique ?","1492",["1515","1453","1498"]],["histoire",1,"En quelle année se termine la Seconde Guerre mondiale en Europe ?","1945",["1944","1946","1918"]],["histoire",2,"Quel général romain a franchi le Rubicon ?","Jules César",["Pompée","Auguste","Marc Antoine"]],["sciences",1,"Quel est le symbole chimique de l'or ?","Au",["Ag","Or","Go"]],["sciences",1,"Quelle planète est la plus proche du Soleil ?","Mercure",["Vénus","Mars","La Terre"]],["sciences",2,"Combien d'os compte le squelette d'un adulte ?","206",["186","212","256"]],["sciences",1,"Quelle est la formule chimique de l'eau ?","H₂O",["CO₂","O₂","H₂O₂"]],["sciences",2,"Quelle est environ la vitesse de la lumière ?","300 000 km/s",["30 000 km/s","3 000 km/s","3 000 000 km/s"]],["sciences",1,"Quel gaz les plantes absorbent-elles pour la photosynthèse ?","Le dioxyde de carbone",["L'oxygène","L'azote","L'hélium"]],["sciences",1,"Quelle est la plus grande planète du système solaire ?","Jupiter",["Saturne","Neptune","Uranus"]],["sciences",3,"Combien de chromosomes possède une cellule humaine ?","46",["23","44","48"]],["sciences",2,"Quelle est l'unité de la résistance électrique ?","L'ohm",["Le volt","L'ampère","Le watt"]],["sciences",1,"Qui a formulé la théorie de la relativité ?","Albert Einstein",["Isaac Newton","Niels Bohr","Max Planck"]],["sport",1,"Combien de joueurs par équipe sur un terrain de football ?","11",["10","12","9"]],["sport",1,"Quel pays a remporté la Coupe du monde de football 2018 ?","La France",["La Croatie","La Belgique","Le Brésil"]],["sport",1,"Quel pays a remporté la Coupe du monde de football 2022 ?","L'Argentine",["La France","Le Maroc","La Croatie"]],["sport",1,"Quelle ville a accueilli les Jeux olympiques d'été 2024 ?","Paris",["Los Angeles","Tokyo","Londres"]],["sport",1,"Quel tournoi du Grand Chelem se joue sur terre battue ?","Roland-Garros",["Wimbledon","L'US Open","L'Open d'Australie"]],["sport",2,"Combien de points vaut un essai au rugby à XV ?","5",["3","4","7"]],["sport",1,"Combien de joueurs par équipe sur un terrain de basket ?","5",["6","7","4"]],["sport",1,"Dans quelle course cycliste le leader porte-t-il le maillot jaune ?","Le Tour de France",["Le Giro","La Vuelta","Paris-Roubaix"]],["sport",3,"Quel est le record du monde du 100 m d'Usain Bolt ?","9,58 s",["9,63 s","9,69 s","9,72 s"]],["sport",1,"Dans quel sport Teddy Riner est-il champion ?","Le judo",["La lutte","Le karaté","La boxe"]],["cuisine",1,"De quel pays la pizza est-elle originaire ?","L'Italie",["La Grèce","L'Espagne","La France"]],["cuisine",1,"Quel est l'ingrédient principal du guacamole ?","L'avocat",["Le concombre","Le petit pois","La courgette"]],["cuisine",1,"Quel fromage normand est célèbre dans le monde entier ?","Le camembert",["Le comté","Le roquefort","Le reblochon"]],["cuisine",1,"De quel pays viennent les sushis ?","Le Japon",["La Chine","La Corée","La Thaïlande"]],["cuisine",2,"Quelle est l'épice la plus chère au monde ?","Le safran",["La vanille","La cardamome","La cannelle"]],["cuisine",1,"De quel pays la paella est-elle originaire ?","L'Espagne",["Le Portugal","Le Mexique","L'Italie"]],["cuisine",1,"Quel est l'ingrédient de base du houmous ?","Le pois chiche",["La lentille","Le haricot blanc","La fève"]],["cuisine",1,"De quelle région française vient la ratatouille ?","La Provence",["La Bretagne","L'Alsace","La Normandie"]],["cuisine",2,"Avec quel lait est fabriqué le roquefort ?","Le lait de brebis",["Le lait de vache","Le lait de chèvre","Le lait de bufflonne"]],["cuisine",3,"Quel pays est le premier producteur mondial de café ?","Le Brésil",["La Colombie","L'Éthiopie","Le Vietnam"]],["culture",1,"Combien de couleurs compte-t-on traditionnellement dans un arc-en-ciel ?","7",["6","5","8"]],["culture",1,"Combien de pattes a une araignée ?","8",["6","10","12"]],["culture",1,"Quel est le plus grand animal du monde ?","La baleine bleue",["L'éléphant d'Afrique","Le requin-baleine","La girafe"]],["culture",1,"Combien de cases compte un échiquier ?","64",["81","100","48"]],["culture",1,"De quelle couleur était le cheval blanc d'Henri IV ?","Blanc",["Noir","Gris","Marron"]],["culture",1,"Quel oiseau est le symbole de la paix ?","La colombe",["L'aigle","Le hibou","Le corbeau"]],["culture",1,"Combien de mois de l'année comptent 31 jours ?","7",["6","5","8"]],["culture",2,"Qui a composé « La Lettre à Élise » ?","Ludwig van Beethoven",["Wolfgang Amadeus Mozart","Frédéric Chopin","Jean-Sébastien Bach"]],["culture",2,"Qui a écrit « Roméo et Juliette » ?","William Shakespeare",["Molière","Jean Racine","Victor Hugo"]],["culture",2,"Quel peintre s'est tranché une partie de l'oreille ?","Vincent van Gogh",["Pablo Picasso","Claude Monet","Salvador Dalí"]],["culture",2,"Dans quelle ville se trouve le musée du Prado ?","Madrid",["Barcelone","Lisbonne","Séville"]],["culture",2,"Quel chiffre romain représente 50 ?","L",["C","D","V"]],["culture",2,"Qui a écrit la fable « Le Corbeau et le Renard » (1668) ?","Jean de La Fontaine",["Charles Perrault","Molière","Nicolas Boileau"]],["culture",2,"Qui est l'auteur de « Germinal » ?","Émile Zola",["Honoré de Balzac","Guy de Maupassant","Stendhal"]],["culture",3,"Combien de symphonies Beethoven a-t-il achevées ?","9",["7","11","5"]],["culture",3,"Qui a peint « Le Radeau de la Méduse » ?","Théodore Géricault",["Eugène Delacroix","Jacques-Louis David","Gustave Courbet"]],["culture",3,"Quel philosophe a écrit « Ainsi parlait Zarathoustra » ?","Friedrich Nietzsche",["Emmanuel Kant","Hegel","Arthur Schopenhauer"]],["culture",3,"En quelle année les frères Lumière ont-ils organisé la première projection publique payante ?","1895",["1885","1901","1912"]],["culture",3,"Quel compositeur a écrit le « Boléro » ?","Maurice Ravel",["Claude Debussy","Erik Satie","Camille Saint-Saëns"]],["culture",3,"Quel écrivain français a reçu le prix Nobel de littérature en 1957 ?","Albert Camus",["Jean-Paul Sartre","André Gide","François Mauriac"]],["geo",1,"Quelle est la capitale de l'Italie ?","Rome",["Milan","Naples","Turin"]],["geo",1,"Quelle est la capitale de l'Espagne ?","Madrid",["Barcelone","Séville","Valence"]],["geo",1,"Dans quel pays se trouve la tour de Pise ?","L'Italie",["L'Espagne","La Grèce","La France"]],["geo",1,"Quelle est la capitale de l'Allemagne ?","Berlin",["Munich","Francfort","Hambourg"]],["geo",1,"Quel océan sépare l'Europe de l'Amérique du Nord ?","L'océan Atlantique",["L'océan Pacifique","L'océan Indien","L'océan Arctique"]],["geo",1,"Quelle est la capitale du Japon ?","Tokyo",["Kyoto","Osaka","Séoul"]],["geo",1,"Quel est le plus haut sommet du monde ?","L'Everest",["Le K2","Le mont Blanc","Le Kilimandjaro"]],["geo",2,"Quel fleuve traverse Londres ?","La Tamise",["La Seine","Le Danube","Le Rhin"]],["geo",2,"Quelle est la capitale de la Turquie ?","Ankara",["Istanbul","Izmir","Antalya"]],["geo",2,"Quel est le plus grand pays du monde par la superficie ?","La Russie",["Le Canada","La Chine","Les États-Unis"]],["geo",2,"Quel est le plus long fleuve d'Afrique ?","Le Nil",["Le Congo","Le Niger","Le Zambèze"]],["geo",2,"Avec combien de pays la France métropolitaine a-t-elle une frontière terrestre ?","8",["6","7","9"]],["geo",2,"Quelle est la capitale de la Nouvelle-Zélande ?","Wellington",["Auckland","Christchurch","Queenstown"]],["geo",2,"Quel détroit sépare l'Europe de l'Afrique ?","Le détroit de Gibraltar",["Le Bosphore","Le détroit de Messine","Le détroit d'Ormuz"]],["geo",2,"Quel est le plus petit pays du monde ?","Le Vatican",["Monaco","Saint-Marin","Le Liechtenstein"]],["geo",3,"Quelle est la capitale du Kazakhstan ?","Astana",["Almaty","Bichkek","Tachkent"]],["geo",3,"Quel est le plus grand lac d'Afrique ?","Le lac Victoria",["Le lac Tanganyika","Le lac Malawi","Le lac Tchad"]],["geo",3,"Quel fleuve traverse Bagdad ?","Le Tigre",["L'Euphrate","Le Jourdain","Le Nil"]],["geo",3,"Quelle est l'altitude approximative du mont Blanc ?","Environ 4 800 m",["Environ 4 300 m","Environ 5 200 m","Environ 3 900 m"]],["geo",3,"Dans quel pays se trouve le désert d'Atacama ?","Le Chili",["Le Pérou","L'Argentine","Le Mexique"]],["histoire",1,"Quel roi de France était surnommé le « Roi-Soleil » ?","Louis XIV",["Louis XVI","François Ier","Henri IV"]],["histoire",1,"En quelle année a commencé la Première Guerre mondiale ?","1914",["1912","1916","1918"]],["histoire",1,"Quel empereur français est mort en exil à Sainte-Hélène ?","Napoléon Ier",["Napoléon III","Charlemagne","Louis XVIII"]],["histoire",1,"Quel peuple a construit le Colisée ?","Les Romains",["Les Grecs","Les Égyptiens","Les Gaulois"]],["histoire",1,"Quel roi de France a été guillotiné en 1793 ?","Louis XVI",["Louis XV","Louis XIV","Charles X"]],["histoire",1,"En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?","1969",["1965","1972","1959"]],["histoire",1,"Quel paquebot a coulé en 1912 après avoir heurté un iceberg ?","Le Titanic",["Le Lusitania","Le Britannic","Le Normandie"]],["histoire",2,"Qui a été couronné empereur d'Occident en l'an 800 ?","Charlemagne",["Clovis","Pépin le Bref","Charles Martel"]],["histoire",2,"En quelle année a commencé la Seconde Guerre mondiale ?","1939",["1937","1940","1941"]],["histoire",2,"Quel pharaon a été découvert dans une tombe presque intacte en 1922 ?","Toutânkhamon",["Ramsès II","Khéops","Akhenaton"]],["histoire",2,"Quelle reine de France a été guillotinée en 1793 ?","Marie-Antoinette",["Catherine de Médicis","Anne d'Autriche","Marie de Médicis"]],["histoire",2,"Quel président américain a été assassiné à Dallas en 1963 ?","John F. Kennedy",["Abraham Lincoln","Richard Nixon","Lyndon Johnson"]],["histoire",2,"En quelle année les Françaises ont-elles voté pour la première fois ?","1945",["1936","1918","1958"]],["histoire",2,"Quelle ville était la capitale de l'Empire byzantin ?","Constantinople",["Rome","Athènes","Alexandrie"]],["histoire",3,"En quelle année a eu lieu la bataille d'Alésia ?","52 av. J.-C.",["44 av. J.-C.","27 av. J.-C.","79 apr. J.-C."]],["histoire",3,"Qui a fondé l'Empire mongol ?","Gengis Khan",["Kubilai Khan","Tamerlan","Attila"]],["histoire",3,"Quel traité a mis fin à la Première Guerre mondiale avec l'Allemagne ?","Le traité de Versailles",["Le traité de Paris","Les traités de Westphalie","Le traité de Rome"]],["histoire",3,"En quelle année a eu lieu la bataille de Marignan ?","1515",["1415","1492","1610"]],["histoire",3,"Quel roi de France a signé l'édit de Nantes en 1598 ?","Henri IV",["Louis XIII","François Ier","Henri III"]],["histoire",3,"En quelle année l'esclavage a-t-il été définitivement aboli en France ?","1848",["1789","1794","1871"]],["sciences",1,"Combien de planètes compte le système solaire ?","8",["9","7","10"]],["sciences",1,"Quelle planète est surnommée la « planète rouge » ?","Mars",["Vénus","Jupiter","Mercure"]],["sciences",1,"À quelle température l'eau bout-elle au niveau de la mer ?","100 °C",["90 °C","120 °C","80 °C"]],["sciences",1,"Quel organe pompe le sang dans le corps ?","Le cœur",["Le foie","Les poumons","Les reins"]],["sciences",1,"Quel est le satellite naturel de la Terre ?","La Lune",["Phobos","Titan","Europe"]],["sciences",1,"Combien de pattes a un insecte ?","6",["8","4","10"]],["sciences",2,"Quel est l'os le plus long du corps humain ?","Le fémur",["Le tibia","L'humérus","Le radius"]],["sciences",2,"Quel est le symbole chimique du fer ?","Fe",["Fr","Ir","F"]],["sciences",2,"Quel est le gaz le plus abondant dans l'air ?","L'azote",["L'oxygène","Le dioxyde de carbone","L'argon"]],["sciences",2,"Qui a découvert la pénicilline ?","Alexander Fleming",["Louis Pasteur","Marie Curie","Robert Koch"]],["sciences",2,"Combien de temps met la lumière du Soleil pour atteindre la Terre ?","Environ 8 minutes",["Environ 8 secondes","Environ 1 heure","Environ 1 journée"]],["sciences",2,"Quel est le plus grand organe du corps humain ?","La peau",["Le foie","Le cerveau","Les intestins"]],["sciences",2,"Quelle est la formule chimique du sel de table ?","NaCl",["KCl","NaOH","CaCO₃"]],["sciences",2,"Quelle particule porte une charge électrique négative ?","L'électron",["Le proton","Le neutron","Le photon"]],["sciences",2,"Quelle est la vitesse approximative du son dans l'air ?","340 m/s",["34 m/s","1 200 m/s","3 400 m/s"]],["sciences",3,"Quel est le numéro atomique du carbone ?","6",["12","8","14"]],["sciences",3,"Qui a publié le premier tableau périodique des éléments en 1869 ?","Dmitri Mendeleïev",["Antoine Lavoisier","John Dalton","Niels Bohr"]],["sciences",3,"Quelle est la planète la plus chaude du système solaire ?","Vénus",["Mercure","Mars","Jupiter"]],["sciences",3,"Combien de dents compte la dentition complète d'un adulte ?","32",["28","30","36"]],["sciences",3,"Quel métal est liquide à température ambiante ?","Le mercure",["Le plomb","Le gallium","L'étain"]],["sport",1,"Combien de joueurs par équipe sur un terrain de volley-ball ?","6",["5","7","4"]],["sport",1,"Quel sport pratique Kylian Mbappé ?","Le football",["Le basket-ball","Le rugby","Le handball"]],["sport",1,"Combien de temps dure un match de football, hors prolongations ?","90 minutes",["80 minutes","100 minutes","120 minutes"]],["sport",1,"Dans quel sport utilise-t-on un volant ?","Le badminton",["Le tennis","Le squash","Le tennis de table"]],["sport",1,"Tous les combien d'années ont lieu les Jeux olympiques d'été ?","4 ans",["2 ans","3 ans","5 ans"]],["sport",1,"Dans quel pays est né le judo ?","Le Japon",["La Chine","La Corée du Sud","Le Brésil"]],["sport",1,"Combien d'anneaux figurent sur le drapeau olympique ?","5",["4","6","7"]],["sport",2,"Quel joueur détient le record de victoires à Roland-Garros ?","Rafael Nadal",["Roger Federer","Novak Djokovic","Björn Borg"]],["sport",2,"Dans quel pays sont nés les Jeux olympiques antiques ?","La Grèce",["L'Italie","L'Égypte","La Turquie"]],["sport",2,"Quel pays a remporté le plus de Coupes du monde de football ?","Le Brésil",["L'Allemagne","L'Italie","L'Argentine"]],["sport",2,"Quelle est la distance officielle d'un marathon ?","42,195 km",["40 km","42 km","45,5 km"]],["sport",2,"Quel club de football est surnommé « les Verts » ?","L'AS Saint-Étienne",["Le FC Nantes","L'OGC Nice","L'Olympique lyonnais"]],["sport",2,"En quelle année la France a-t-elle gagné sa première Coupe du monde de football ?","1998",["1984","2006","2018"]],["sport",2,"Combien de sets faut-il gagner pour remporter un match masculin en Grand Chelem ?","3",["2","4","5"]],["sport",3,"Quel nageur détient le record de médailles d'or olympiques ?","Michael Phelps",["Mark Spitz","Ian Thorpe","Léon Marchand"]],["sport",3,"Dans quel pays se trouve le circuit de Spa-Francorchamps ?","La Belgique",["Les Pays-Bas","Le Luxembourg","La Suisse"]],["sport",3,"Combien de trous compte un parcours de golf standard ?","18",["9","12","21"]],["sport",3,"Quel Français a remporté cinq Tours de France, le dernier en 1985 ?","Bernard Hinault",["Jacques Anquetil","Laurent Fignon","Raymond Poulidor"]],["sport",3,"En quelle année ont eu lieu les premiers Jeux olympiques modernes ?","1896",["1900","1924","1888"]],["sport",3,"Quelle ville française a accueilli les Jeux olympiques d'hiver de 1992 ?","Albertville",["Grenoble","Chamonix","Annecy"]],["cuisine",1,"Avec quel fruit fabrique-t-on le cidre ?","La pomme",["La poire","Le raisin","La cerise"]],["cuisine",1,"Quel est l'ingrédient principal d'une omelette ?","Les œufs",["La farine","Le lait","Le fromage"]],["cuisine",1,"Quelle céréale utilise-t-on pour faire un risotto ?","Le riz",["Le blé","L'orge","Le maïs"]],["cuisine",1,"De quel pays les tacos sont-ils originaires ?","Le Mexique",["L'Espagne","L'Argentine","Le Pérou"]],["cuisine",1,"Quelle boisson obtient-on en infusant des feuilles de théier ?","Le thé",["Le café","Le chocolat chaud","La chicorée"]],["cuisine",1,"Un croque-monsieur contient du pain, du jambon et…","Du fromage",["Du poulet","Du thon","De la salade"]],["cuisine",1,"Quel aliment est fabriqué par les abeilles ?","Le miel",["La confiture","Le sirop d'érable","La mélasse"]],["cuisine",2,"Quel fruit sec est la base de la pâte d'amande ?","L'amande",["La noisette","La noix","La pistache"]],["cuisine",2,"De quel pays le kimchi est-il originaire ?","La Corée",["Le Japon","La Chine","Le Vietnam"]],["cuisine",2,"Quel fromage utilise-t-on traditionnellement dans la tartiflette ?","Le reblochon",["Le comté","La raclette","Le beaufort"]],["cuisine",2,"Quelle ville a donné son nom à une moutarde célèbre ?","Dijon",["Lyon","Reims","Bordeaux"]],["cuisine",2,"Quel est l'ingrédient de base du tzatziki ?","Le yaourt",["La mayonnaise","Le lait de coco","La crème de sésame"]],["cuisine",2,"Quel plat alsacien est à base de chou fermenté ?","La choucroute",["Le baeckeoffe","La flammekueche","Le kouglof"]],["cuisine",2,"Le wasabi accompagne traditionnellement…","Les sushis",["La pizza","Le couscous","La paella"]],["cuisine",3,"Quelle épice donne sa couleur jaune au curry ?","Le curcuma",["Le safran","Le paprika","Le cumin"]],["cuisine",3,"De quel pays la feta AOP est-elle originaire ?","La Grèce",["La Turquie","L'Italie","Chypre"]],["cuisine",3,"Quel chef lyonnais était surnommé le « pape de la gastronomie » ?","Paul Bocuse",["Alain Ducasse","Joël Robuchon","Auguste Escoffier"]],["cuisine",3,"De quelle région française vient le cassoulet ?","L'Occitanie",["La Bretagne","La Normandie","L'Alsace"]],["cuisine",3,"De quel pays le gruyère AOP est-il originaire ?","La Suisse",["La France","L'Allemagne","L'Autriche"]],["cuisine",3,"Quel champignon est surnommé le « diamant noir » ?","La truffe noire",["Le cèpe","La morille","La girolle"]]];
-const DEFAULT_P = {pseudo:"Joueur", avatar:"🦊", xp:0, wins:0, losses:0, draws:0};
+const DEFAULT_P = {pseudo:"Joueur", avatar:"a01", xp:0, wins:0, losses:0, draws:0};
 let ONLINE = false;
 let LOC = LS.get("dq_local", null) || { solo:{ games:0, correct:0, answered:0, byTheme:{} }, queue:[], seen:[] };
 const saveLoc = () => LS.set("dq_local", LOC);
@@ -439,7 +646,7 @@ function setOnline(v){
 function goOffline(){
   setOnline(false);
   if(new URLSearchParams(location.search).get("duel")){
-    $("offbar").textContent = "📴 Pas de connexion : le défi de ton ami s'ouvrira dès que tu seras de nouveau en ligne. En attendant, le mode solo est disponible.";
+    $("offbar").textContent = "Pas de connexion : le défi de ton ami s'ouvrira dès que tu seras de nouveau en ligne. En attendant, le mode solo est disponible.";
   }
   renderHome(); show("home");
 }
@@ -502,17 +709,18 @@ async function renderHome(){
   $("themes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
     const s = tmap[k] || {xp:0, played:0};
     const pend = LOC.queue.filter(g => g.theme === k).length;
-    return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played + pend} parties</div></button>`;
+    return `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${art(k, 46)}</div><div class="tn">${t.n}</div><div class="tl">Niveau ${lvlOf(s.xp).l} · ${s.played + pend} parties</div></button>`;
   }).join("");
   document.querySelectorAll("#themes .theme").forEach(b=>b.onclick=()=>openMode(b.dataset.k));
   if(ONLINE) refreshBadges();
+  renderDaily();
   renderPanel();
 }
 let lbDays = 7, lbTheme = null, lbFriends = false;
 async function renderPanel(){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.dataset.tab===tab));
   if(!ONLINE){
-    $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">📴 ${tab==="lb"?"Le classement":"L'historique des duels"} sera disponible au retour de la connexion.</p>`;
+    $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">${ic("offline")}<br>${tab==="lb"?"Le classement":tab==="daily"?"Le défi du jour":"L'historique des duels"} sera disponible au retour de la connexion.</p>`;
     return;
   }
   $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
@@ -520,14 +728,22 @@ async function renderPanel(){
     const { data, error } = await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme, p_friends: lbFriends });
     if(error) return $("panel").textContent = errMsg(error);
     const per = [[1,"Aujourd'hui"],[7,"Semaine"],[30,"Mois"],[null,"Depuis toujours"]];
-    const chips = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">👥 Amis</button>${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
-      `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${t.e}</button>`).join("")}</div>`;
+    const chips = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">${ic("users",15)} Amis</button>${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
+      `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${art(k, 20)}</button>`).join("")}</div>`;
     $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbFriends?" · entre amis":""}${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
-      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?medal(i):i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
       : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué sur cette période. Sois le premier !</p>`);
     $("panel").querySelector("[data-f]").onclick = () => { lbFriends = !lbFriends; renderPanel(); };
     $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : +b.dataset.d; renderPanel(); });
     $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; renderPanel(); });
+  } else if(tab==="daily"){
+    const { data, error } = await rpc("daily_leaderboard", { p_friends: lbFriends });
+    if(error) return $("panel").textContent = errMsg(error);
+    $("panel").innerHTML = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">${ic("users",15)} Amis</button></div>
+      <div class="label" style="margin:4px 0 6px">Défi du jour · nouveau dans ${untilMidnight()}</div>` + (data.length ?
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?medal(i):i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">${r.correct}/7 bonnes réponses</span></div><div class="rs">${r.score}</div></div>`).join("")
+      : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué le défi d'aujourd'hui. À toi l'honneur !</p>`);
+    $("panel").querySelector("[data-f]").onclick = () => { lbFriends = !lbFriends; renderPanel(); };
   } else {
     const { data, error } = await sb.from("matches")
       .select("id,theme,private,p1,p2,p1_score,p2_score,p2_answers,created_at,a:profiles!matches_p1_fkey(pseudo,avatar,avatar_url),b:profiles!matches_p2_fkey(pseudo,avatar,avatar_url)")
@@ -536,13 +752,13 @@ async function renderPanel(){
     const list = (data||[]).filter(m => (m.p1===me ? m.p1_score : m.p2_score) != null);
     if(!list.length) return $("panel").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun duel pour l'instant. Lance-toi !</p>`;
     $("panel").innerHTML = list.map(m=>{
-      const iAmP1 = m.p1===me, opp = iAmP1 ? m.b : m.a, th = THEMES[m.theme] || {e:"❓", n:m.theme};
+      const iAmP1 = m.p1===me, opp = iAmP1 ? m.b : m.a, th = THEMES[m.theme] || {n:m.theme};
       const mine = iAmP1 ? m.p1_score : m.p2_score, his = iAmP1 ? m.p2_score : m.p1_score;
       if(his==null){
-        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?av(opp):"❔"}</div><div class="rn">${m.private?"Défi ami en attente":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private&&iAmP1?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
+        return `<div class="row"><div class="rk">${ic("history",18)}</div><div class="av">${opp?av(opp):WAIT_AV}</div><div class="rn">${m.private?"Défi ami en attente":"En attente d'adversaire"}<br><span class="pl">${tname(m.theme)} · ton score : ${mine}</span></div>${m.private&&iAmP1?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
       }
-      const res = mine>his?"✅":mine<his?"❌":"🤝";
-      return `<div class="row"><div class="rk">${res}</div><div class="av">${opp?av(opp):"❔"}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${th.e} ${th.n}</span></div><div class="rs">${mine} – ${his}</div></div>`;
+      const res = mine>his?`<span class="ok">${ic("check",18)}</span>`:mine<his?`<span class="ko">${ic("x",18)}</span>`:"=";
+      return `<div class="row"><div class="rk">${res}</div><div class="av">${opp?av(opp):WAIT_AV}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${tname(m.theme)}</span></div><div class="rs">${mine} – ${his}</div></div>`;
     }).join("");
     $("panel").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(duelLink(b.dataset.copy), b));
   }
@@ -550,7 +766,7 @@ async function renderPanel(){
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ tab=t.dataset.tab; renderPanel(); });
 
 /* ---------------- MODE SOLO (100 % local) ---------------- */
-const DIFFS = [[0,"🎲 Mélange"],[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]];
+const DIFFS = [[0,"Mélange"],[1,"Facile"],[2,"Intermédiaire"],[3,"Difficile"]];
 let soloDiff = LS.get("dq_diff", 0);
 function renderDiff(){
   $("mDiff").innerHTML = DIFFS.map(([d,l])=>`<button data-d="${d}" class="${d===soloDiff?'on':''}">${l}</button>`).join("");
@@ -577,6 +793,7 @@ async function finishSolo(M, G){
   const N = M.questions.length, score = G.me, correct = G.log.filter(x=>x.ok).length;
   const st = LOC.solo, bt = st.byTheme[M.theme] || (st.byTheme[M.theme] = { played:0, best:0 });
   const record = score > bt.best && bt.played > 0;
+  if(correct === N) LOC.perfect = true;
   st.games++; st.correct += correct; st.answered += N; bt.played++; bt.best = Math.max(bt.best, score);
   const syncable = M.questions.every(q => q.id != null);
   if(syncable) LOC.queue.push({ id:M.id, theme:M.theme, difficulty:M.difficulty, qids:M.questions.map(q=>q.id),
@@ -585,25 +802,27 @@ async function finishSolo(M, G){
   let synced = false;
   if(ONLINE && syncable){ $("gQ").innerHTML = "<div>Enregistrement…</div>"; $("gA").innerHTML = ""; await flushQueue(); synced = !LOC.queue.some(g => g.id === M.id); }
   const xp = Math.round(score / 2);
-  const stars = correct >= 7 ? "⭐⭐⭐" : correct >= 5 ? "⭐⭐" : correct >= 3 ? "⭐" : "";
+  const stars = `<span class="stars">${[1,2,3].map(s => `<svg viewBox="0 0 24 24" width="16" height="16" fill="${(correct>=7?3:correct>=5?2:correct>=3?1:0)>=s?'#ffcc3d':'#3b3270'}">${ICONS.star}</svg>`).join("")}</span>`;
   $("rTitle").innerHTML = `<span class="${correct>=4?'w':'d'}">${correct===N?"Sans faute !":correct>=5?"Bravo !":correct>=3?"Pas mal !":"Courage !"}</span>`;
   $("rMe").innerHTML = av(P); $("rMeS").textContent = score;
-  $("rOpp").textContent = "🎯"; $("rOppS").textContent = `${correct}/${N}`;
+  $("rOpp").innerHTML = art("solo", 44); $("rOppS").textContent = `${correct}/${N}`;
   $("rGain").innerHTML = `
     <div class="g"><span>Bonnes réponses</span><b>${correct}/${N} ${stars}</b></div>
     <div class="g"><span>Difficulté</span><b>${(DIFFS.find(d=>d[0]===soloDiff)||DIFFS[0])[1]}</b></div>
-    <div class="g"><span>Record solo ${THEMES[M.theme].n}</span><b>${bt.best}${record?" 🎉 nouveau !":""}</b></div>
+    <div class="g"><span>Record solo ${THEMES[M.theme].n}</span><b>${bt.best}${record?" · nouveau record !":""}</b></div>
     <div class="g"><span>XP</span><b>${!syncable ? "non comptée (banque de secours)" : synced ? `+${xp} XP ✔` : `+${xp} XP · au retour du réseau`}</b></div>`;
-  const shareTxt = `J'ai fait ${score} points (${correct}/${N}) en ${THEMES[M.theme].n} sur Défi Quiz 🎯 Tu fais mieux ?`;
+  const shareTxt = `J'ai fait ${score} points (${correct}/${N}) en ${THEMES[M.theme].n} sur Défi Quiz. Tu fais mieux ?`;
   const link = location.origin + location.pathname;
-  $("rShare").innerHTML = `<button class="btn s" id="rBrag">📤 Partager mon score</button>`;
+  $("rShare").innerHTML = `<button class="btn s" id="rBrag">${ic("share",18)} Partager mon score</button>`;
   $("rBrag").onclick = async e => {
     if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:shareTxt, url:link }); return; } catch(er){ if(er && er.name==="AbortError") return; } }
     copy(shareTxt + " " + link, e.target);
   };
   $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
     `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · +${x.mp}</div>`).join("");
+  $("rAgain").textContent = "Rejouer ce thème";
   $("rAgain").onclick = () => startSolo(M.theme);
+  checkAch();
   show("result");
 }
 
@@ -616,11 +835,11 @@ async function copy(text, btn){
 let curTheme = null, LV = null;   // LV = duel en direct en cours (canal temps réel)
 function openMode(k){
   curTheme = k;
-  $("mEmo").textContent = THEMES[k].e; $("mName").textContent = THEMES[k].n;
+  $("mEmo").innerHTML = art(k, 88); $("mName").textContent = THEMES[k].n;
   renderDiff();
   $("mRandom").disabled = $("mFriend").disabled = !ONLINE;
   $("mNote").textContent = ONLINE ? "Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite."
-                                  : "📴 Les duels demandent une connexion Internet. Le solo, lui, marche partout.";
+                                  : "Les duels demandent une connexion Internet. Le solo, lui, marche partout.";
   show("mode");
 }
 $("mBack").onclick = () => show("home");
@@ -631,9 +850,9 @@ function joinDuel(id){ return startLive(null, false, id); }
 
 function mmReset(k){
   hideErr("mmErr"); ["mmBack","mmSolo","mmCancel"].forEach(id=>$(id).style.display="none"); $("mmShare").innerHTML = "";
-  $("mmTheme").textContent = k ? `${THEMES[k].e} ${THEMES[k].n}` : "⚔️ Défi d'un ami";
+  $("mmTheme").innerHTML = k ? tname(k) : `${ic("swords")} Défi d'un ami`;
   $("mmMe").innerHTML = av(P); $("mmMeN").textContent = P.pseudo; $("mmMeL").textContent = `Niveau ${lvlOf(P.xp).l}`;
-  $("mmOpp").textContent = "❔"; $("mmOpp").classList.add("spin");
+  $("mmOpp").innerHTML = WAIT_AV; $("mmOpp").classList.add("spin");
   $("mmOppN").textContent = "Recherche…"; $("mmOppL").innerHTML = "&nbsp;";
   show("match");
 }
@@ -651,7 +870,7 @@ async function startLive(k, priv, joinId){
   const { data: M, error } = joinId ? await rpc("join_match", { p_id: joinId })
                                     : await rpc("start_live", { p_theme: k, p_private: priv });
   if(error) return mmFail(error);
-  $("mmTheme").textContent = `${THEMES[M.theme].e} ${THEMES[M.theme].n}`;
+  $("mmTheme").innerHTML = tname(M.theme);
   if(!M.live) return asyncIntro(M);     // lien d'un ami qui a joué sans attendre → duel différé
   liveLobby(M);
 }
@@ -670,7 +889,7 @@ async function asyncIntro(M){
     mmOpp(M.opponent);
     $("mmMsg").textContent = "Adversaire trouvé ! Tu joues contre sa partie enregistrée, à son rythme.";
   } else {
-    $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = M.private ? "Ton ami" : "Prochain joueur"; $("mmOppL").innerHTML = "&nbsp;";
+    $("mmOpp").innerHTML = WAIT_AV; $("mmOppN").textContent = M.private ? "Ton ami" : "Prochain joueur"; $("mmOppL").innerHTML = "&nbsp;";
     $("mmMsg").textContent = M.private ? "Tu joues en premier : ton ami jouera ensuite avec le lien."
                                        : "Personne n'est dispo pour l'instant : tu joues en premier, le prochain joueur affrontera ton score.";
   }
@@ -680,12 +899,12 @@ async function asyncIntro(M){
 
 function shareBox(link){
   return `<div class="share"><b>Envoie ce lien à ton ami :</b><input readonly value="${esc(link)}" onclick="this.select()">`+
-         `<button class="btn p" data-act="share" style="margin-top:4px">📤 Envoyer le lien</button></div>`;
+         `<button class="btn p" data-act="share" style="margin-top:4px">${ic("share",18)} Envoyer le lien</button></div>`;
 }
 function wireShare(root, link){
   root.querySelectorAll("[data-act=share]").forEach(b => b.onclick = async () => {
     if(navigator.share){
-      try { await navigator.share({ title:"Défi Quiz", text:"Je te défie sur Défi Quiz ! ⚔️", url: link }); return; }
+      try { await navigator.share({ title:"Défi Quiz", text:"Je te défie sur Défi Quiz !", url: link }); return; }
       catch(e){ if(e && e.name === "AbortError") return; }
     }
     copy(link, b);
@@ -721,7 +940,7 @@ function liveLobby(M){
 
   if(host && M.private){
     const link = duelLink(M.id);
-    $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = "⏳"; $("mmOppN").textContent = "Ton ami";
+    $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = WAIT_AV; $("mmOppN").textContent = "Ton ami";
     $("mmMsg").textContent = "Salon créé ! Envoie le lien à ton ami : le duel démarre tout seul dès qu'il arrive.";
     $("mmShare").innerHTML = shareBox(link); wireShare($("mmShare"), link);
     $("mmSolo").style.display = "block"; $("mmCancel").style.display = "block";
@@ -794,8 +1013,8 @@ function play(M, lv){
   let driver = !lv || lv.host, cur = null;
   const send = p => { if(lv && !lv.oppGone && LV === lv) lv.ch.send({ type:"broadcast", event:"g", payload:p }); };
 
-  $("gMe").innerHTML = av(P); $("gOpp").innerHTML = opp ? av(opp) : (M.solo ? "🎯" : "⏳");
-  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo ? "" : "?"); $("gOppSt").textContent = M.solo ? "Solo" : "";
+  $("gMe").innerHTML = av(P); $("gOpp").innerHTML = opp ? av(opp) : M.daily ? art("daily", 40) : M.solo ? art("solo", 40) : WAIT_AV;
+  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo || M.daily ? "" : "?"); $("gOppSt").textContent = M.daily ? "Défi du jour" : M.solo ? "Solo" : "";
   show("game");
 
   function showQ(i){
@@ -804,7 +1023,7 @@ function play(M, lv){
     const Q = qs[i], last = i === N-1, good = Q.answer;
     const opts = seededShuffle([good, ...Q.wrong], M.id + ":" + i);
     $("gQn").textContent = `Question ${i+1}/${N}`;
-    $("gQ").innerHTML = (last ? `<div><span class="dbl">⭐ DERNIÈRE QUESTION · POINTS DOUBLÉS</span>` : "<div>") + esc(Q.question) + "</div>";
+    $("gQ").innerHTML = (M.daily && Q.theme ? `<div><span class="qtheme">${tname(Q.theme)}</span>` : "") + (last ? `<div><span class="dbl">DERNIÈRE QUESTION · POINTS × 2</span>` : "<div>") + esc(Q.question) + "</div>";
     $("gA").innerHTML = opts.map((o,j) => `<button class="ans" data-j="${j}">${esc(o)}</button>`).join("");
     $("gOppSt").textContent = (lv && lv.oppGone) ? "Adversaire déconnecté" : "";
     const btns = [...document.querySelectorAll(".ans")];
@@ -895,6 +1114,7 @@ function play(M, lv){
 }
 
 async function finishMatch(M, G, opp, lv){
+  if(M.daily) return finishDaily(M, G);
   if(M.solo) return finishSolo(M, G);
   $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = ""; $("gOppSt").textContent = "";
   let { data: R, error } = await rpc("submit_answers", { p_id: M.id, p_answers: G.answers });
@@ -914,7 +1134,7 @@ async function finishMatch(M, G, opp, lv){
   leaveLive();
   const oldLvl = lvlOf(P.xp).l;
   await loadProfile();
-  $("rMe").innerHTML = av(P); $("rOpp").innerHTML = opp ? av(opp) : "⏳";
+  $("rMe").innerHTML = av(P); $("rOpp").innerHTML = opp ? av(opp) : WAIT_AV;
   $("rShare").innerHTML = "";
   const good = G.log.filter(x => x.ok).length;
   if(error){
@@ -929,7 +1149,7 @@ async function finishMatch(M, G, opp, lv){
       <div class="g"><span>Bonnes réponses</span><b>${good}/${G.log.length}</b></div>
       <div class="g"><span>Points de match</span><b>+${R.score} XP</b></div>
       <div class="g"><span>Bonus ${w ? 'victoire' : d ? 'égalité' : 'participation'}</span><b>+${R.bonus} XP</b></div>
-      ${lvlOf(P.xp).l > oldLvl ? `<div class="g"><span>🚀 Niveau global</span><b>Niveau ${lvlOf(P.xp).l} !</b></div>` : ""}`;
+      ${lvlOf(P.xp).l > oldLvl ? `<div class="g"><span>Niveau global</span><b>Niveau ${lvlOf(P.xp).l} !</b></div>` : ""}`;
   } else {
     $("rTitle").innerHTML = '<span class="d">Score envoyé !</span>';
     $("rMeS").textContent = R.score; $("rOppS").textContent = "?";
@@ -945,7 +1165,9 @@ async function finishMatch(M, G, opp, lv){
   const hasOpp = !!(lv || M.ghost);
   $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
     `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${hasOpp?` / adv. +${x.op}`:""}</div>`).join("");
+  $("rAgain").textContent = "Rejouer ce thème";
   $("rAgain").onclick = () => openMode(M.theme);
+  checkAch();
   show("result");
 }
 $("rHome").onclick = () => { renderHome(); show("home"); };
@@ -958,9 +1180,13 @@ const ago = d => { const s = (Date.now() - new Date(d)) / 1000;
 const inGame = () => ["game","match"].some(id => $(id).classList.contains("on"));
 
 function startSocial(){
+  try { startSocialInner(); } catch(e){ console.warn("temps réel indisponible", e); }
+}
+function startSocialInner(){
   if(!ONLINE || NOTIF_CH) return;
   NOTIF_CH = sb.channel("notif-" + me)
     .on("postgres_changes", { event:"INSERT", schema:"public", table:"notifications", filter:`user_id=eq.${me}` }, ({ new: n }) => onNotif(n))
+    .on("postgres_changes", { event:"INSERT", schema:"public", table:"messages", filter:`receiver=eq.${me}` }, ({ new: m }) => onMessage(m))
     .subscribe();
   const pc = PRES_CH = sb.channel("online", { config: { presence: { key: me } } });
   pc.on("presence", { event:"sync" }, () => {
@@ -976,25 +1202,28 @@ function stopSocial(){
 }
 async function refreshBadges(){
   if(!ONLINE) return;
-  const [{ count: n }, { count: f }] = await Promise.all([
+  const [{ count: n }, { count: f }, { data: um }] = await Promise.all([
     sb.from("notifications").select("id", { count:"exact", head:true }).eq("user_id", me).eq("read", false),
-    sb.from("friendships").select("requester", { count:"exact", head:true }).eq("addressee", me).eq("status", "pending")]);
-  setBadge("nBadge", n || 0); setBadge("fBadge", f || 0);
+    sb.from("friendships").select("requester", { count:"exact", head:true }).eq("addressee", me).eq("status", "pending"),
+    rpc("unread_messages", {})]);
+  UNREAD_BY = Object.fromEntries((um || []).map(r => [r.other, r.n]));
+  const unread = Object.values(UNREAD_BY).reduce((a, b) => a + b, 0);
+  setBadge("nBadge", n || 0); setBadge("fBadge", (f || 0) + unread);
 }
 function setBadge(id, n){ const b = $(id); b.textContent = n > 9 ? "9+" : n; b.style.display = n ? "block" : "none"; }
 async function actorOf(id){
-  if(!id) return { pseudo:"Un joueur", avatar:"👤" };
+  if(!id) return { pseudo:"Un joueur", avatar:"" };
   if(PROFILE_CACHE[id]) return PROFILE_CACHE[id];
   const { data } = await sb.from("profiles").select("id,pseudo,avatar,avatar_url,xp").eq("id", id).maybeSingle();
-  return (PROFILE_CACHE[id] = data || { pseudo:"Un joueur", avatar:"👤" });
+  return (PROFILE_CACHE[id] = data || { pseudo:"Un joueur", avatar:"" });
 }
 function notifText(n, a){
   const th = n.data && THEMES[n.data.theme];
   return ({
-    duel_invite:     `⚔️ <b>${esc(a.pseudo)}</b> te défie en direct${th ? ` en ${th.e} ${th.n}` : ""} !`,
-    duel_declined:   `🙅 <b>${esc(a.pseudo)}</b> a refusé ton duel.`,
-    friend_request:  `👋 <b>${esc(a.pseudo)}</b> veut devenir ton ami.`,
-    friend_accepted: `🎉 <b>${esc(a.pseudo)}</b> a accepté ta demande d'ami.`
+    duel_invite:     `<b>${esc(a.pseudo)}</b> te défie en direct${th ? ` en ${tname(n.data.theme)}` : ""} !`,
+    duel_declined:   `<b>${esc(a.pseudo)}</b> a refusé ton duel.`,
+    friend_request:  `<b>${esc(a.pseudo)}</b> veut devenir ton ami.`,
+    friend_accepted: `<b>${esc(a.pseudo)}</b> a accepté ta demande d'ami.`
   })[n.type] || "Nouvelle notification";
 }
 
@@ -1023,7 +1252,7 @@ async function onNotif(n){
     if(inGame()) return toast(txt + "", [], 5000);
     return toast(txt, [
       { label:"Refuser", run: () => rpc("decline_invite", { p_match: n.data.match_id }) },
-      { label:"⚔️ Jouer !", primary:true, run: () => acceptInvite(n) }], 30000);
+      { label:"Jouer !", primary:true, run: () => acceptInvite(n) }], 30000);
   }
   if(n.type === "friend_request"){
     return toast(txt, [
@@ -1032,7 +1261,7 @@ async function onNotif(n){
   }
   if(n.type === "duel_declined" && LV && LV.M.id === (n.data && n.data.match_id) && !LV.started){
     leaveLive();
-    $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = "🙅";
+    $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = ic("x", 34);
     $("mmMsg").textContent = `${a.pseudo} a refusé le duel.`; $("mmShare").innerHTML = "";
     ["mmSolo","mmCancel"].forEach(id => $(id).style.display = "none"); $("mmBack").style.display = "block";
     return;
@@ -1064,7 +1293,7 @@ async function renderNotifs(){
   const ids = data.filter(n => !n.read && !(n.type === "duel_invite" || n.type === "friend_request")).map(n => n.id);
   if(ids.length){ await rpc("mark_notifications_read", { p_ids: ids }); refreshBadges(); }
 }
-$("toNotifs").onclick = () => { if(!ONLINE) return toast("📴 Les notifications reviennent avec la connexion."); renderNotifs(); show("notifs"); };
+$("toNotifs").onclick = () => { if(!ONLINE) return toast("Les notifications reviennent avec la connexion."); renderNotifs(); show("notifs"); };
 $("nBack").onclick = () => { renderHome(); show("home"); };
 
 /* Écran amis */
@@ -1085,9 +1314,9 @@ async function renderFriendList(){
   if(by("received").length) html += `<div class="sec">Demandes reçues</div>` + by("received").map(f => row(f,
       `<button class="mini p" data-act="acc" data-id="${f.id}">Accepter</button><button class="mini" data-act="dec" data-id="${f.id}">Refuser</button>`)).join("");
   html += `<div class="sec">Mes amis (${friends.length})</div>` + (friends.length ? friends.map(f => row(f,
-      `<button class="mini p" data-act="duel" data-id="${f.id}">⚔️ Défier</button><button class="mini" data-act="more" data-id="${f.id}">⋯</button>`,
+      `<button class="mini p" data-act="duel" data-id="${f.id}">${ic("swords",15)} Défier</button><button class="mini chatb" data-act="chat" data-id="${f.id}">${ic("chat",16)}${UNREAD_BY[f.id]?`<span class="badge">${UNREAD_BY[f.id]}</span>`:""}</button><button class="mini" data-act="more" data-id="${f.id}">${ic("dots",16)}</button>`,
       ` · face-à-face ${f.wins_vs}V ${f.losses_vs}D${f.draws_vs?` ${f.draws_vs}N`:""}`)).join("")
-    : `<p class="sub" style="margin:6px 4px">Ajoute tes potes avec leur pseudo ou leur code ami 👆</p>`);
+    : `<p class="sub" style="margin:6px 4px">Ajoute tes potes avec leur pseudo ou leur code ami, juste au-dessus.</p>`);
   if(by("sent").length) html += `<div class="sec">Demandes envoyées</div>` + by("sent").map(f => row(f, `<button class="mini" data-act="cancel" data-id="${f.id}">Annuler</button>`)).join("");
   if(by("blocked").length) html += `<div class="sec">Bloqués</div>` + by("blocked").map(f => row(f, `<button class="mini" data-act="unblock" data-id="${f.id}">Débloquer</button>`)).join("");
   $("fList").innerHTML = html;
@@ -1096,22 +1325,23 @@ async function renderFriendList(){
 }
 async function friendAction(act, f, btn){
   if(act === "duel") return openInvite(f);
+  if(act === "chat") return openChat(f);
   if(act === "more"){
     return toast(`<div class="av" style="width:40px;height:40px;font-size:22px">${av(f)}</div><div><b>${esc(f.pseudo)}</b><br><span class="pl">Code ${esc(f.friend_code)}</span></div>`, [
       { label:"Retirer des amis", run: async () => { if(confirm(`Retirer ${f.pseudo} de tes amis ?`)){ await rpc("remove_friend", { p_other:f.id }); renderFriendList(); } } },
-      { label:"🚩 Signaler", run: async () => {
+      { label:"Signaler", run: async () => {
           const why = prompt(`Pourquoi signaler ${f.pseudo} ? (photo déplacée, pseudo insultant…)`);
           if(why === null) return;
           const { error } = await rpc("report_user", { p_target:f.id, p_reason: why || "non précisé" });
-          toast(error ? "⚠️ " + esc(errMsg(error)) : "🚩 Merci, le signalement a été envoyé.");
+          toast(error ? "" + esc(errMsg(error)) : "Merci, le signalement a été envoyé.");
         } },
-      { label:"🚫 Bloquer", run: async () => { if(confirm(`Bloquer ${f.pseudo} ? Il ne pourra plus te trouver ni te défier.`)){ await rpc("block_user", { p_other:f.id }); renderFriendList(); } } }], 10000);
+      { label:"Bloquer", run: async () => { if(confirm(`Bloquer ${f.pseudo} ? Il ne pourra plus te trouver ni te défier.`)){ await rpc("block_user", { p_other:f.id }); renderFriendList(); } } }], 10000);
   }
   btn.disabled = true;
   const call = { acc:["respond_friend_request",{ p_requester:f.id, p_accept:true }], dec:["respond_friend_request",{ p_requester:f.id, p_accept:false }],
                  cancel:["remove_friend",{ p_other:f.id }], unblock:["unblock_user",{ p_other:f.id }] }[act];
   const { error } = await rpc(call[0], call[1]);
-  if(error) toast("⚠️ " + esc(errMsg(error)));
+  if(error) toast("" + esc(errMsg(error)));
   renderFriendList();
 }
 let searchTimer = null;
@@ -1124,29 +1354,29 @@ $("fSearch").oninput = () => {
     $("fResults").style.display = "block";
     if(error) return $("fResults").textContent = errMsg(error);
     if(!data.length) return $("fResults").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun joueur trouvé.</p>`;
-    const lab = { none:`<button class="mini p" data-add>➕ Ajouter</button>`, sent:`<span class="pl">Demande envoyée</span>`,
+    const lab = { none:`<button class="mini p" data-add>${ic("friend",15)} Ajouter</button>`, sent:`<span class="pl">Demande envoyée</span>`,
                   received:`<button class="mini p" data-add>Accepter</button>`, friend:`<span class="pl">Ami ✓</span>` };
     $("fResults").innerHTML = data.map((p, i) => `<div class="row" data-i="${i}"><div class="av">${av(p)}</div><div class="rn">${esc(p.pseudo)}<br><span class="pl">Niveau ${lvlOf(p.xp).l} · code ${esc(p.friend_code)}</span></div><div class="acts">${lab[p.relation]||""}</div></div>`).join("");
     $("fResults").querySelectorAll("[data-add]").forEach(b => b.onclick = async () => {
       const p = data[+b.closest(".row").dataset.i]; b.disabled = true;
       const { data: st, error } = await rpc("send_friend_request", { p_target: p.id });
-      if(error){ toast("⚠️ " + esc(errMsg(error))); b.disabled = false; return; }
+      if(error){ toast("" + esc(errMsg(error))); b.disabled = false; return; }
       b.outerHTML = `<span class="pl">${st === "friend" ? "Ami ✓" : "Demande envoyée"}</span>`;
       renderFriendList();
     });
   }, 300);
 };
 $("fCopy").onclick = e => copy(P.friend_code || "", e.target);
-$("toFriends").onclick = () => { if(!ONLINE) return toast("📴 Tes amis seront là au retour de la connexion."); renderFriends(); show("friends"); };
+$("toFriends").onclick = () => { if(!ONLINE) return toast("Tes amis seront là au retour de la connexion."); renderFriends(); show("friends"); };
 $("fBack").onclick = () => { renderHome(); show("home"); };
 
 /* Défier un ami : choix du thème puis salon en direct */
 let invFriend = null;
 function openInvite(f){
   invFriend = f;
-  $("iAv").innerHTML = av(f); $("iName").textContent = f.pseudo + (ONLINE_IDS.has(f.id) ? " 🟢" : "");
+  $("iAv").innerHTML = av(f); $("iName").innerHTML = esc(f.pseudo) + (ONLINE_IDS.has(f.id) ? ' <span class="on-dot"></span>' : "");
   $("iThemes").innerHTML = Object.entries(THEMES).map(([k,t]) =>
-    `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div></button>`).join("");
+    `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${art(k, 46)}</div><div class="tn">${t.n}</div></button>`).join("");
   $("iThemes").querySelectorAll(".theme").forEach(b => b.onclick = () => inviteFriend(invFriend, b.dataset.k));
   show("invite");
 }
@@ -1158,8 +1388,9 @@ async function inviteFriend(f, k){
   $("mmMsg").textContent = "Envoi de l'invitation…";
   const { data: M, error } = await rpc("invite_friend", { p_friend: f.id, p_theme: k });
   if(error) return mmFail(error);
+  rpc("send_message", { p_to: f.id, p_code: "duel", p_data: { theme: k } });
   liveLobby(M);
-  $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = av(f); $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "⏳ invité";
+  $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = av(f); $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "invité";
   $("mmMsg").textContent = `${f.pseudo} a reçu ton invitation${ONLINE_IDS.has(f.id) ? "" : " (il n'est pas en ligne : il la verra en ouvrant l'appli)"}. Le duel démarre dès qu'il accepte.`;
 }
 
@@ -1183,20 +1414,20 @@ async function switchAccount(){
 }
 async function renderAccount(){
   const el = $("pAccount");
-  if(!ONLINE){ el.innerHTML = `<b>Compte</b><div class="pl">📴 Disponible au retour de la connexion.</div>`; return; }
+  if(!ONLINE){ el.innerHTML = `<b>Compte</b><div class="pl">Disponible au retour de la connexion.</div>`; return; }
   const { data:{ session } } = await sb.auth.getSession();
   const u = session && session.user;
   if(u && !u.is_anonymous && u.email){
-    el.innerHTML = `<b>✅ Compte sauvegardé</b><div class="pl" style="margin:4px 0 6px">${esc(u.email)} · ta progression te suit sur tous tes appareils.</div>
+    el.innerHTML = `<b class="ok">${ic("check",18)} Compte sauvegardé</b><div class="pl" style="margin:4px 0 6px">${esc(u.email)} · ta progression te suit sur tous tes appareils.</div>
       <input class="field" id="aNewPass" type="password" placeholder="Nouveau mot de passe (6 caractères min.)" autocomplete="new-password" style="margin:4px 0">
-      <button class="btn s" id="aPw" style="font-size:15px">🔑 Définir / changer mon mot de passe</button>
+      <button class="btn s" id="aPw" style="font-size:15px">Définir / changer mon mot de passe</button>
       <button class="btn s" id="aOut">Se déconnecter</button>
       <button class="btn s" id="aDel" style="color:var(--bad);font-size:14px">Supprimer mon compte</button>`;
     $("aPw").onclick = async e => {
       const pw = $("aNewPass").value;
-      if(pw.length < 6) return toast("⚠️ Mot de passe trop court (6 caractères minimum).");
+      if(pw.length < 6) return toast("Mot de passe trop court (6 caractères minimum).");
       const { error } = await sb.auth.updateUser({ password: pw });
-      toast(error ? "⚠️ " + esc(authMsg(error)) : "🔑 Mot de passe enregistré.");
+      toast(error ? "" + esc(authMsg(error)) : "Mot de passe enregistré.");
       if(!error) $("aNewPass").value = "";
     };
     $("aOut").onclick = async () => {
@@ -1207,14 +1438,14 @@ async function renderAccount(){
       if(!confirm("Supprimer définitivement ton compte, ta progression, tes amis et tes duels ?")) return;
       if(!confirm("Dernière confirmation : cette action est irréversible.")) return;
       const { error } = await rpc("delete_my_account", {});
-      if(error) return toast("⚠️ " + esc(errMsg(error)));
+      if(error) return toast("" + esc(errMsg(error)));
       await sb.auth.signOut({ scope:"local" });
       LOC = { solo:{ games:0, correct:0, answered:0, byTheme:{} }, queue:[], seen:[] }; saveLoc();
       await ensureAuth(); await switchAccount(); toast("Compte supprimé.");
     };
     return;
   }
-  el.innerHTML = `<b>💾 Sauvegarde ta progression</b>
+  el.innerHTML = `<b>${ic("save",18)} Sauvegarde ta progression</b>
     <div class="pl" style="margin:4px 0 8px">Tu joues en invité : si tu changes de téléphone ou vides ton navigateur, tu perds tout. Crée ton compte pour retrouver ton niveau, tes amis et tes stats partout.</div>
     <input class="field" id="aEmail" type="email" placeholder="E-mail" autocomplete="email" style="margin:4px 0">
     <input class="field" id="aPass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="new-password" style="margin:4px 0 8px">
@@ -1222,7 +1453,7 @@ async function renderAccount(){
     <button class="btn p" id="aSave">Créer mon compte</button>
     <button class="btn s" id="aLogin" style="font-size:15px">J'ai déjà un compte : me connecter</button>`;
   const vals = () => ({ email: $("aEmail").value.trim().toLowerCase(), password: $("aPass").value });
-  const fail = e => { $("aErr").textContent = "⚠️ " + authMsg(e); $("aErr").style.display = "block"; };
+  const fail = e => { $("aErr").textContent = "" + authMsg(e); $("aErr").style.display = "block"; };
   $("aSave").onclick = async e => {
     hideErr("aErr");
     const { email, password } = vals();
@@ -1234,13 +1465,13 @@ async function renderAccount(){
     else if(!r.error){
       // confirmation d'e-mail activée : le compte sera actif après le clic dans le mail
       e.target.disabled = false; e.target.textContent = "Créer mon compte";
-      $("pAccount").innerHTML = `<b>📧 Vérifie tes mails</b><div class="pl" style="margin:4px 0">Un lien de confirmation a été envoyé à <b>${esc(email)}</b>. Clique dessus, puis reviens ici pour choisir ton mot de passe.</div>`;
+      $("pAccount").innerHTML = `<b>Vérifie tes mails</b><div class="pl" style="margin:4px 0">Un lien de confirmation a été envoyé à <b>${esc(email)}</b>. Clique dessus, puis reviens ici pour choisir ton mot de passe.</div>`;
       return;
     }
     e.target.disabled = false; e.target.textContent = "Créer mon compte";
     if(r.error) return fail(r.error);
     await sb.auth.refreshSession();
-    toast("✅ Compte créé ! Ta progression est sauvegardée.");
+    toast("Compte créé ! Ta progression est sauvegardée.");
     renderAccount();
   };
   $("aLogin").onclick = async e => {
@@ -1252,8 +1483,172 @@ async function renderAccount(){
     const { error } = await sb.auth.signInWithPassword({ email, password });
     e.target.disabled = false;
     if(error) return fail(error);
-    await switchAccount(); toast("👋 Content de te revoir !");
+    await switchAccount(); toast("Content de te revoir !");
   };
+}
+
+/* ---------------- DÉFI DU JOUR ---------------- */
+let DAILY = null;
+const untilMidnight = () => {
+  const p = new Date(new Date().toLocaleString("en-US", { timeZone:"Europe/Paris" }));
+  const s = 86400 - (p.getHours()*3600 + p.getMinutes()*60 + p.getSeconds());
+  return `${Math.floor(s/3600)} h ${String(Math.floor(s%3600/60)).padStart(2,"0")}`;
+};
+const nth = r => `${r}${r === 1 ? "er" : "e"}`;
+function recapHtml(log, withOpp){
+  return `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + log.map(x =>
+    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${withOpp?` / adv. +${x.op}`:""}</div>`).join("");
+}
+async function renderDaily(){
+  const c = $("dailyCard");
+  c.innerHTML = `${art("daily", 54)}<div style="min-width:0"><b>Défi du jour</b><span class="s" id="dSub">…</span></div><span class="tag" id="dTag">…</span>`;
+  if(!ONLINE){ c.disabled = true; $("dSub").textContent = "Disponible avec une connexion"; $("dTag").textContent = "Hors ligne"; return; }
+  c.disabled = false;
+  const { data, error } = await rpc("get_daily", {});
+  if(error || !data){ $("dSub").textContent = error ? errMsg(error) : "Indisponible pour le moment"; $("dTag").textContent = "–"; return; }
+  DAILY = data;
+  if(data.played){
+    $("dSub").textContent = `${data.correct}/7 · ${nth(data.rank)} sur ${data.players} · nouveau défi dans ${untilMidnight()}`;
+    $("dTag").textContent = `${data.score} pts`;
+  } else {
+    $("dSub").textContent = `7 questions, les mêmes pour tous · ${data.players} joueur${data.players > 1 ? "s" : ""} aujourd'hui`;
+    $("dTag").textContent = "Jouer";
+  }
+}
+$("dailyCard").onclick = () => {
+  if(!DAILY || !ONLINE) return;
+  if(DAILY.played){ tab = "daily"; renderPanel(); $("panel").scrollIntoView({ behavior:"smooth" }); return; }
+  play({ id:"daily-" + DAILY.day, daily:true, theme:null, questions: DAILY.questions }, null);
+};
+async function finishDaily(M, G){
+  $("gQ").innerHTML = "<div>Envoi de ton score…</div>"; $("gA").innerHTML = "";
+  const { data: R, error } = await rpc("submit_daily", { p_answers: G.answers });
+  await loadProfile();
+  const N = M.questions.length;
+  $("rMe").innerHTML = av(P); $("rOpp").innerHTML = art("daily", 44); $("rShare").innerHTML = "";
+  if(error){
+    $("rTitle").innerHTML = '<span class="l">Oups</span>'; $("rMeS").textContent = G.me; $("rOppS").textContent = "";
+    $("rGain").innerHTML = `<div class="g"><span>${esc(errMsg(error))}</span></div>`;
+  } else {
+    $("rTitle").innerHTML = `<span class="${R.rank<=3?'w':'d'}">${R.rank===1 ? "1er du jour !" : R.rank<=3 ? "Sur le podium !" : "Défi relevé !"}</span>`;
+    $("rMeS").textContent = R.score; $("rOppS").textContent = nth(R.rank);
+    $("rGain").innerHTML = `
+      <div class="g"><span>Bonnes réponses</span><b>${R.correct}/${N}</b></div>
+      <div class="g"><span>Classement du jour</span><b>${nth(R.rank)} sur ${R.players}</b></div>
+      <div class="g"><span>XP (bonus du défi inclus)</span><b>+${R.xp} XP</b></div>
+      <div class="g"><span>Prochain défi</span><b>dans ${untilMidnight()}</b></div>`;
+    const txt = `Défi du jour sur Défi Quiz : ${R.score} points (${R.correct}/${N}), ${nth(R.rank)} sur ${R.players}. À toi !`;
+    const link = location.origin + location.pathname;
+    $("rShare").innerHTML = `<button class="btn s" id="rBrag">${ic("share",18)} Partager mon score</button>`;
+    $("rBrag").onclick = async e => {
+      if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:txt, url:link }); return; } catch(er){ if(er && er.name === "AbortError") return; } }
+      copy(txt + " " + link, e.target);
+    };
+  }
+  $("rRecap").innerHTML = recapHtml(G.log, false);
+  $("rAgain").textContent = "Voir le classement du jour";
+  $("rAgain").onclick = () => { tab = "daily"; renderHome(); show("home"); };
+  show("result"); checkAch();
+}
+
+/* ---------------- MESSAGERIE ENTRE AMIS (phrases rapides) ---------------- */
+const QUICK = { slt:"Salut !", gg:"GG !", bj:"Bien joué !", rev:"Revanche ?", fort:"Trop fort", serre:"C'était serré !",
+                chance:"Coup de chance…", pret:"Prêt quand tu veux", go:"On fait un duel ?", merci:"Merci !", haha:"Haha", bn:"Bonne nuit" };
+let CHAT = null, UNREAD_BY = {};
+const msgText = m => m.code === "duel"
+  ? `${ic("swords",16)} Défi lancé${m.data && THEMES[m.data.theme] ? ` en ${THEMES[m.data.theme].n}` : ""}`
+  : esc(QUICK[m.code] || "…");
+const hhmm = d => { const t = new Date(d), today = new Date().toDateString() === t.toDateString();
+  return (today ? "" : t.toLocaleDateString("fr-FR", { day:"numeric", month:"short" }) + " · ") + t.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }); };
+async function openChat(f){
+  CHAT = f;
+  $("cAv").innerHTML = av(f); $("cName").textContent = f.pseudo;
+  $("cStatus").innerHTML = ONLINE_IDS.has(f.id) ? '<span class="on-dot"></span> en ligne' : "hors ligne";
+  $("cQuick").innerHTML = Object.entries(QUICK).map(([k,v]) => `<button data-k="${k}">${esc(v)}</button>`).join("");
+  $("cQuick").querySelectorAll("button").forEach(b => b.onclick = () => sendMsg(b.dataset.k));
+  $("cMsgs").innerHTML = `<div class="center pl spin" style="margin:auto">Chargement…</div>`;
+  show("chat");
+  const { data } = await sb.from("messages").select("*")
+    .or(`and(sender.eq.${me},receiver.eq.${f.id}),and(sender.eq.${f.id},receiver.eq.${me})`)
+    .order("created_at", { ascending:false }).limit(80);
+  $("cMsgs").innerHTML = (data && data.length) ? "" : `<p class="sub center" style="margin:auto">Dis bonjour à ${esc(f.pseudo)} !</p>`;
+  (data || []).reverse().forEach(addBubble);
+  if(UNREAD_BY[f.id]){ await rpc("mark_conversation_read", { p_other: f.id }); delete UNREAD_BY[f.id]; refreshBadges(); }
+}
+function addBubble(m){
+  const el = $("cMsgs"), p = el.querySelector("p.sub, .spin"); if(p) p.remove();
+  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'?'duel':''}">${msgText(m)}<small>${hhmm(m.created_at)}</small></div>`);
+  el.scrollTop = el.scrollHeight;
+}
+async function sendMsg(code, data){
+  if(!CHAT) return;
+  const { data: m, error } = await rpc("send_message", { p_to: CHAT.id, p_code: code, p_data: data || {} });
+  if(error) return toast(esc(errMsg(error)));
+  if($("chat").classList.contains("on") && m) addBubble(m);
+}
+async function onMessage(m){
+  if(m.sender === me) return;
+  if(CHAT && CHAT.id === m.sender && $("chat").classList.contains("on")){
+    addBubble(m); rpc("mark_conversation_read", { p_other: m.sender }); return;
+  }
+  UNREAD_BY[m.sender] = (UNREAD_BY[m.sender] || 0) + 1; refreshBadges();
+  if($("friends").classList.contains("on")) renderFriendList();
+  if(inGame() || m.code === "duel") return;   // l'invitation a déjà sa propre alerte
+  const a = await actorOf(m.sender);
+  toast(`<div class="av" style="width:40px;height:40px">${av(a)}</div><div><b>${esc(a.pseudo)}</b><br>${msgText(m)}</div>`,
+        [{ label:"Répondre", primary:true, run: () => openChat({ ...a, id: m.sender }) }], 6000);
+}
+$("cBack").onclick = () => { CHAT = null; renderFriends(); show("friends"); };
+$("cDuel").onclick = () => { if(CHAT) openInvite(CHAT); };
+
+/* ---------------- SUCCÈS ---------------- */
+let IS_GUEST = true;
+const ACH = [
+  ["win1",    "trophy", "bronze", "Première victoire", "Gagne un duel",               s => s.wins >= 1],
+  ["win10",   "trophy", "silver", "Compétiteur",       "10 victoires",                s => s.wins >= 10],
+  ["win50",   "trophy", "gold",   "Champion",          "50 victoires",                s => s.wins >= 50],
+  ["streak3", "fire",   "bronze", "En feu",            "3 victoires d'affilée",       s => s.best_streak >= 3],
+  ["streak5", "fire",   "gold",   "Inarrêtable",       "5 victoires d'affilée",       s => s.best_streak >= 5],
+  ["live5",   "swords", "silver", "Duelliste",         "5 duels en direct",           s => s.live_duels >= 5],
+  ["solo10",  "target", "bronze", "Entraînement",      "10 parties solo",             s => s.solo_games >= 10],
+  ["perfect", "star",   "gold",   "Sans faute",        "7/7 en solo",                 s => s.solo_perfect >= 1],
+  ["daily1",  "sun",    "bronze", "Lève-tôt",          "Joue un défi du jour",        s => s.daily_count >= 1],
+  ["daily7",  "sun",    "silver", "Assidu",            "7 défis du jour",             s => s.daily_count >= 7],
+  ["podium",  "medal",  "gold",   "Podium",            "Top 3 d'un défi du jour",     s => s.daily_top3 >= 1],
+  ["friend1", "users",  "rose",   "Sociable",          "Ajoute un ami",               s => s.friends >= 1],
+  ["friend5", "users",  "blue",   "Populaire",         "5 amis",                      s => s.friends >= 5],
+  ["expert",  "bolt",   "blue",   "Expert",            "Niveau 5 dans un thème",      s => lvlOf(s.max_theme_xp).l >= 5],
+  ["brain",   "check",  "silver", "Cerveau",           "100 bonnes réponses",         s => s.correct >= 100],
+  ["level10", "star",   "silver", "Vétéran",           "Niveau 10",                   s => lvlOf(s.xp).l >= 10],
+  ["photo",   "camera", "rose",   "Photogénique",      "Ajoute une photo",            s => s.photo],
+  ["saved",   "save",   "blue",   "Fidèle",            "Crée ton compte",             s => s.saved]
+];
+function achStats(x){
+  x = x || {};
+  return { ...x, wins: P.wins || 0, xp: P.xp || 0, photo: !!P.avatar_url, saved: !IS_GUEST,
+           solo_games: Math.max(LOC.solo.games, x.solo_games || 0), solo_perfect: Math.max(x.solo_perfect || 0, LOC.perfect ? 1 : 0),
+           best_streak: x.best_streak || 0, live_duels: x.live_duels || 0, daily_count: x.daily_count || 0, daily_top3: x.daily_top3 || 0,
+           friends: x.friends || 0, max_theme_xp: x.max_theme_xp || 0, correct: x.correct || 0 };
+}
+const unlockedAch = s => ACH.filter(a => a[5](s)).map(a => a[0]);
+async function checkAch(){
+  if(!ONLINE) return;
+  const { data: x } = await rpc("my_stats", {}); if(!x) return;
+  LS.set("dq_mystats", x);
+  const now = unlockedAch(achStats(x)), seen = LS.get("dq_ach", null);
+  if(seen){
+    now.filter(id => !seen.includes(id)).forEach((id, i) => {
+      const a = ACH.find(a => a[0] === id);
+      setTimeout(() => toast(`<div style="width:46px;height:46px;flex:none">${badgeSVG(a[1], a[2])}</div><div><b>Succès débloqué !</b><br>${a[3]} <span class="pl">· ${a[4]}</span></div>`, [], 5000), 900 + i * 5200);
+    });
+  }
+  LS.set("dq_ach", now);
+}
+function renderAchs(x){
+  const s = achStats(x), n = ACH.filter(a => a[5](s)).length;
+  $("pAchTitle").textContent = `Succès (${n}/${ACH.length})`;
+  $("pAchs").innerHTML = ACH.map(a => { const on = a[5](s);
+    return `<div class="ach ${on?'on':'off'}"><div class="b">${badgeSVG(a[1], a[2], !on)}</div>${esc(a[3])}<br><span class="pl" style="font-size:10px">${esc(a[4])}</span></div>`; }).join("");
 }
 
 /* ---------------- PROFIL ---------------- */
@@ -1275,13 +1670,13 @@ async function renderProfile(){
       stat(fav ? fav.e : "–", "Thème préféré", fav ? fav.n : "");
   };
   drawStats(null);
-  $("pName").value = P.pseudo; pickAv = P.avatar;
+  $("pName").value = P.pseudo; pickAv = AV_DEFS[P.avatar] ? P.avatar : (EMOJI2AV[P.avatar] || "a01");
   $("pPhoto").innerHTML = av(P);
   $("pFile").disabled = !ONLINE; $("pPhotoDel").style.display = P.avatar_url && ONLINE ? "block" : "none";
   $("pName").disabled = $("pSave").disabled = !ONLINE;
   const drawAv = () => {
-    $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}">${a}</button>`).join("");
-    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ if(ONLINE){ pickAv=b.textContent; drawAv(); } });
+    $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}" data-a="${a}" title="${AV_DEFS[a].n}" style="padding:0;overflow:hidden;border-radius:50%">${avatarSVG(a)}</button>`).join("");
+    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ if(ONLINE){ pickAv=b.dataset.a; drawAv(); } });
   };
   drawAv();
   let tmap = LS.get("dq_tstats", {});
@@ -1289,13 +1684,13 @@ async function renderProfile(){
     const [{ data: ts }, { data: x }] = await Promise.all([
       sb.from("theme_stats").select("*").eq("user_id", me), rpc("my_stats", {})]);
     if(ts){ tmap = Object.fromEntries(ts.map(t=>[t.theme,t])); LS.set("dq_tstats", tmap); }
-    if(x){ LS.set("dq_mystats", x); drawStats(x); }
+    if(x){ LS.set("dq_mystats", x); drawStats(x); renderAchs(x); }
   } else {
-    const x = LS.get("dq_mystats", null); if(x) drawStats(x);
+    const x = LS.get("dq_mystats", null); if(x) drawStats(x); renderAchs(x);
   }
   $("pThemes").innerHTML = Object.entries(THEMES).map(([k,t])=>{
     const L = lvlOf((tmap[k]||{}).xp||0), so = S.byTheme[k];
-    return `<div class="row"><div class="av">${t.e}</div><div class="rn">${t.n}<div class="xpbar"><i style="width:${L.x/L.need*100}%"></i></div>${so?`<span class="pl">Record solo : ${so.best}</span>`:""}</div><div class="rs">Niv. ${L.l}</div></div>`;
+    return `<div class="row"><div class="av" style="background:none">${art(k, 34)}</div><div class="rn">${t.n}<div class="xpbar"><i style="width:${L.x/L.need*100}%"></i></div>${so?`<span class="pl">Record solo : ${so.best}</span>`:""}</div><div class="rs">Niv. ${L.l}</div></div>`;
   }).join("");
 }
 $("pSave").onclick = async e => {
@@ -1319,8 +1714,8 @@ async function squareJpeg(file, size = 256){
 $("pFile").onchange = async e => {
   const file = e.target.files && e.target.files[0]; e.target.value = "";
   if(!file || !ONLINE) return;
-  if(!/^image\//.test(file.type)) return toast("⚠️ Choisis une image.");
-  $("pPhoto").innerHTML = '<span class="spin">⏳</span>';
+  if(!/^image\//.test(file.type)) return toast("Choisis une image.");
+  $("pPhoto").innerHTML = `<span class="spin">${ic("camera",28)}</span>`;
   try {
     const blob = await squareJpeg(file);
     const path = `${me}/${Date.now()}.jpg`, old = P.avatar_url;
@@ -1330,13 +1725,13 @@ $("pFile").onchange = async e => {
     const { error } = await rpc("set_avatar", { p_path: path });
     if(error) throw error;
     if(old && old.startsWith(me + "/")) sb.storage.from("avatars").remove([old]);
-    await loadProfile(); renderProfile(); toast("📷 Photo de profil mise à jour !");
-  } catch(err){ $("pPhoto").innerHTML = av(P); toast("⚠️ Envoi impossible : " + esc(errMsg(err))); }
+    await loadProfile(); renderProfile(); toast("Photo de profil mise à jour !");
+  } catch(err){ $("pPhoto").innerHTML = av(P); toast("Envoi impossible : " + esc(errMsg(err))); }
 };
 $("pPhotoDel").onclick = async () => {
   const old = P.avatar_url;
   const { error } = await rpc("set_avatar", { p_path: null });
-  if(error) return toast("⚠️ " + esc(errMsg(error)));
+  if(error) return toast("" + esc(errMsg(error)));
   if(old && old.startsWith(me + "/")) sb.storage.from("avatars").remove([old]);
   await loadProfile(); renderProfile();
 };
@@ -1347,7 +1742,8 @@ if("serviceWorker" in navigator && (location.protocol === "https:" || location.h
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 
-boot().catch(e => { console.error(e); goOffline(); });
+hydrateIcons();
+boot().then(() => setTimeout(checkAch, 2500)).catch(e => { console.error(e); goOffline(); });
 </script>
 </body>
 </html>
