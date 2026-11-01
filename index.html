@@ -225,6 +225,53 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .sec{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:12px 4px 4px}
 .row.unread{background:#ffcc3d14;border-radius:10px}
+
+body.withnav #app{padding-bottom:96px}
+.bnav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(440px,100vw);display:none;justify-content:space-around;background:#1a1440ee;backdrop-filter:blur(10px);border-top:1px solid #ffffff14;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40}
+.bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--mute);padding:4px 0;position:relative}
+.bnav button.on{color:var(--acc)}
+.bnav .badge{top:0;right:calc(50% - 22px)}
+.av{position:relative}
+.frm{position:absolute;inset:0;border-radius:50%;pointer-events:none;-webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%)}
+.fr-bronze{background:conic-gradient(#cd7f32,#f3c18b,#8c5523,#cd7f32)}
+.fr-argent{background:conic-gradient(#d9e2ec,#ffffff,#8fa3b8,#d9e2ec)}
+.fr-or{background:conic-gradient(#ffcc3d,#fff2b0,#d49b00,#ffcc3d)}
+.fr-diamant{background:conic-gradient(#7ef9ff,#ffffff,#4fb3ff,#c58bff,#7ef9ff)}
+.fr-flamme{background:conic-gradient(#ff5d2a,#ffcc3d,#ff2a5d,#ff5d2a)}
+.fr-arcenciel{background:conic-gradient(#ff5d73,#ffcc3d,#2fd18b,#4fb3ff,#c58bff,#ff5d73)}
+.fr-etoile{background:conic-gradient(#ffcc3d,#ff7a59,#ffcc3d,#fff2b0,#ffcc3d)}
+.fr-couronne{background:conic-gradient(#c58bff,#ffcc3d,#7c6bff,#ffcc3d,#c58bff)}
+.av.big{width:96px;height:96px;font-size:52px;border-width:3px}
+.ttl{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:12px;background:#ffcc3d22;color:var(--acc);font-size:12px;font-weight:700}
+.ttl.sm{font-size:10px;padding:1px 6px;margin:0 0 0 4px;vertical-align:middle}
+.bio{margin:10px auto 0;max-width:320px;font-size:14px;line-height:1.4;color:var(--txt);opacity:.9}
+.role{font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;background:var(--acc);color:var(--bg);margin-left:4px;vertical-align:middle}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.emos .lk{position:absolute;inset:0;display:grid;place-items:center;align-content:center;background:#1a1440b0;color:#fff;font-size:10px;font-weight:700;line-height:1}
+.chips button.locked,.frb.locked{opacity:.45}
+.frames{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}
+.frb{background:var(--card);border-radius:14px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;border:2px solid transparent}
+.frb.on{border-color:var(--acc)}
+.frb .av{width:48px;height:48px;font-size:26px;border-width:0}
+.frb small{font-size:9.5px;font-weight:500;color:var(--mute);text-align:center;line-height:1.2}
+.composer{display:flex;gap:8px;margin-top:10px;align-items:center}
+.composer input{flex:1;min-width:0;background:var(--card2);border:0;border-radius:22px;padding:12px 16px;color:var(--txt);font:inherit;font-size:15px;outline:none}
+.composer button{width:44px;height:44px;border-radius:50%;background:var(--acc);color:var(--bg);display:grid;place-items:center;flex:none}
+.composer button.ghost{background:var(--card2);color:var(--txt)}
+.rmsg{display:flex;gap:8px;align-items:flex-end;max-width:88%}
+.rmsg.me{align-self:flex-end}
+.rmsg .av{width:30px;height:30px;font-size:16px;border-width:0;cursor:pointer}
+.rmsg .bub{max-width:100%}
+.bub .who{display:block;font-size:12px;color:var(--acc);margin-bottom:2px}
+.sysmsg{align-self:center;font-size:12px;color:var(--mute);background:#ffffff0d;padding:4px 10px;border-radius:12px;text-align:center}
+.sysmsg.ch{color:var(--acc);background:#ffcc3d1a;cursor:pointer}
+.seen{align-self:flex-end;font-size:11px;color:var(--mute);margin-top:-4px}
+.conv{cursor:pointer}
+.room,.calrow,.gc,.qrow{cursor:pointer}
+.daily.ev{background:linear-gradient(120deg,#ffcc3d33,#ff7a5933)}
+.live{color:var(--good);font-weight:700;font-size:12px}
+.quote{background:var(--card2);border-left:3px solid var(--bad);padding:6px 10px;border-radius:8px;margin:6px 0;font-size:14px}
+.field.good{border-left:4px solid var(--good)}.field.bad{border-left:4px solid var(--bad)}
 </style>
 </head>
 <body>
@@ -417,10 +464,11 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
       <div class="av" id="cAv" style="width:44px;height:44px"></div>
       <div class="who"><div class="name" id="cName"></div><div class="lvl" id="cStatus"></div></div>
       <button class="iconbtn" id="cDuel" aria-label="Défier" style="color:var(--acc)"><i data-ic="swords"></i></button>
+      <button class="iconbtn" id="cMenu" aria-label="Options"><i data-ic="dots"></i></button>
     </div>
     <div class="msgs" id="cMsgs"></div>
-    <div class="label" style="margin-top:12px">Messages rapides</div>
-    <div class="quick" id="cQuick"></div>
+    <div class="composer"><button class="ghost" id="cQuickT" aria-label="Messages rapides"><i data-ic="bolt"></i></button><input id="cInput" maxlength="500" placeholder="Écris un message…" autocomplete="off" enterkeyhint="send"><button id="cSend" aria-label="Envoyer"><i data-ic="send"></i></button></div>
+    <div class="quick" id="cQuick" style="display:none"></div>
   </section>
 
   <!-- PROFIL -->
@@ -443,12 +491,101 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <div class="label">Ou un avatar dessiné</div>
     <div class="emos" id="pEmos"></div>
     <button class="btn p" id="pSave" style="margin-bottom:18px">Enregistrer</button>
+    <div id="pExtra"></div>
     <div class="label" style="margin-bottom:8px">Niveaux par thème</div>
     <div class="panel" id="pThemes"></div>
     <div class="label" style="margin:18px 0 8px" id="pAchTitle">Succès</div>
     <div class="achs" id="pAchs"></div>
     <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Défi Quiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
   </section>
+
+  <!-- JOUER : événements, tournoi, saison, calendrier -->
+  <section class="screen tabscreen" id="play">
+    <h2 style="font-size:28px">Jouer</h2>
+    <p class="sub" style="margin:2px 0 12px">Tournois, défis et saison : de quoi revenir chaque jour.</p>
+    <div id="plCards"></div>
+    <div class="label" style="margin:18px 0 8px"><i data-ic="history"></i> Calendrier</div>
+    <div class="panel" id="plCal"></div>
+  </section>
+
+  <!-- ÉVÉNEMENT / DÉFI DE GROUPE -->
+  <section class="screen" id="event">
+    <button class="back" id="evBack">← Retour</button>
+    <div class="center" id="evHead"></div>
+    <div id="evActs"></div>
+    <div class="label" style="margin:18px 0 8px">Classement</div>
+    <div class="panel" id="evTop"></div>
+  </section>
+
+  <!-- COMMUNAUTÉ -->
+  <section class="screen tabscreen" id="community">
+    <h2 style="font-size:28px">Communauté</h2>
+    <div class="chips" id="coTabs" style="margin:10px 0"></div>
+    <div class="sbar" id="coSearchBar"><i data-ic="search"></i><input id="coSearch" placeholder="Chercher un salon ou un groupe" autocomplete="off"></div>
+    <div id="coBody"></div>
+  </section>
+
+  <!-- SALON / GROUPE -->
+  <section class="screen" id="room">
+    <div class="chathead">
+      <button class="iconbtn" id="rmBack" aria-label="Retour"><i data-ic="back"></i></button>
+      <div class="av" id="rmIcon" style="width:44px;height:44px;background:none;border:0"></div>
+      <div class="who"><div class="name" id="rmName"></div><div class="lvl" id="rmSub"></div></div>
+      <button class="iconbtn" id="rmMenu" aria-label="Options"><i data-ic="dots"></i></button>
+    </div>
+    <div class="chips" id="rmTabs"></div>
+    <div id="rmBody"></div>
+  </section>
+
+  <!-- CRÉER / MODIFIER UN SALON OU UN GROUPE -->
+  <section class="screen" id="roomEdit">
+    <button class="back" id="reBack">← Retour</button>
+    <h2 style="font-size:26px" id="reTitle"></h2>
+    <div class="label">Nom</div>
+    <input class="field" id="reName" maxlength="40" placeholder="Ex. : Les passionnés d'histoire">
+    <div class="label">Description</div>
+    <textarea class="field" id="reDesc" maxlength="200" rows="2" placeholder="De quoi parle-t-on ici ?"></textarea>
+    <div class="label">Image</div>
+    <div class="chips wrap" id="reIcon"></div>
+    <div class="label">Couleur</div>
+    <div class="chips wrap" id="reColor"></div>
+    <div class="label">Qui peut entrer ?</div>
+    <div class="chips" id="reVis"></div>
+    <div class="err" id="reErr"></div>
+    <button class="btn p" id="reSave">Enregistrer</button>
+  </section>
+
+  <!-- MESSAGES -->
+  <section class="screen tabscreen" id="messages">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h2 style="font-size:28px">Messages</h2>
+      <button class="mini p" id="msNew">Écrire</button>
+    </div>
+    <div class="panel" id="msList" style="margin-top:10px"></div>
+  </section>
+
+  <!-- PROFIL PUBLIC -->
+  <section class="screen" id="pub">
+    <button class="back" id="pbBack">← Retour</button>
+    <div id="pbBody"></div>
+  </section>
+
+  <!-- ADMINISTRATION -->
+  <section class="screen" id="admin">
+    <button class="back" id="adBack">← Retour</button>
+    <h2 style="font-size:28px">Administration</h2>
+    <div class="chips" id="adTabs" style="margin:10px 0"></div>
+    <div id="adBody"></div>
+  </section>
+
+  <!-- BARRE DE NAVIGATION -->
+  <nav class="bnav" id="bnav">
+    <button data-go="home"><i data-ic="target"></i><span>Accueil</span></button>
+    <button data-go="play"><i data-ic="trophy"></i><span>Jouer</span></button>
+    <button data-go="community"><i data-ic="users"></i><span>Communauté</span><b class="badge" id="nbCo" style="display:none"></b></button>
+    <button data-go="messages"><i data-ic="chat"></i><span>Messages</span><b class="badge" id="nbMs" style="display:none"></b></button>
+    <button data-go="profile"><i data-ic="user"></i><span>Profil</span></button>
+  </nav>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -590,7 +727,13 @@ const AV_DEFS = {
   a09: { n:"Lion",     bg:"#ffe08a", head:"#f2b544", ears:"round", mane:"#c9741e", muzzle:"#ffe9b8", nose:"#6b3a1e" },
   a10: { n:"Koala",    bg:"#cfe3ee", head:"#a9b4be", ears:"koala", inner:"#e8edf1", bigNose:true },
   a11: { n:"Robot",    bg:"#b5f0ff", robot:true },
-  a12: { n:"Alien",    bg:"#d6b8ff", alien:true }
+  a12: { n:"Alien",    bg:"#d6b8ff", alien:true },
+  a13: { n:"Tigre",    bg:"#ffcf8a", head:"#ff9d3a", ears:"round", stripes:true, muzzle:"#fff4e6", nose:"#2a2160" },
+  a14: { n:"Raton",    bg:"#c9d6e3", head:"#8e9aa8", ears:"tri", patches:true, muzzle:"#eef2f6", nose:"#2a2160" },
+  a15: { n:"Licorne",  bg:"#ffd6f0", head:"#ffffff", ears:"tri", horn:true, muzzle:"#ffe9f5", nose:"#ff8fd1" },
+  a16: { n:"Dragon",   bg:"#bff5d6", head:"#38c77a", ears:"none", horns:true, muzzle:"#9be8b8", nose:"#1f6b45" },
+  a17: { n:"Astronaute", bg:"#1d1a4a", astro:true },
+  a18: { n:"Ninja",    bg:"#ff9fb0", ninja:true }
 };
 function avatarSVG(code){
   const d = AV_DEFS[code]; if(!d) return "";
@@ -608,6 +751,17 @@ function avatarSVG(code){
       <ellipse cx="38" cy="48" rx="9" ry="12" fill="#2a2160" transform="rotate(-20 38 48)"/><ellipse cx="62" cy="48" rx="9" ry="12" fill="#2a2160" transform="rotate(20 62 48)"/>
       <circle cx="36" cy="44" r="3" fill="#fff"/><circle cx="60" cy="44" r="3" fill="#fff"/><path d="M43 68q7 5 14 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
   }
+  if(d.astro){
+    return s + `<circle cx="20" cy="22" r="1.6" fill="#fff"/><circle cx="82" cy="30" r="1.2" fill="#fff"/><circle cx="74" cy="12" r="1.6" fill="#ffcc3d"/>
+      <circle cx="50" cy="54" rx="32" r="32" fill="#f2f4f8"/><rect x="26" y="36" width="48" height="36" rx="18" fill="#2a2160"/>
+      <path d="M32 46q8-8 22-6" stroke="#7ef9ff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>
+      <circle cx="42" cy="56" r="4" fill="#fff"/><circle cx="58" cy="56" r="4" fill="#fff"/><path d="M45 64q5 3 10 0" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <rect x="44" y="84" width="12" height="6" rx="2" fill="#ff5d73"/><circle cx="20" cy="56" r="5" fill="#c3ccd6"/><circle cx="80" cy="56" r="5" fill="#c3ccd6"/></svg>`;
+  }
+  if(d.ninja){
+    return s + `<ellipse cx="50" cy="54" rx="30" ry="30" fill="#2a2160"/><rect x="22" y="44" width="56" height="16" rx="8" fill="#ffd9b8"/>
+      ${eyes(52, 4)}<path d="M20 34h60" stroke="#ff5d73" stroke-width="7" stroke-linecap="round"/><path d="M78 34l12-6M78 36l12 4" stroke="#ff5d73" stroke-width="5" stroke-linecap="round"/></svg>`;
+  }
   if(d.mane) s += `<g fill="${d.mane}">${Array.from({length:12},(_,i)=>{const a=i/12*Math.PI*2;return `<circle cx="${50+Math.cos(a)*30}" cy="${54+Math.sin(a)*30}" r="13"/>`}).join("")}</g>`;
   // oreilles
   if(d.ears === "tri") s += `<path d="M22 44L26 14l22 18z" fill="${d.head}"/><path d="M78 44L74 14 52 32z" fill="${d.head}"/><path d="M28 34l1.5-12 10 9z" fill="#ffd2c2"/><path d="M72 34l-1.5-12-10 9z" fill="#ffd2c2"/>`;
@@ -622,7 +776,10 @@ function avatarSVG(code){
       <path d="M32 64q18 12 36 0" stroke="#2a2160" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="3" fill="#ff9fb0" opacity=".7"/><circle cx="70" cy="58" r="3" fill="#ff9fb0" opacity=".7"/></svg>`;
     return s;
   }
+  if(d.horns) s += `<path d="M30 34l-6-20 14 12z" fill="#ffcc3d"/><path d="M70 34l6-20-14 12z" fill="#ffcc3d"/>`;
   s += `<ellipse cx="50" cy="54" rx="30" ry="28" fill="${d.head}"/>`;
+  if(d.horn) s += `<path d="M44 30l6-24 6 24z" fill="#ffcc3d"/><path d="M46 24l8-3M47 18l6-2" stroke="#e8a92b" stroke-width="2"/><path d="M28 34c-6 6-6 16 0 22M72 34c6 6 6 16 0 22" stroke="#c58bff" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  if(d.horns) s += `<path d="M40 68q10 6 20 0" stroke="#1f6b45" stroke-width="2" fill="none"/><circle cx="44" cy="62" r="1.6" fill="#1f6b45"/><circle cx="56" cy="62" r="1.6" fill="#1f6b45"/>`;
   if(d.face) s += `<ellipse cx="50" cy="58" rx="22" ry="21" fill="${d.face}"/>`;
   if(d.stripes) s += `<path d="M44 28v8M50 27v9M56 28v8" stroke="#7d7398" stroke-width="3" stroke-linecap="round"/>`;
   if(d.patches) s += `<ellipse cx="39" cy="50" rx="8" ry="10" fill="#2a2160" transform="rotate(20 39 50)"/><ellipse cx="61" cy="50" rx="8" ry="10" fill="#2a2160" transform="rotate(-20 61 50)"/>`;
@@ -663,7 +820,7 @@ const AVATARS = Object.keys(AV_DEFS);
 const TIME = 10;
 
 const $ = id => document.getElementById(id);
-const show = id => { document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id)); window.scrollTo(0,0); };
+const show = id => { document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id)); window.scrollTo(0,0);  if(typeof syncNav === "function") syncNav(id); };
 const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -673,9 +830,10 @@ const errMsg = e => (e && (e.message || e.error_description)) || String(e);
 const showErr = (id, e) => { const el=$(id); el.textContent = "" + errMsg(e); el.style.display="block"; };
 const hideErr = id => { $(id).style.display="none"; };
 const AVBASE = SUPABASE_URL + "/storage/v1/object/public/avatars/";
-const av = p => !p ? ic("user", 22) : p.avatar_url
+const avInner = p => !p ? ic("user", 22) : p.avatar_url
   ? `<img src="${esc(AVBASE + p.avatar_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
   : AV_DEFS[p.avatar] ? avatarSVG(p.avatar) : AV_DEFS[EMOJI2AV[p.avatar]] ? avatarSVG(EMOJI2AV[p.avatar]) : ic("user", 22);
+const av = p => avInner(p) + (p && p.frame ? `<i class="frm fr-${esc(p.frame)}"></i>` : "");
 const EMOJI2AV = {"🦊":"a01","🐼":"a02","🐯":"a03","🦁":"a09","🐸":"a06","🦄":"a05","🐙":"a12","🐲":"a12","🦅":"a07","🚀":"a11","⚡":"a11","🍀":"a06","👾":"a12","🤖":"a11","😎":"a04","🔥":"a01"};
 const WAIT_AV = `<span style="opacity:.6">${ic("user", 30)}</span>`;
 const tname = k => THEMES[k] ? `${art(k, 24)} ${THEMES[k].n}` : "";
@@ -747,12 +905,13 @@ async function boot(){
   P = LS.get("dq_profile", null) || { ...DEFAULT_P };
   if(typeof supabase === "undefined") return goOffline();     // bibliothèque non chargée : pas de réseau
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  watchRecovery();
   if(navigator.onLine === false) return goOffline();
   try { await withTimeout(ensureAuth(), 8000); }
   catch(e){ return goOffline(); }
   setOnline(true);
   await loadProfile();
-  startSocial(); refreshBank(); flushQueue();
+  startSocial(); refreshBank(); flushQueue(); checkAdmin();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   const quiz = new URLSearchParams(location.search).get("quiz");
@@ -777,7 +936,7 @@ async function reconnect(){
   if(!sb) sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   try { await withTimeout(ensureAuth(), 8000); } catch(e){ return; }
   setOnline(true);
-  await loadProfile(); startSocial(); await flushQueue(); refreshBank();
+  await loadProfile(); startSocial(); await flushQueue(); refreshBank(); checkAdmin();
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   if($("home").classList.contains("on")) renderHome();
@@ -846,17 +1005,19 @@ async function renderPanel(){
   }
   $("panel").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
   if(tab==="lb"){
-    const { data, error } = await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme, p_friends: lbFriends });
+    const { data, error } = lbDays === "s" ? await rpc("season_leaderboard", { p_offset: 0, p_friends: lbFriends })
+                                           : await rpc("leaderboard", { p_days: lbDays, p_theme: lbTheme, p_friends: lbFriends });
     if(error) return $("panel").textContent = errMsg(error);
-    const per = [[1,"Aujourd'hui"],[7,"Semaine"],[30,"Mois"],[null,"Depuis toujours"]];
+    const per = [["s","Saison"],[1,"Aujourd'hui"],[7,"Semaine"],[null,"Depuis toujours"]];
     const chips = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">${ic("users",15)} Amis</button>${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
       `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${art(k, 20)}</button>`).join("")}</div>`;
-    $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbFriends?" · entre amis":""}${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
-      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?medal(i):i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
+    $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">${lbDays==="s" ? `Saison de ${MONTHS[new Date().getMonth()]} · le podium gagne le cadre Couronne` : "Points marqués en duel"}${lbFriends?" · entre amis":""}${lbTheme && lbDays!=="s"?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}" data-u="${r.id||""}" style="cursor:pointer"><div class="rk">${i<3?medal(i):i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}${r.title?` <span class="ttl sm">${esc(titleName(r.title))}</span>`:""}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
       : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué sur cette période. Sois le premier !</p>`);
     $("panel").querySelector("[data-f]").onclick = () => { lbFriends = !lbFriends; renderPanel(); };
-    $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : +b.dataset.d; renderPanel(); });
-    $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; renderPanel(); });
+    $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : b.dataset.d==="s" ? "s" : +b.dataset.d; renderPanel(); });
+    $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; if(lbDays === "s") lbDays = 7; renderPanel(); });
+    $("panel").querySelectorAll("[data-u]").forEach(r=>r.onclick=()=>{ if(r.dataset.u) openPub(r.dataset.u, () => { renderHome(); show("home"); }); });
   } else if(tab==="daily"){
     const { data, error } = await rpc("daily_leaderboard", { p_friends: lbFriends });
     if(error) return $("panel").textContent = errMsg(error);
@@ -1028,7 +1189,7 @@ async function friendPicker(root, M){
   const { data } = await rpc("list_friends", {});
   const fr = (data || []).filter(f => f.relation === "friend").sort((a, b) => ONLINE_IDS.has(b.id) - ONLINE_IDS.has(a.id));
   if(!fr.length){ list.textContent = "Ajoute des amis (bouton Amis en haut de l'accueil) pour les inviter ici en un clic."; return; }
-  list.innerHTML = fr.map(f => `<div class="row"><div class="av">${av(f)}</div><div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id) ? '<span class="on-dot"></span>' : ""}</div><button class="mini p" data-id="${f.id}">Inviter</button></div>`).join("");
+  list.innerHTML = fr.map(f => `<div class="row"><div class="av">${av(f)}</div><div class="rn">${esc(f.pseudo)}${stDot(f.id)}</div><button class="mini p" data-id="${f.id}">Inviter</button></div>`).join("");
   list.querySelectorAll("button").forEach(b => b.onclick = async () => {
     b.disabled = true;
     const { error } = await rpc("invite_to_match", { p_friend: b.dataset.id, p_match: M.id });
@@ -1155,8 +1316,8 @@ function play(M, lv){
   let driver = !lv || lv.host, cur = null;
   const send = p => { if(lv && !lv.oppGone && LV === lv) lv.ch.send({ type:"broadcast", event:"g", payload:p }); };
 
-  $("gMe").innerHTML = av(P); $("gOpp").innerHTML = opp ? av(opp) : M.custom ? art(M.quiz.icon, 40) : M.daily ? art("daily", 40) : M.solo ? art("solo", 40) : WAIT_AV;
-  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo || M.daily || M.custom ? "" : "?"); $("gOppSt").textContent = M.custom ? "Quiz joueur" : M.daily ? "Défi du jour" : M.solo ? "Solo" : "";
+  $("gMe").innerHTML = av(P); $("gOpp").innerHTML = opp ? av(opp) : M.custom ? art(M.quiz.icon, 40) : (M.event || M.gchal) ? art(M.theme || (M.gchal ? "duel" : "daily"), 40) : M.daily ? art("daily", 40) : M.solo ? art("solo", 40) : WAIT_AV;
+  $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo || M.daily || M.custom || M.event || M.gchal ? "" : "?"); $("gOppSt").textContent = M.custom ? "Quiz joueur" : M.event ? "Tournoi" : M.gchal ? "Défi du groupe" : M.daily ? "Défi du jour" : M.solo ? "Solo" : "";
   show("game");
 
   function showQ(i){
@@ -1239,6 +1400,8 @@ function play(M, lv){
     if(G.ended) return;
     const msg = M.solo || M.custom ? "Abandonner cette partie ? Elle ne sera pas comptée."
       : M.daily ? "Abandonner le défi du jour ? Il comptera comme joué, avec les réponses déjà données."
+      : M.event ? "Abandonner ? Cet essai sera compté avec les réponses déjà données."
+      : M.gchal ? "Abandonner le défi du groupe ? Il comptera comme joué, avec les réponses déjà données."
       : lv ? "Abandonner le duel ? Les questions restantes compteront comme sans réponse, et ton adversaire terminera seul."
       : "Abandonner le duel ? Les questions restantes compteront comme sans réponse.";
     if(!confirm(msg)) return;
@@ -1274,6 +1437,7 @@ function play(M, lv){
 
 async function finishMatch(M, G, opp, lv){
   if(M.custom) return finishCustom(M, G);
+  if(M.event || M.gchal) return finishEvent(M, G);
   if(M.daily) return finishDaily(M, G);
   if(M.solo) return finishSolo(M, G);
   $("gQ").innerHTML = "<div>Envoi des résultats…</div>"; $("gA").innerHTML = ""; $("gOppSt").textContent = "";
@@ -1351,18 +1515,22 @@ function startSocialInner(){
   NOTIF_CH = sb.channel("notif-" + me)
     .on("postgres_changes", { event:"INSERT", schema:"public", table:"notifications", filter:`user_id=eq.${me}` }, ({ new: n }) => onNotif(n))
     .on("postgres_changes", { event:"INSERT", schema:"public", table:"messages", filter:`receiver=eq.${me}` }, ({ new: m }) => onMessage(m))
+    .on("postgres_changes", { event:"UPDATE", schema:"public", table:"messages", filter:`sender=eq.${me}` }, ({ new: m }) => onMsgRead(m))
     .subscribe();
   const pc = PRES_CH = sb.channel("online", { config: { presence: { key: me } } });
   pc.on("presence", { event:"sync" }, () => {
-      ONLINE_IDS = new Set(Object.keys(pc.presenceState()));
+      const ps = pc.presenceState();
+      ONLINE_IDS = new Set(Object.keys(ps));
+      ONLINE_ST = Object.fromEntries(Object.entries(ps).map(([k, v]) => [k, (v && v[0] && v[0].st) || "online"]));
+      if($("messages").classList.contains("on")) renderMessages();
       if($("friends").classList.contains("on")) renderFriendList();
     })
-    .subscribe(async s => { if(s === "SUBSCRIBED") await pc.track({ at: Date.now() }); });
+    .subscribe(async s => { if(s === "SUBSCRIBED"){ MY_ST = undefined; await pushStatus(); } });
   refreshBadges();
 }
 function stopSocial(){
   [NOTIF_CH, PRES_CH].forEach(c => { if(c) try { sb.removeChannel(c); } catch(e){} });
-  NOTIF_CH = PRES_CH = null; ONLINE_IDS = new Set();
+  NOTIF_CH = PRES_CH = null; ONLINE_IDS = new Set(); ONLINE_ST = {}; MY_ST = null;
 }
 async function refreshBadges(){
   if(!ONLINE) return;
@@ -1373,6 +1541,7 @@ async function refreshBadges(){
   UNREAD_BY = Object.fromEntries((um || []).map(r => [r.other, r.n]));
   const unread = Object.values(UNREAD_BY).reduce((a, b) => a + b, 0);
   setBadge("nBadge", n || 0); setBadge("fBadge", (f || 0) + unread);
+  refreshNavBadges();
 }
 function setBadge(id, n){ const b = $(id); b.textContent = n > 9 ? "9+" : n; b.style.display = n ? "block" : "none"; }
 async function actorOf(id){
@@ -1387,7 +1556,8 @@ function notifText(n, a){
     duel_invite:     `<b>${esc(a.pseudo)}</b> te défie${th ? ` en ${tname(n.data.theme)}` : ""} !`,
     duel_declined:   `<b>${esc(a.pseudo)}</b> a refusé ton duel.`,
     friend_request:  `<b>${esc(a.pseudo)}</b> veut devenir ton ami.`,
-    friend_accepted: `<b>${esc(a.pseudo)}</b> a accepté ta demande d'ami.`
+    friend_accepted: `<b>${esc(a.pseudo)}</b> a accepté ta demande d'ami.`,
+    room_invite:     `<b>${esc(a.pseudo)}</b> t'invite dans ${n.data && n.data.kind === "group" ? "le groupe" : "le salon"} « ${esc((n.data && n.data.name) || "")} ».`
   })[n.type] || "Nouvelle notification";
 }
 
@@ -1423,6 +1593,10 @@ async function onNotif(n){
       { label:"Refuser", run: async () => { await rpc("respond_friend_request", { p_requester:n.actor, p_accept:false }); refreshBadges(); } },
       { label:"Accepter", primary:true, run: async () => { await rpc("respond_friend_request", { p_requester:n.actor, p_accept:true }); refreshBadges(); } }], 15000);
   }
+  if(n.type === "room_invite" && n.data){
+    refreshNavBadges();
+    return toast(txt, [{ label:"Plus tard", run: () => {} }, { label:"Voir", primary:true, run: () => openRoom(n.data.room_id) }], 12000);
+  }
   if(n.type === "duel_declined" && LV && LV.M.id === (n.data && n.data.match_id) && !LV.started){
     leaveLive();
     $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = ic("x", 34);
@@ -1444,12 +1618,14 @@ async function renderNotifs(){
     const fresh = Date.now() - new Date(n.created_at) < 10*60*1000;
     let acts = "";
     if(n.type === "duel_invite" && !n.read && fresh) acts = `<button class="mini p" data-act="join" data-i="${i}">Jouer</button>`;
+    if(n.type === "room_invite" && n.data) acts = `<button class="mini p" data-act="room" data-i="${i}">Voir</button>`;
     if(n.type === "friend_request" && !n.read) acts = `<button class="mini p" data-act="acc" data-i="${i}">Accepter</button><button class="mini" data-act="dec" data-i="${i}">Refuser</button>`;
     return `<div class="row ${n.read?'':'unread'}"><div class="av">${av(actors[i])}</div><div class="rn" style="font-weight:500">${notifText(n, actors[i])}<br><span class="pl">${ago(n.created_at)}</span></div><div class="acts">${acts}</div></div>`;
   }).join("");
   $("nList").querySelectorAll("[data-act]").forEach(b => b.onclick = async () => {
     const n = data[+b.dataset.i];
     if(b.dataset.act === "join") return acceptInvite(n);
+    if(b.dataset.act === "room") return openRoom(n.data.room_id);
     await rpc("respond_friend_request", { p_requester:n.actor, p_accept: b.dataset.act === "acc" });
     renderNotifs(); refreshBadges();
   });
@@ -1472,7 +1648,7 @@ async function renderFriendList(){
   if(error) return $("fList").textContent = errMsg(error);
   FRIENDS = data || [];
   const by = r => FRIENDS.filter(f => f.relation === r);
-  const row = (f, acts, extra = "") => `<div class="row"><div class="av">${av(f)}</div><div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id)?'<span class="on-dot" title="en ligne"></span>':""}<br><span class="pl">Niveau ${lvlOf(f.xp).l}${extra}</span></div><div class="acts">${acts}</div></div>`;
+  const row = (f, acts, extra = "") => `<div class="row"><div class="av" data-pub="${f.id}" style="cursor:pointer">${av(f)}</div><div class="rn">${esc(f.pseudo)}${stDot(f.id)}<br><span class="pl">Niveau ${lvlOf(f.xp).l}${extra}</span></div><div class="acts">${acts}</div></div>`;
   const friends = by("friend").sort((a,b) => ONLINE_IDS.has(b.id) - ONLINE_IDS.has(a.id));
   let html = "";
   if(by("received").length) html += `<div class="sec">Demandes reçues</div>` + by("received").map(f => row(f,
@@ -1485,6 +1661,7 @@ async function renderFriendList(){
   if(by("blocked").length) html += `<div class="sec">Bloqués</div>` + by("blocked").map(f => row(f, `<button class="mini" data-act="unblock" data-id="${f.id}">Débloquer</button>`)).join("");
   $("fList").innerHTML = html;
   $("fList").querySelectorAll("[data-act]").forEach(b => b.onclick = () => friendAction(b.dataset.act, FRIENDS.find(f => f.id === b.dataset.id), b));
+  $("fList").querySelectorAll("[data-pub]").forEach(a => a.onclick = () => openPub(a.dataset.pub, () => { renderFriends(); show("friends"); }));
   refreshBadges();
 }
 async function friendAction(act, f, btn){
@@ -1532,13 +1709,13 @@ $("fSearch").oninput = () => {
 };
 $("fCopy").onclick = e => copy(P.friend_code || "", e.target);
 $("toFriends").onclick = () => { if(!ONLINE) return toast("Tes amis seront là au retour de la connexion."); renderFriends(); show("friends"); };
-$("fBack").onclick = () => { renderHome(); show("home"); };
+$("fBack").onclick = () => goTab("community");
 
 /* Défier un ami : choix du thème puis salon en direct */
 let invFriend = null;
 function openInvite(f){
   invFriend = f;
-  $("iAv").innerHTML = av(f); $("iName").innerHTML = esc(f.pseudo) + (ONLINE_IDS.has(f.id) ? ' <span class="on-dot"></span>' : "");
+  $("iAv").innerHTML = av(f); $("iName").innerHTML = esc(f.pseudo) + (" " + stDot(f.id));
   $("iThemes").innerHTML = Object.entries(THEMES).map(([k,t]) =>
     `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${art(k, 46)}</div><div class="tn">${t.n}</div></button>`).join("");
   $("iThemes").querySelectorAll(".theme").forEach(b => b.onclick = () => inviteFriend(invFriend, b.dataset.k));
@@ -1587,7 +1764,7 @@ function drawPick(){
   }
   const q = fold($("pfSearch").value), list = o.friends.filter(f => !q || fold(f.pseudo).includes(q));
   $("pfList").innerHTML = list.length ? list.map(f => `<div class="row" data-id="${f.id}" style="cursor:pointer"><div class="av">${av(f)}</div>
-      <div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id) ? '<span class="on-dot"></span>' : ""}<br><span class="pl">${ONLINE_IDS.has(f.id) ? "en ligne" : "Niveau " + lvlOf(f.xp).l}</span></div>
+      <div class="rn">${esc(f.pseudo)}${stDot(f.id)}<br><span class="pl">${ONLINE_IDS.has(f.id) ? stLabel(f.id) : "Niveau " + lvlOf(f.xp).l}</span></div>
       <button class="mini p">${o.btn}</button></div>`).join("")
     : `<p class="sub center" style="margin:6px 0">Aucun ami ne s'appelle comme ça.</p>`;
   $("pfList").querySelectorAll(".row").forEach(r => {
@@ -1672,6 +1849,742 @@ function drawSound(){
 }
 $("pSound").onclick = () => { SOUND = !SOUND; LS.set("dq_sound", SOUND); drawSound(); if(SOUND) sfx("good"); };
 
+
+/* =====================================================================
+   PHASE 7 : navigation, statuts, profils publics, messagerie complète,
+   salons, groupes, événements, administration, notifications push
+   ===================================================================== */
+const PUSH_URL = SUPABASE_URL + "/functions/v1/push";
+const FN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpaXFlanhocXNrZGdhc3Zzb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0Njc2NDIsImV4cCI6MjEwOTA0MzY0Mn0.ka4iwybJ4FwUTsXj0-QkkqWZYY44rl0cTfzmui5FPiU";   // clé publique « anon » (format JWT) exigée par les fonctions Supabase
+
+/* ---------- Cadres, titres, avatars à débloquer ---------- */
+const FRAMES = {
+  "":        ["Aucun", "Toujours disponible"],
+  bronze:    ["Bronze", "Atteindre le niveau 5"],
+  argent:    ["Argent", "Atteindre le niveau 10"],
+  or:        ["Or", "Atteindre le niveau 20"],
+  diamant:   ["Diamant", "Atteindre le niveau 35"],
+  flamme:    ["Flamme", "Gagner 25 duels"],
+  arcenciel: ["Arc-en-ciel", "Jouer 10 défis du jour"],
+  etoile:    ["Étoile", "Finir sur le podium d'un tournoi"],
+  couronne:  ["Couronne", "Finir sur le podium d'une saison"]
+};
+const TITLES = {
+  "": ["Aucun titre", ""], debutant: ["Débutant", "Toujours disponible"], apprenti: ["Apprenti", "Niveau 3"],
+  erudit: ["Érudit", "Niveau 10"], sage: ["Sage", "Niveau 20"], legende: ["Légende", "Niveau 30"],
+  duelliste: ["Duelliste", "10 victoires"], gladiateur: ["Gladiateur", "50 victoires"], populaire: ["Populaire", "5 amis"],
+  assidu: ["Assidu", "10 défis du jour"], createur: ["Créateur", "Un de tes quiz joué 10 fois"],
+  champion_tournoi: ["Champion de tournoi", "Gagner un tournoi"], champion_saison: ["Champion de saison", "Finir 1er d'une saison"]
+};
+const titleName = t => !t ? "" : t.startsWith("m:") ? `Maître · ${THEMES[t.slice(2)] ? THEMES[t.slice(2)].n : t.slice(2)}` : (TITLES[t] ? TITLES[t][0] : "");
+const AV_LOCK = { a13:4, a14:8, a15:12, a16:16, a17:22, a18:28 };
+let UNLOCKS = null;
+async function loadUnlocks(){ if(!ONLINE) return UNLOCKS; const { data } = await rpc("my_unlocks", {}); if(data) UNLOCKS = data; return UNLOCKS; }
+
+/* ---------- Statuts : en ligne, en partie, occupé, absent, invisible ---------- */
+let ONLINE_ST = {}, MY_ST = null, AWAY_TIMER = null, HIDDEN_SINCE = null;
+const ST_INFO = { online:["En ligne","#2fd18b"], playing:["En partie","#ff7a59"], busy:["Occupé","#ff5d73"], away:["Absent","#ffcc3d"] };
+const stOf = id => id === me ? (MY_ST || "online") : ONLINE_IDS.has(id) ? (ONLINE_ST[id] || "online") : null;
+const stDot = id => { const s = stOf(id); return s ? `<span class="on-dot" style="background:${ST_INFO[s][1]}" title="${ST_INFO[s][0]}"></span>` : ""; };
+const stLabel = id => { const s = stOf(id); return s ? ST_INFO[s][0] : "Hors ligne"; };
+function computeStatus(){
+  const pref = P.status_pref || "auto";
+  if(pref === "invisible") return null;
+  if(pref === "busy" || pref === "away") return pref;
+  if(inGame()) return "playing";
+  if(document.hidden && HIDDEN_SINCE && Date.now() - HIDDEN_SINCE > 3*60*1000) return "away";
+  return "online";
+}
+async function pushStatus(){
+  if(!PRES_CH) return;
+  const st = computeStatus();
+  if(st === MY_ST && st !== null) return;
+  MY_ST = st;
+  try { if(st === null) await PRES_CH.untrack(); else await PRES_CH.track({ at: Date.now(), st }); } catch(e){}
+}
+document.addEventListener("visibilitychange", () => {
+  HIDDEN_SINCE = document.hidden ? Date.now() : null;
+  clearTimeout(AWAY_TIMER);
+  if(document.hidden) AWAY_TIMER = setTimeout(pushStatus, 3*60*1000 + 500); else pushStatus();
+});
+
+/* ---------- Barre de navigation ---------- */
+const NAV_SCREENS = ["home","play","community","messages","profile"];
+function syncNav(id){
+  const on = NAV_SCREENS.includes(id);
+  $("bnav").style.display = on ? "flex" : "none";
+  document.body.classList.toggle("withnav", on);
+  $("bnav").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.go === id));
+  setTimeout(pushStatus, 50);
+}
+function goTab(id){
+  if(id === "home"){ renderHome(); show("home"); }
+  else if(id === "play"){ renderPlay(); show("play"); }
+  else if(id === "community"){ renderCommunity(); show("community"); }
+  else if(id === "messages"){ renderMessages(); show("messages"); }
+  else if(id === "profile"){ renderProfile(); show("profile"); }
+}
+$("bnav").querySelectorAll("button").forEach(b => b.onclick = () => goTab(b.dataset.go));
+async function refreshNavBadges(){
+  if(!ONLINE) return;
+  const unreadMsg = Object.values(UNREAD_BY).reduce((a, b) => a + b, 0);
+  setBadge("nbMs", unreadMsg);
+  const [{ data: rooms }, { count: f }] = await Promise.all([rpc("list_rooms", { p_kind:"all", p_mine:true, p_q:null }),
+    sb.from("friendships").select("requester", { count:"exact", head:true }).eq("addressee", me).eq("status", "pending")]);
+  setBadge("nbCo", (rooms || []).reduce((a, r) => a + (r.unread || 0) + (r.invited ? 1 : 0), 0) + (f || 0));
+}
+
+/* ---------- Profil public ---------- */
+let PUB_BACK = null;
+async function openPub(id, back){
+  if(!id) return;
+  if(!ONLINE) return toast("Les profils s'affichent avec une connexion.");
+  PUB_BACK = back || (() => goTab("home"));
+  show("pub");
+  $("pbBody").innerHTML = `<div class="center pl spin" style="padding:30px">Chargement…</div>`;
+  const { data: p, error } = await rpc("get_public_profile", { p_id: id });
+  if(error) return $("pbBody").innerHTML = `<p class="sub center">${esc(errMsg(error))}</p>`;
+  const s = p.stats, n = s ? s.wins + s.losses + s.draws : 0;
+  const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+  let acts = "";
+  if(!p.is_me){
+    if(p.relation === "friend") acts = `<button class="btn p" data-a="duel">${ic("swords",18)} Défier</button><button class="btn s" data-a="chat">${ic("chat",18)} Envoyer un message</button>`;
+    else if(p.relation === "received") acts = `<button class="btn p" data-a="accept">Accepter sa demande d'ami</button>`;
+    else if(p.relation === "sent") acts = `<button class="btn s" disabled>Demande d'ami envoyée</button>`;
+    else if(p.allow_requests) acts = `<button class="btn p" data-a="add">${ic("friend",18)} Ajouter en ami</button>`;
+    else acts = `<p class="note center">Ce joueur n'accepte pas les demandes d'ami.</p>`;
+    acts += `<div style="display:flex;gap:8px;margin-top:8px"><button class="btn s" data-a="report" style="font-size:14px">${ic("flag",16)} Signaler</button><button class="btn s" data-a="block" style="font-size:14px;color:var(--bad)">Bloquer</button></div>`;
+  } else acts = `<button class="btn s" data-a="edit">Modifier mon profil</button>`;
+  $("pbBody").innerHTML = `
+    <div class="center" style="padding:6px 0 10px">
+      <div class="av big" style="margin:0 auto 8px">${av(p)}</div>
+      <h2 style="font-size:26px">${esc(p.pseudo)}</h2>
+      ${p.title ? `<div class="ttl">${esc(titleName(p.title))}</div>` : ""}
+      <div class="pl" style="margin-top:4px">${stDot(p.id)} ${stLabel(p.id)} · Niveau ${p.level} · ${p.friends} ami${p.friends > 1 ? "s" : ""} · inscrit ${new Date(p.created_at).toLocaleDateString("fr-FR", { month:"long", year:"numeric" })}</div>
+      ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
+    </div>
+    ${p.vs && (p.vs.wins || p.vs.losses) ? `<div class="share center" style="margin:6px 0"><b>Vos duels :</b> ${p.vs.wins} victoire${p.vs.wins > 1 ? "s" : ""} pour toi · ${p.vs.losses} pour ${esc(p.pseudo)}</div>` : ""}
+    ${s ? `<div class="stats s3" style="margin:10px 0">${stat(n, "Duels")}${stat(s.wins, "Victoires")}${stat(n ? Math.round(s.wins / n * 100) + "%" : "–", "Ratio")}</div>
+      ${s.themes.length ? `<div class="label">Thèmes favoris</div><div class="panel">${s.themes.map(t => `<div class="row"><div class="av" style="background:none">${art(t.theme, 30)}</div><div class="rn">${THEMES[t.theme] ? THEMES[t.theme].n : esc(t.theme)}<br><span class="pl">Niveau ${lvlOf(t.xp).l} · ${t.played} parties</span></div></div>`).join("")}</div>` : ""}
+      ${s.recent.length ? `<div class="label" style="margin-top:12px">Derniers duels</div><div class="panel">${s.recent.map(r => `<div class="row"><div class="rk">${r.mine > r.his ? `<span class="ok">${ic("check",16)}</span>` : r.mine < r.his ? `<span class="ko">${ic("x",16)}</span>` : "="}</div><div class="rn">contre ${esc(r.opp || "?")}<br><span class="pl">${tname(r.theme)}</span></div><div class="rs">${r.mine} – ${r.his}</div></div>`).join("")}</div>` : ""}`
+      : `<p class="note center">${esc(p.pseudo)} préfère garder ses statistiques privées.</p>`}
+    <div style="margin-top:14px">${acts}</div>`;
+  $("pbBody").querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+    const a = b.dataset.a, f = { id:p.id, pseudo:p.pseudo, avatar:p.avatar, avatar_url:p.avatar_url, xp:p.xp, frame:p.frame };
+    if(a === "duel") return openInvite(f);
+    if(a === "chat") return openChat(f);
+    if(a === "edit") return goTab("profile");
+    if(a === "add"){ b.disabled = true; const { error } = await rpc("send_friend_request", { p_target:p.id }); if(error){ b.disabled = false; return toast(esc(errMsg(error))); } return openPub(id, PUB_BACK); }
+    if(a === "accept"){ await rpc("respond_friend_request", { p_requester:p.id, p_accept:true }); refreshBadges(); return openPub(id, PUB_BACK); }
+    if(a === "report") return reportThing("user", p.id, p.pseudo);
+    if(a === "block"){ if(confirm(`Bloquer ${p.pseudo} ? Il ne pourra plus te trouver, t'écrire ni te défier.`)){ await rpc("block_user", { p_other:p.id }); toast("Joueur bloqué."); PUB_BACK(); } }
+  });
+}
+$("pbBack").onclick = () => PUB_BACK ? PUB_BACK() : goTab("home");
+async function reportThing(kind, ref, label){
+  const why = prompt(`Pourquoi signaler ${label ? "« " + label + " »" : "ce contenu"} ? (insulte, harcèlement, contenu choquant…)`);
+  if(why === null) return;
+  const { error } = await rpc("report_content", { p_kind: kind, p_ref: String(ref), p_reason: why || "non précisé" });
+  toast(error ? esc(errMsg(error)) : "Merci, le signalement a été envoyé à l'équipe de modération.");
+}
+
+/* ---------- Liste des conversations ---------- */
+const convPreview = c => !c.last_code ? `<i>Pas encore de message</i>` : (c.last_mine ? "Toi : " : "") +
+  (c.last_code === "txt" ? esc((c.last_data && c.last_data.t) || "").slice(0, 60) : msgText({ code:c.last_code, data:c.last_data }).replace(/<br>.*$/, ""));
+async function renderMessages(){
+  if(!ONLINE){ $("msList").innerHTML = `<p class="sub center" style="margin:8px 0">${ic("offline")}<br>Tes messages reviennent avec la connexion.</p>`; return; }
+  $("msList").innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  let { data, error } = await rpc("my_conversations", {});
+  if(error) return $("msList").textContent = errMsg(error);
+  data = data || [];
+  if(!data.length) return $("msList").innerHTML = `<p class="sub center" style="margin:8px 0">Ajoute des amis pour pouvoir discuter avec eux.</p><button class="btn s" id="msAdd">${ic("friend",18)} Ajouter des amis</button>`,
+    $("msAdd").onclick = () => { renderFriends(); show("friends"); };
+  $("msList").innerHTML = data.map((c, i) => `<div class="row conv ${c.unread ? 'unread' : ''}" data-i="${i}">
+      <div class="av">${av(c)}</div>
+      <div class="rn">${esc(c.pseudo)}${stDot(c.id)}<br><span class="pl">${convPreview(c)}</span></div>
+      <div class="rs" style="font-size:11px;font-weight:600;color:var(--mute);text-align:right">${c.last_at ? ago(c.last_at) : ""}${c.unread ? `<br><span class="badge" style="position:static;display:inline-block">${c.unread}</span>` : ""}</div></div>`).join("");
+  $("msList").querySelectorAll(".conv").forEach(r => r.onclick = () => openChat(data[+r.dataset.i]));
+}
+$("msNew").innerHTML = `${ic("chat",15)} Écrire`;
+$("msNew").onclick = () => pickFriend({ art: art("community", 64), title: "Nouveau message", sub: "Choisis un ami", btn: "Écrire",
+  pick: f => openChat(f), back: () => goTab("messages") });
+
+/* ---------- Communauté : salons, groupes, amis ---------- */
+let CO_TAB = "salons", CO_Q = "", CO_TIMER = null;
+async function renderCommunity(){
+  $("coTabs").innerHTML = [["salons","Salons"],["groups","Groupes"],["friends","Amis"]]
+    .map(([k,l]) => `<button data-k="${k}" class="${k===CO_TAB?'on':''}">${l}</button>`).join("");
+  $("coTabs").querySelectorAll("button").forEach(b => b.onclick = () => { CO_TAB = b.dataset.k; CO_Q = ""; $("coSearch").value = ""; renderCommunity(); });
+  $("coSearchBar").style.display = CO_TAB === "friends" ? "none" : "flex";
+  $("coSearch").placeholder = CO_TAB === "groups" ? "Chercher un groupe" : "Chercher un salon";
+  const B = $("coBody");
+  if(!ONLINE) return B.innerHTML = `<p class="sub center" style="margin:10px 0">${ic("offline")}<br>La communauté est disponible avec une connexion.</p>`;
+  if(CO_TAB === "friends"){ B.innerHTML = ""; renderFriends(); show("friends"); return; }
+  B.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const kind = CO_TAB === "groups" ? "group" : "salons";
+  const [{ data: rooms0, error }, lb] = await Promise.all([rpc("list_rooms", { p_kind: kind, p_mine: false, p_q: CO_Q || null }),
+    CO_TAB === "groups" && !CO_Q ? rpc("groups_leaderboard", {}) : Promise.resolve({ data:null })]);
+  if(error) return B.textContent = errMsg(error);
+  const data = rooms0 || [];
+  const card = r => `<div class="row room" data-id="${r.id}">
+      <div class="av" style="background:${r.color}22;border:0">${art(r.icon, 30)}</div>
+      <div class="rn">${esc(r.name)}${r.visibility === "private" ? ` <span class="pl">${ic("lock",13)}</span>` : ""}<br><span class="pl">${r.members} membre${r.members > 1 ? "s" : ""}${r.invited ? " · <b style='color:var(--acc)'>tu es invité</b>" : r.description ? " · " + esc(r.description).slice(0, 50) : ""}</span></div>
+      <div class="rs">${r.unread ? `<span class="badge" style="position:static;display:inline-block">${r.unread > 99 ? "99+" : r.unread}</span>` : r.is_member ? `<span class="pl">${ic("check",16)}</span>` : ""}</div></div>`;
+  const mine = data.filter(r => r.is_member || r.invited), others = data.filter(r => !r.is_member && !r.invited);
+  const official = others.filter(r => r.kind === "theme"), users = others.filter(r => r.kind !== "theme");
+  let h = `<button class="btn p" id="coNew" style="margin:6px 0 4px">+ ${CO_TAB === "groups" ? "Créer un groupe" : "Créer un salon"}</button>`;
+  if(mine.length) h += `<div class="sec">${CO_TAB === "groups" ? "Mes groupes" : "Mes salons"}</div><div class="panel">${mine.map(card).join("")}</div>`;
+  if(official.length) h += `<div class="sec">Salons officiels</div><div class="panel">${official.map(card).join("")}</div>`;
+  if(users.length) h += `<div class="sec">${CO_TAB === "groups" ? "Groupes publics" : "Salons des joueurs"}</div><div class="panel">${users.map(card).join("")}</div>`;
+  if(!data.length) h += `<p class="sub center" style="margin:10px 0">${CO_Q ? "Aucun résultat." : CO_TAB === "groups" ? "Aucun groupe pour l'instant : crée le premier avec tes amis !" : "Aucun salon."}</p>`;
+  if(lb.data && lb.data.length) h += `<div class="sec">Classement des groupes · cette semaine</div><div class="panel">${lb.data.map((g, i) =>
+      `<div class="row room ${g.is_member ? 'me' : ''}" data-id="${g.id}"><div class="rk">${i < 3 ? medal(i) : i + 1}</div><div class="av" style="background:${g.color}22;border:0">${art(g.icon, 26)}</div><div class="rn">${esc(g.name)}<br><span class="pl">${g.members} membres</span></div><div class="rs">${g.week_points}</div></div>`).join("")}</div>`;
+  B.innerHTML = h;
+  $("coNew").onclick = () => openRoomEdit(null, CO_TAB === "groups" ? "group" : "salon");
+  B.querySelectorAll(".room").forEach(r => r.onclick = () => openRoom(r.dataset.id));
+}
+$("coSearch").oninput = () => { clearTimeout(CO_TIMER); CO_TIMER = setTimeout(() => { CO_Q = $("coSearch").value.trim(); renderCommunity(); }, 300); };
+
+/* ---------- Création / modification ---------- */
+const ROOM_COLORS = ["#7c6bff","#ff5d73","#ff7a59","#ffcc3d","#2fd18b","#4fb3ff","#c58bff","#ff8fd1"];
+let RE = null;
+function openRoomEdit(r, kind){
+  if(!ONLINE) return;
+  RE = r ? { id:r.id, kind:r.kind, name:r.name, description:r.description, icon:r.icon, color:r.color, visibility:r.visibility }
+         : { id:null, kind, name:"", description:"", icon: kind === "group" ? "community" : "culture", color: ROOM_COLORS[0], visibility:"public" };
+  $("reTitle").textContent = r ? "Modifier" : RE.kind === "group" ? "Nouveau groupe" : "Nouveau salon";
+  $("reName").value = RE.name; $("reDesc").value = RE.description; hideErr("reErr");
+  const draw = () => {
+    $("reIcon").innerHTML = QICONS.filter(k => k !== "solo" && k !== "daily").map(k => `<button data-k="${k}" class="${k===RE.icon?'on':''}" style="padding:6px">${art(k, 28)}</button>`).join("");
+    $("reColor").innerHTML = ROOM_COLORS.map(c => `<button data-c="${c}" class="${c===RE.color?'on':''}" style="width:34px;height:34px;padding:0;border-radius:50%;background:${c};border:3px solid ${c===RE.color?'#fff':'transparent'}"></button>`).join("");
+    $("reVis").innerHTML = [["public","Tout le monde"],["private","Sur invitation"]].map(([k,l]) => `<button data-v="${k}" class="${k===RE.visibility?'on':''}">${l}</button>`).join("");
+    $("reIcon").querySelectorAll("button").forEach(b => b.onclick = () => { RE.icon = b.dataset.k; draw(); });
+    $("reColor").querySelectorAll("button").forEach(b => b.onclick = () => { RE.color = b.dataset.c; draw(); });
+    $("reVis").querySelectorAll("button").forEach(b => b.onclick = () => { RE.visibility = b.dataset.v; draw(); });
+  };
+  draw();
+  $("reBack").onclick = () => r ? openRoom(r.id) : goTab("community");
+  show("roomEdit");
+}
+$("reSave").onclick = async e => {
+  hideErr("reErr");
+  const args = { p_name: $("reName").value, p_description: $("reDesc").value, p_icon: RE.icon, p_color: RE.color, p_visibility: RE.visibility };
+  e.target.disabled = true;
+  const { data, error } = RE.id ? await rpc("update_room", { p_id: RE.id, ...args }) : await rpc("create_room", { p_kind: RE.kind, ...args });
+  e.target.disabled = false;
+  if(error) return showErr("reErr", error);
+  openRoom(RE.id || data);
+};
+
+/* ---------- Salon / groupe ---------- */
+let ROOM = null, ROOM_CH = null, ROOM_TAB = "chat", ROOM_MSGS = [];
+function leaveRoomChannel(){ if(ROOM_CH){ try { sb.removeChannel(ROOM_CH); } catch(e){} ROOM_CH = null; } }
+async function openRoom(id, tabName){
+  if(!ONLINE) return;
+  leaveRoomChannel();
+  show("room"); ROOM_TAB = tabName || "chat";
+  $("rmBody").innerHTML = `<div class="center pl spin" style="padding:30px">Chargement…</div>`;
+  const { data: rs } = await rpc("list_rooms", { p_kind:"all", p_mine:false, p_q:null });
+  let r = (rs || []).find(x => x.id === id);
+  if(!r){ const { data: d } = await sb.from("rooms").select("*").eq("id", id).maybeSingle(); if(d) r = { ...d, members:0, is_member:false, my_role:null, invited:false }; }
+  if(!r){ $("rmBody").innerHTML = `<p class="sub center">Ce salon n'existe plus ou est privé.</p>`; return; }
+  ROOM = r;
+  $("rmIcon").innerHTML = art(r.icon, 44);
+  $("rmName").textContent = r.name;
+  $("rmSub").innerHTML = `${r.members} membre${r.members > 1 ? "s" : ""} · <span id="rmOnline">…</span>`;
+  const tabs = r.kind === "group" ? [["chat","Discussion"],["challenges","Défis"],["members","Membres"],["stats","Stats"]] : [["chat","Discussion"],["members","Membres"]];
+  $("rmTabs").innerHTML = tabs.map(([k,l]) => `<button data-k="${k}" class="${k===ROOM_TAB?'on':''}">${l}</button>`).join("");
+  $("rmTabs").querySelectorAll("button").forEach(b => b.onclick = () => { ROOM_TAB = b.dataset.k; $("rmTabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); drawRoomTab(); });
+  // temps réel : nouveaux messages + présence
+  const ch = ROOM_CH = sb.channel("room-" + id, { config: { presence: { key: me } } });
+  ch.on("postgres_changes", { event:"INSERT", schema:"public", table:"room_messages", filter:`room_id=eq.${id}` }, ({ new: m }) => onRoomMsg(m))
+    .on("postgres_changes", { event:"UPDATE", schema:"public", table:"room_messages", filter:`room_id=eq.${id}` }, ({ new: m }) => {
+      const i = ROOM_MSGS.findIndex(x => x.id === m.id); if(i >= 0){ ROOM_MSGS[i] = { ...ROOM_MSGS[i], ...m }; if(ROOM_TAB === "chat") drawRoomMsgs(); } })
+    .on("presence", { event:"sync" }, () => { const n = Object.keys(ch.presenceState()).length; const el = $("rmOnline"); if(el) el.textContent = `${n} connecté${n > 1 ? "s" : ""}`; })
+    .subscribe(async s => { if(s === "SUBSCRIBED" && ROOM && ROOM.id === id) try { await ch.track({ at: Date.now() }); } catch(e){} });
+  drawRoomTab();
+}
+$("rmBack").onclick = () => { leaveRoomChannel(); ROOM = null; goTab("community"); };
+async function drawRoomTab(){
+  const r = ROOM, B = $("rmBody");
+  if(ROOM_TAB === "chat"){
+    B.innerHTML = `<div class="msgs" id="rmMsgs"><div class="center pl spin" style="margin:auto">Chargement…</div></div>
+      ${r.is_member ? `<div class="composer"><input id="rmInput" maxlength="500" placeholder="Écris un message…" autocomplete="off" enterkeyhint="send"><button id="rmSend" aria-label="Envoyer">${ic("send",20)}</button></div>`
+        : r.invited || r.visibility === "public" ? `<button class="btn p" id="rmJoin" style="margin-top:10px">${r.invited ? "Accepter l'invitation" : r.kind === "group" ? "Rejoindre le groupe" : "Rejoindre le salon"}</button>${r.invited ? `<button class="btn s" id="rmDecline">Refuser</button>` : ""}`
+        : `<p class="note center">Ce salon est privé.</p>`}`;
+    if($("rmJoin")) $("rmJoin").onclick = async () => { const { error } = await rpc("join_room", { p_id:r.id }); if(error) return toast(esc(errMsg(error))); openRoom(r.id); refreshNavBadges(); };
+    if($("rmDecline")) $("rmDecline").onclick = async () => { await rpc("decline_room_invite", { p_id:r.id }); refreshNavBadges(); goTab("community"); };
+    if($("rmSend")){
+      const send = async () => {
+        const t = $("rmInput").value.trim(); if(!t) return;
+        $("rmInput").value = "";
+        const { data: m, error } = await rpc("send_room_message", { p_room:r.id, p_body:t });
+        if(error){ $("rmInput").value = t; return toast(esc(errMsg(error))); }
+        onRoomMsg(m);
+      };
+      $("rmSend").onclick = send;
+      $("rmInput").onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); send(); } };
+    }
+    const { data } = await sb.from("room_messages").select("*, s:profiles!room_messages_sender_fkey(id,pseudo,avatar,avatar_url,frame,title)")
+      .eq("room_id", r.id).order("created_at", { ascending:false }).limit(80);
+    ROOM_MSGS = (data || []).reverse();
+    drawRoomMsgs();
+    if(r.is_member){ rpc("mark_room_read", { p_room:r.id }); setTimeout(refreshNavBadges, 500); }
+  }
+  else if(ROOM_TAB === "members") drawRoomMembers();
+  else if(ROOM_TAB === "challenges") drawGroupChallenges();
+  else if(ROOM_TAB === "stats") drawGroupStats();
+}
+async function onRoomMsg(m){
+  if(!ROOM || m.room_id !== ROOM.id || ROOM_MSGS.some(x => x.id === m.id)) return;
+  if(!m.s) m.s = m.sender === me ? P : await actorOf(m.sender);
+  ROOM_MSGS.push(m);
+  if(ROOM_TAB === "chat" && $("rmMsgs")){ drawRoomMsgs(); if(ROOM.is_member) rpc("mark_room_read", { p_room: ROOM.id }); }
+}
+function drawRoomMsgs(){
+  const el = $("rmMsgs"); if(!el) return;
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  el.innerHTML = ROOM_MSGS.length ? ROOM_MSGS.map((m, i) => {
+    const s = m.s || {}, mine = m.sender === me;
+    if(m.kind === "sys") return `<div class="sysmsg"><b>${esc(s.pseudo || "Un joueur")}</b> ${esc(m.body)}</div>`;
+    if(m.kind === "challenge") return `<div class="sysmsg ch" data-ch="${esc(m.data.challenge_id)}">${ic("swords",15)} <b>${esc(s.pseudo || "")}</b> a lancé un défi${m.data.theme && THEMES[m.data.theme] ? " en " + THEMES[m.data.theme].n : ""} · <u>Jouer</u></div>`;
+    return `<div class="rmsg ${mine ? 'me' : ''}" data-i="${i}">
+      ${mine ? "" : `<div class="av" data-u="${s.id || ""}">${av(s)}</div>`}
+      <div class="bub ${mine ? 'me' : ''}">${mine ? "" : `<b class="who">${esc(s.pseudo || "?")}${s.title ? ` <span class="ttl sm">${esc(titleName(s.title))}</span>` : ""}</b>`}${m.deleted ? `<i style="opacity:.6">Message supprimé</i>` : esc(m.body)}<small>${hhmm(m.created_at)}</small></div></div>`;
+  }).join("") : `<p class="sub center" style="margin:auto">Aucun message pour l'instant. Lance la discussion !</p>`;
+  if(atBottom || ROOM_MSGS.length < 30) el.scrollTop = el.scrollHeight;
+  el.querySelectorAll(".rmsg .av[data-u]").forEach(a => a.onclick = e => { e.stopPropagation(); const id = a.dataset.u; openPub(id, () => openRoom(ROOM.id)); });
+  el.querySelectorAll(".sysmsg.ch").forEach(c => c.onclick = () => openGroupChallenge(c.dataset.ch));
+  el.querySelectorAll(".rmsg").forEach(b => b.onclick = () => roomMsgActions(ROOM_MSGS[+b.dataset.i]));
+}
+function roomMsgActions(m){
+  if(!m || m.deleted) return;
+  const mine = m.sender === me, mod = ["owner","admin"].includes(ROOM.my_role) || IS_ADMIN;
+  const acts = [];
+  if(mine || mod) acts.push({ label:"Supprimer", run: async () => { const { error } = await rpc("delete_room_message", { p_id:m.id }); if(error) toast(esc(errMsg(error))); } });
+  if(!mine){
+    acts.push({ label:"Voir le profil", run: () => openPub(m.sender, () => openRoom(ROOM.id)) });
+    acts.push({ label:"Signaler", run: () => reportThing("room_message", m.id, (m.body || "").slice(0, 40)) });
+    if(mod) acts.push({ label:"Rendre muet 1 h", run: async () => { const { error } = await rpc("mute_member", { p_room:ROOM.id, p_user:m.sender, p_minutes:60 }); toast(error ? esc(errMsg(error)) : "Ce membre ne peut plus écrire pendant 1 heure."); } });
+  }
+  if(acts.length) toast(`<div><b>${esc((m.s && m.s.pseudo) || "Message")}</b><br><span class="pl">${esc((m.body || "").slice(0, 80))}</span></div>`, acts, 8000);
+}
+async function drawRoomMembers(){
+  const r = ROOM, B = $("rmBody");
+  B.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const { data, error } = await rpc("room_members_list", { p_room:r.id });
+  if(error) return B.textContent = errMsg(error);
+  const roleL = { owner:"Créateur", admin:"Admin", member:"" };
+  const canMod = ["owner","admin"].includes(r.my_role) || IS_ADMIN;
+  B.innerHTML = (r.is_member ? `<button class="btn s" id="rmInvite">${ic("friend",18)} Inviter des amis</button>` : "") +
+    `<div class="panel" style="margin-top:8px">${data.map(u => `<div class="row" data-id="${u.id}">
+      <div class="av">${av(u)}</div>
+      <div class="rn">${esc(u.pseudo)}${stDot(u.id)}${roleL[u.role] ? ` <span class="role">${roleL[u.role]}</span>` : ""}<br><span class="pl">Niveau ${lvlOf(u.xp).l}${r.kind === "group" ? ` · ${u.week_points} pts cette semaine` : ""}${u.title ? " · " + esc(titleName(u.title)) : ""}</span></div>
+      <div class="acts">${canMod && u.id !== me && u.role !== "owner" ? `<button class="mini" data-m="${u.id}">${ic("dots",16)}</button>` : ""}</div></div>`).join("")}</div>`;
+  if($("rmInvite")) $("rmInvite").onclick = () => pickFriend({ art: art(r.icon, 64), title: "Inviter des amis", sub: r.name, btn: "Inviter",
+    pick: async (f, b) => { b.disabled = true; const { error } = await rpc("invite_to_room", { p_room:r.id, p_user:f.id }); if(error){ b.disabled = false; return toast(esc(errMsg(error))); } b.textContent = "Invité ✓"; },
+    back: () => openRoom(r.id, "members") });
+  B.querySelectorAll(".row[data-id]").forEach(row => row.onclick = e => { if(e.target.closest("[data-m]")) return; openPub(row.dataset.id, () => openRoom(r.id, "members")); });
+  B.querySelectorAll("[data-m]").forEach(b => b.onclick = () => {
+    const u = data.find(x => x.id === b.dataset.m), acts = [];
+    if(r.my_role === "owner") acts.push(u.role === "admin"
+      ? { label:"Retirer admin", run: async () => { await rpc("set_member_role", { p_room:r.id, p_user:u.id, p_role:"member" }); drawRoomMembers(); } }
+      : { label:"Nommer admin", run: async () => { await rpc("set_member_role", { p_room:r.id, p_user:u.id, p_role:"admin" }); drawRoomMembers(); } });
+    acts.push({ label:"Muet 1 h", run: async () => { const { error } = await rpc("mute_member", { p_room:r.id, p_user:u.id, p_minutes:60 }); toast(error ? esc(errMsg(error)) : `${esc(u.pseudo)} ne peut plus écrire pendant 1 heure.`); } });
+    acts.push({ label:"Exclure", run: async () => { if(!confirm(`Exclure ${u.pseudo} ?`)) return; const { error } = await rpc("kick_member", { p_room:r.id, p_user:u.id, p_ban:false }); if(error) toast(esc(errMsg(error))); drawRoomMembers(); } });
+    acts.push({ label:"Bannir", run: async () => { if(!confirm(`Bannir ${u.pseudo} ? Il ne pourra plus revenir.`)) return; const { error } = await rpc("kick_member", { p_room:r.id, p_user:u.id, p_ban:true }); if(error) toast(esc(errMsg(error))); drawRoomMembers(); } });
+    toast(`<div><b>${esc(u.pseudo)}</b></div>`, acts, 9000);
+  });
+}
+$("rmMenu").onclick = () => {
+  const r = ROOM; if(!r) return;
+  const acts = [];
+  if(r.is_member) acts.push({ label:"Inviter", run: () => { ROOM_TAB = "members"; openRoom(r.id, "members").then(() => $("rmInvite") && $("rmInvite").click()); } });
+  if(["owner","admin"].includes(r.my_role) && r.kind !== "theme") acts.push({ label:"Modifier", run: () => openRoomEdit(r) });
+  if(r.is_member && r.kind !== "theme" || r.is_member && r.kind === "theme") acts.push({ label:"Quitter", run: async () => {
+    if(r.my_role === "owner" && !confirm("Tu es le créateur : un autre membre deviendra responsable (ou le salon sera supprimé s'il est vide). Quitter ?")) return;
+    await rpc("leave_room", { p_id:r.id }); leaveRoomChannel(); goTab("community"); } });
+  if((r.my_role === "owner" || IS_ADMIN) && r.kind !== "theme") acts.push({ label:"Supprimer", run: async () => {
+    if(!confirm(`Supprimer définitivement « ${r.name} » et tous ses messages ?`)) return;
+    const { error } = await rpc("delete_room", { p_id:r.id }); if(error) return toast(esc(errMsg(error))); leaveRoomChannel(); goTab("community"); } });
+  if(r.kind !== "theme" && r.my_role !== "owner") acts.push({ label:"Signaler", run: () => reportThing("room", r.id, r.name) });
+  toast(`<div><b>${esc(r.name)}</b>${r.description ? `<br><span class="pl">${esc(r.description)}</span>` : ""}</div>`, acts, 9000);
+};
+
+/* ---------- Groupes : défis internes et statistiques ---------- */
+async function drawGroupChallenges(){
+  const r = ROOM, B = $("rmBody");
+  B.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const { data, error } = await rpc("list_group_challenges", { p_room:r.id });
+  if(error) return B.textContent = errMsg(error);
+  const admin = ["owner","admin"].includes(r.my_role);
+  B.innerHTML = (admin ? `<div class="share"><b>Lancer un défi au groupe</b><div class="pl" style="margin:4px 0 8px">7 questions identiques pour tous les membres, un seul essai. Classement à la fin.</div>
+      <div class="chips wrap" id="gcTheme"><button data-k="" class="on">Mélange</button>${Object.entries(THEMES).map(([k,t]) => `<button data-k="${k}">${art(k, 18)} ${t.n}</button>`).join("")}</div>
+      <div class="chips" id="gcDur"><button data-h="24">24 h</button><button data-h="48" class="on">48 h</button><button data-h="168">1 semaine</button></div>
+      <button class="btn p" id="gcGo">Lancer le défi</button></div>` : "") +
+    (data.length ? `<div class="panel">${data.map(c => {
+        const live = new Date(c.ends_at) > Date.now();
+        return `<div class="row gc" data-id="${c.id}"><div class="av" style="background:none;border:0">${art(c.theme || "duel", 30)}</div>
+          <div class="rn">${c.theme && THEMES[c.theme] ? THEMES[c.theme].n : "Mélange"}<br><span class="pl">${live ? "Fin " + untilDate(c.ends_at) : "Terminé"} · ${c.players} joueur${c.players > 1 ? "s" : ""}${c.best_pseudo ? ` · 1er : ${esc(c.best_pseudo)} (${c.best_score})` : ""}</span></div>
+          <div class="rs">${c.my_score != null ? c.my_score : live ? `<span class="mini p">Jouer</span>` : "–"}</div></div>`; }).join("")}</div>`
+      : `<p class="sub center" style="margin:10px 0">${admin ? "Lance le premier défi du groupe !" : "Aucun défi pour l'instant. Les admins du groupe peuvent en lancer."}</p>`);
+  if(admin){
+    let th = "", hours = 48;
+    B.querySelectorAll("#gcTheme button").forEach(b => b.onclick = () => { th = b.dataset.k; B.querySelectorAll("#gcTheme button").forEach(x => x.classList.toggle("on", x === b)); });
+    B.querySelectorAll("#gcDur button").forEach(b => b.onclick = () => { hours = +b.dataset.h; B.querySelectorAll("#gcDur button").forEach(x => x.classList.toggle("on", x === b)); });
+    $("gcGo").onclick = async e => { e.target.disabled = true; const { data: id, error } = await rpc("create_group_challenge", { p_room:r.id, p_theme:th, p_hours:hours }); e.target.disabled = false;
+      if(error) return toast(esc(errMsg(error))); openGroupChallenge(id); };
+  }
+  B.querySelectorAll(".gc").forEach(x => x.onclick = () => openGroupChallenge(x.dataset.id));
+}
+async function drawGroupStats(){
+  const r = ROOM, B = $("rmBody");
+  B.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const [{ data: s }, { data: lb }, { data: mem }] = await Promise.all([rpc("group_stats", { p_room:r.id }), rpc("groups_leaderboard", {}), rpc("room_members_list", { p_room:r.id })]);
+  if(!s) return B.innerHTML = `<p class="sub center">Statistiques indisponibles.</p>`;
+  const rank = (lb || []).findIndex(g => g.id === r.id);
+  const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+  const top = (mem || []).slice().sort((a, b) => b.week_points - a.week_points).slice(0, 10);
+  B.innerHTML = `<div class="stats s3" style="margin:8px 0">${stat(s.members, "Membres")}${stat(s.week_points, "Pts / semaine")}${stat(rank >= 0 ? nth(rank + 1) : "–", "Rang des groupes")}
+      ${stat(s.wins, "Victoires")}${stat(s.xp, "XP cumulée")}${stat(s.challenges, "Défis lancés")}</div>
+    <div class="label">Meilleurs membres de la semaine</div>
+    <div class="panel">${top.map((u, i) => `<div class="row"><div class="rk">${i < 3 ? medal(i) : i + 1}</div><div class="av">${av(u)}</div><div class="rn">${esc(u.pseudo)}</div><div class="rs">${u.week_points}</div></div>`).join("")}</div>`;
+}
+function untilDate(d){ const s = (new Date(d) - Date.now()) / 1000; if(s <= 0) return "terminé";
+  const h = Math.floor(s / 3600); return h >= 48 ? `dans ${Math.floor(h / 24)} j` : h >= 1 ? `dans ${h} h` : `dans ${Math.max(1, Math.floor(s / 60))} min`; }
+
+/* ---------- Écran générique : tournoi ou défi de groupe ---------- */
+let EV = null;
+async function openGroupChallenge(id){ return openEvent(id, "gchal"); }
+async function openEvent(id, type = "event"){
+  if(!ONLINE) return;
+  show("event");
+  $("evHead").innerHTML = `<div class="pl spin" style="padding:30px">Chargement…</div>`; $("evActs").innerHTML = ""; $("evTop").innerHTML = "";
+  const { data: e, error } = await rpc(type === "gchal" ? "get_group_challenge" : "get_event", { p_id:id });
+  if(error){ $("evHead").innerHTML = `<p class="sub">${esc(errMsg(error))}</p>`; return; }
+  EV = { ...e, type };
+  const theme = e.theme && THEMES[e.theme] ? e.theme : null;
+  const live = type === "gchal" ? e.active : new Date(e.starts_at) <= Date.now() && new Date(e.ends_at) > Date.now();
+  const title = type === "gchal" ? "Défi du groupe" : e.title;
+  const sub = type === "gchal" ? `${theme ? THEMES[theme].n : "Mélange de thèmes"} · 7 questions · un seul essai`
+    : `${theme ? THEMES[theme].n + " · " : ""}${e.questions ? e.questions.length : ""}${e.questions ? " questions · " : ""}${e.max_attempts} essai${e.max_attempts > 1 ? "s" : ""}`;
+  $("evHead").innerHTML = `${art(theme || (type === "gchal" ? "duel" : "daily"), 92)}<h2 style="font-size:26px;margin-top:6px">${esc(title)}</h2>
+    <p class="sub" style="margin:4px 0">${esc(sub)}</p>${e.description ? `<p class="pl" style="margin:4px 0">${esc(e.description)}</p>` : ""}
+    <div class="pl" style="margin:6px 0">${live ? `Se termine ${untilDate(e.ends_at)}` : new Date(e.starts_at || 0) > Date.now() ? `Commence ${untilDate(e.starts_at)}` : "Terminé"}
+    ${e.my_score != null ? ` · ton meilleur score : <b style="color:var(--acc)">${e.my_score}</b>` : ""}${type === "event" && e.my_attempts ? ` · essais : ${e.my_attempts}/${e.max_attempts}` : ""}</div>`;
+  const canPlay = type === "gchal" ? (e.active && !e.played) : e.can_play;
+  $("evActs").innerHTML = canPlay ? `<button class="btn p" id="evPlay">${ic("play",18)} ${e.my_attempts ? "Nouvel essai" : "Jouer"}</button>` : "";
+  if(canPlay) $("evPlay").onclick = () => {
+    const M = type === "gchal" ? { id:"gc-" + e.id, gchal:true, ev:e, theme:e.theme, questions:e.questions } : { id:"ev-" + e.id + "-" + (e.my_attempts || 0), event:true, ev:e, theme:e.theme, questions:e.questions };
+    play(M, null);
+  };
+  $("evTop").innerHTML = e.top.length ? e.top.map((r, i) => `<div class="row ${r.is_me ? 'me' : ''}" data-u="${r.id}"><div class="rk">${i < 3 ? medal(i) : i + 1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me ? " (toi)" : ""}<br><span class="pl">${r.correct} bonnes réponses${r.attempts ? ` · ${r.attempts} essai${r.attempts > 1 ? "s" : ""}` : ""}</span></div><div class="rs">${r.score}</div></div>`).join("")
+    : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué. À toi l'honneur !</p>`;
+  $("evTop").querySelectorAll("[data-u]").forEach(x => x.onclick = () => openPub(x.dataset.u, () => openEvent(id, type)));
+  $("evBack").onclick = () => type === "gchal" ? openRoom(e.room_id, "challenges") : goTab("play");
+}
+async function finishEvent(M, G){
+  $("gQ").innerHTML = "<div>Envoi de ton score…</div>"; $("gA").innerHTML = "";
+  const gch = !!M.gchal;
+  const { data: R, error } = await rpc(gch ? "submit_group_challenge" : "submit_event", { p_id: M.ev.id, p_answers: G.answers });
+  await loadProfile();
+  const N = M.questions.length;
+  $("rMe").innerHTML = av(P); $("rOpp").innerHTML = art(M.theme || (gch ? "duel" : "daily"), 44); $("rShare").innerHTML = "";
+  if(error){
+    $("rTitle").innerHTML = '<span class="l">Oups</span>'; $("rMeS").textContent = G.me; $("rOppS").textContent = "";
+    $("rGain").innerHTML = `<div class="g"><span>${esc(errMsg(error))}</span></div>`;
+  } else {
+    $("rTitle").innerHTML = `<span class="${R.rank <= 3 ? 'w' : 'd'}">${G.forfeit ? "Abandon" : R.rank === 1 ? "En tête !" : R.rank <= 3 ? "Sur le podium !" : "Score envoyé !"}</span>`;
+    $("rMeS").textContent = R.score; $("rOppS").textContent = nth(R.rank);
+    $("rGain").innerHTML = `
+      <div class="g"><span>Bonnes réponses</span><b>${R.correct}/${N}</b></div>
+      ${R.best != null && R.best !== R.score ? `<div class="g"><span>Ton meilleur score</span><b>${R.best}</b></div>` : ""}
+      <div class="g"><span>Classement</span><b>${nth(R.rank)} sur ${R.players}</b></div>
+      <div class="g"><span>XP</span><b>${R.xp ? "+" + R.xp + " XP" : "déjà gagnée au 1er essai"}</b></div>
+      ${R.attempts ? `<div class="g"><span>Essais</span><b>${R.attempts}/${R.max_attempts}</b></div>` : ""}`;
+  }
+  $("rRecap").innerHTML = recapHtml(G.log, false);
+  $("rAgain").textContent = "Voir le classement";
+  $("rAgain").onclick = () => openEvent(M.ev.id, gch ? "gchal" : "event");
+  show("result"); checkAch();
+}
+
+/* ---------- Écran Jouer : tournoi, thème de la semaine, saison, calendrier ---------- */
+const MONTHS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+async function renderPlay(){
+  const C = $("plCards");
+  if(!ONLINE){ C.innerHTML = `<p class="sub center" style="margin:10px 0">${ic("offline")}<br>Les tournois reviennent avec la connexion. Le solo reste disponible depuis l'accueil.</p>`; $("plCal").innerHTML = ""; return; }
+  C.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  const [{ data: evs }, { data: si }] = await Promise.all([rpc("list_events", {}), rpc("season_info", {})]);
+  const now = Date.now(), list = evs || [];
+  const tour = list.find(e => e.kind === "tournament" && new Date(e.ends_at) > now);
+  const tw = si && si.theme_week;
+  const [y, m] = si ? si.month.split("-").map(Number) : [0, 1];
+  let h = "";
+  if(tour){
+    const live = new Date(tour.starts_at) <= now;
+    h += `<button class="daily ev" data-ev="${tour.id}">${art(tour.theme || "daily", 54)}<div style="min-width:0"><b>${esc(tour.title)}</b><span class="s">${tour.theme && THEMES[tour.theme] ? THEMES[tour.theme].n + " · " : ""}${live ? `en cours, fin ${untilDate(tour.ends_at)}` : `commence ${untilDate(tour.starts_at)} (samedi)`}${tour.my_rank ? ` · tu es ${nth(tour.my_rank)}` : ""}</span></div><span class="tag">${live ? (tour.my_attempts >= tour.max_attempts ? tour.my_score + " pts" : "Jouer") : "Bientôt"}</span></button>`;
+  }
+  if(tw && THEMES[tw]) h += `<button class="daily" id="plTw">${art(tw, 54)}<div style="min-width:0"><b>Thème de la semaine</b><span class="s">${THEMES[tw].n} · c'est aussi le thème du tournoi du week-end : entraîne-toi !</span></div><span class="tag">Jouer</span></button>`;
+  if(si) h += `<button class="daily" id="plSeason">${art("solo", 54)}<div style="min-width:0"><b>Saison de ${MONTHS[m - 1]}</b><span class="s">${si.my_points} points marqués en duel · fin ${untilDate(si.ends_at)} · le podium gagne le cadre Couronne</span></div><span class="tag">Classement</span></button>`;
+  h += `<button class="daily" id="plDaily">${art("daily", 54)}<div style="min-width:0"><b>Défi du jour</b><span class="s">7 questions identiques pour tous, chaque jour</span></div><span class="tag">Jouer</span></button>`;
+  h += `<button class="daily comm" id="plQuiz">${art("community", 54)}<div style="min-width:0"><b>Quiz des joueurs</b><span class="s">Cherche un thème, crée ton quiz</span></div><span class="tag">Voir</span></button>`;
+  C.innerHTML = h;
+  C.querySelectorAll("[data-ev]").forEach(b => b.onclick = () => openEvent(b.dataset.ev));
+  if($("plTw")) $("plTw").onclick = () => openMode(tw);
+  if($("plSeason")) $("plSeason").onclick = () => { lbDays = "s"; tab = "lb"; renderHome(); show("home"); setTimeout(() => $("panel").scrollIntoView({ behavior:"smooth" }), 300); };
+  $("plDaily").onclick = () => { renderHome(); show("home"); setTimeout(() => $("dailyCard").click(), 600); };
+  $("plQuiz").onclick = () => openQuizzes();
+  // calendrier
+  const fmt = d => new Date(d).toLocaleDateString("fr-FR", { weekday:"short", day:"numeric", month:"short" });
+  const cal = [];
+  list.forEach(e => cal.push({ at: new Date(e.starts_at), end: new Date(e.ends_at), html: `<div class="row calrow" data-ev="${e.id}"><div class="av" style="background:none;border:0">${art(e.theme || "daily", 30)}</div><div class="rn">${esc(e.title)}${e.theme && THEMES[e.theme] ? " · " + THEMES[e.theme].n : ""}<br><span class="pl">${fmt(e.starts_at)} → ${fmt(new Date(new Date(e.ends_at) - 1))}${e.players ? ` · ${e.players} joueur${e.players > 1 ? "s" : ""}` : ""}</span></div><div class="rs">${new Date(e.ends_at) < now ? (e.my_rank ? nth(e.my_rank) : "Fini") : new Date(e.starts_at) > now ? "À venir" : `<span class="live">En cours</span>`}</div></div>` }));
+  if(si) cal.push({ at: new Date(si.ends_at), end: new Date(si.ends_at), html: `<div class="row"><div class="av" style="background:none;border:0">${art("solo", 30)}</div><div class="rn">Fin de la saison de ${MONTHS[m - 1]}<br><span class="pl">${fmt(si.ends_at)} · remise à zéro du classement de saison</span></div><div class="rs">${untilDate(si.ends_at)}</div></div>` });
+  // prochain tournoi (semaine suivante), annoncé à l'avance
+  const nextSat = new Date(); nextSat.setDate(nextSat.getDate() + ((6 - nextSat.getDay() + 7) % 7 || 7)); nextSat.setHours(0, 0, 0, 0);
+  if(!list.some(e => e.kind === "tournament" && Math.abs(new Date(e.starts_at) - nextSat) < 864e5))
+    cal.push({ at: nextSat, end: nextSat, html: `<div class="row"><div class="av" style="background:none;border:0">${art("daily", 30)}</div><div class="rn">Tournoi du week-end<br><span class="pl">${fmt(nextSat)} et dimanche · thème annoncé le lundi</span></div><div class="rs">À venir</div></div>` });
+  cal.sort((a, b) => (a.end < now) - (b.end < now) || a.at - b.at);
+  $("plCal").innerHTML = cal.map(c => c.html).join("") || `<p class="sub center">Aucun événement.</p>`;
+  $("plCal").querySelectorAll("[data-ev]").forEach(r => r.onclick = () => openEvent(r.dataset.ev));
+}
+
+/* ---------- Notifications push ---------- */
+const PUSH_OK = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const b64u = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...b].map(c => c.charCodeAt(0))); };
+async function pushState(){
+  if(!PUSH_OK) return "unsupported";
+  if(Notification.permission === "denied") return "denied";
+  try { const reg = await navigator.serviceWorker.ready; const s = await reg.pushManager.getSubscription(); return s ? "on" : "off"; } catch(e){ return "off"; }
+}
+async function enablePush(){
+  if(!PUSH_OK) return toast("Ton navigateur ne gère pas les notifications. Sur iPhone : ajoute d'abord Défi Quiz à l'écran d'accueil.");
+  const perm = await Notification.requestPermission();
+  if(perm !== "granted") return toast("Notifications refusées. Tu peux les réactiver dans les réglages du navigateur.");
+  try {
+    const r = await fetch(PUSH_URL, { headers: { Authorization: "Bearer " + FN_KEY } }); const { publicKey } = await r.json();
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64u(publicKey) });
+    const j = sub.toJSON();
+    const { error } = await rpc("save_push_sub", { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+    if(error) throw error;
+    toast("Notifications activées sur cet appareil.");
+  } catch(e){ toast("Activation impossible pour le moment : " + esc(errMsg(e))); }
+  drawPushBtn();
+}
+async function disablePush(){
+  try { const reg = await navigator.serviceWorker.ready; const s = await reg.pushManager.getSubscription();
+    if(s){ await rpc("delete_push_sub", { p_endpoint: s.endpoint }); await s.unsubscribe(); } } catch(e){}
+  toast("Notifications désactivées sur cet appareil."); drawPushBtn();
+}
+async function drawPushBtn(){
+  const b = $("pPush"); if(!b) return;
+  const st = await pushState();
+  b.classList.toggle("on", st === "on");
+  b.querySelector(".pl").textContent = st === "unsupported" ? "Non disponible sur ce navigateur" : st === "denied" ? "Bloquées dans les réglages du navigateur" : st === "on" ? "Activées sur cet appareil" : "Duels, messages, demandes d'ami";
+  b.onclick = () => st === "on" ? disablePush() : enablePush();
+}
+
+/* ---------- Profil : personnalisation, statut, confidentialité ---------- */
+async function renderProfileExtra(){
+  const el = $("pExtra"); if(!el) return;
+  if(!ONLINE){ el.innerHTML = ""; return; }
+  const u = await loadUnlocks() || { frames:[""], titles:["", "debutant"], avatars:[] };
+  const fr = P.frame || "", tt = P.title || "";
+  const allTitles = [...Object.keys(TITLES), ...u.titles.filter(t => t.startsWith("m:"))];
+  el.innerHTML = `
+    <div class="label">Description</div>
+    <textarea class="field" id="pBio" maxlength="140" rows="2" placeholder="Quelques mots sur toi (140 caractères)">${esc(P.bio || "")}</textarea>
+    <div class="label">Cadre de profil</div>
+    <div class="frames">${Object.entries(FRAMES).map(([k, [n, c]]) => { const ok = u.frames.includes(k);
+      return `<button class="frb ${k === fr ? 'on' : ''} ${ok ? '' : 'locked'}" data-f="${k}" title="${esc(c)}"><div class="av">${av({ ...P, frame:k })}</div><span>${n}</span>${ok ? "" : `<small>${ic("lock",11)} ${esc(c)}</small>`}</button>`; }).join("")}</div>
+    <div class="label">Titre</div>
+    <div class="chips wrap" id="pTitles">${allTitles.map(k => { const ok = u.titles.includes(k);
+      return `<button data-t="${k}" class="${k === tt ? 'on' : ''} ${ok ? '' : 'locked'}" title="${esc(TITLES[k] ? TITLES[k][1] : "")}">${ok ? "" : ic("lock",11) + " "}${esc(k ? titleName(k) : "Aucun")}</button>`; }).join("")}</div>
+    <p class="note" style="margin-top:0">Les titres « Maître » se gagnent en montant un thème au niveau 8 environ (800 XP dans le thème).</p>
+    <button class="btn p" id="pSaveExtra">Enregistrer ma présentation</button>
+    <button class="btn s" id="pSeePub">Voir mon profil public</button>
+    <div class="label" style="margin-top:18px">Statut et confidentialité</div>
+    <div class="share">
+      <div class="pl" style="margin-bottom:6px">Mon statut</div>
+      <div class="chips wrap" id="pStatus">${[["auto","Automatique"],["busy","Occupé"],["away","Absent"],["invisible","Invisible"]].map(([k,l]) => `<button data-s="${k}" class="${(P.status_pref || "auto") === k ? 'on' : ''}">${l}</button>`).join("")}</div>
+      <div class="pl" style="margin:10px 0 6px">Qui peut m'envoyer des messages ?</div>
+      <div class="chips" id="pMsgs">${[["friends","Mes amis"],["nobody","Personne"]].map(([k,l]) => `<button data-m="${k}" class="${(P.allow_msgs || "friends") === k ? 'on' : ''}">${l}</button>`).join("")}</div>
+      <button class="switch ${P.allow_requests !== false ? 'on' : ''}" id="pReq" style="margin:10px 0 6px;background:var(--card2)"><span>Accepter les demandes d'ami</span><span class="k"></span></button>
+      <button class="switch ${P.show_stats !== false ? 'on' : ''}" id="pShow" style="margin:0;background:var(--card2)"><span>Statistiques visibles sur mon profil</span><span class="k"></span></button>
+    </div>
+    <button class="switch" id="pPush"><span style="display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:center;gap:8px">${ic("bell",20)} Notifications</span><span class="pl" style="font-weight:500"></span></span><span class="k"></span></button>
+    ${IS_ADMIN ? `<button class="btn s" id="pAdmin" style="border:1px solid var(--acc)">${ic("lock",18)} Administration</button>` : ""}`;
+  let sel = { frame: fr, title: tt };
+  el.querySelectorAll(".frb").forEach(b => b.onclick = () => { if(b.classList.contains("locked")) return toast(`Cadre verrouillé : ${esc(FRAMES[b.dataset.f][1])}.`);
+    sel.frame = b.dataset.f; el.querySelectorAll(".frb").forEach(x => x.classList.toggle("on", x === b)); });
+  el.querySelectorAll("#pTitles button").forEach(b => b.onclick = () => { if(b.classList.contains("locked")) return toast(`Titre verrouillé : ${esc(TITLES[b.dataset.t] ? TITLES[b.dataset.t][1] : "")}.`);
+    sel.title = b.dataset.t; el.querySelectorAll("#pTitles button").forEach(x => x.classList.toggle("on", x === b)); });
+  $("pSaveExtra").onclick = async e => {
+    const { error } = await rpc("set_profile_extra", { p_bio: $("pBio").value, p_frame: sel.frame, p_title: sel.title });
+    e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
+    await loadProfile(); $("pPhoto").innerHTML = av(P); setTimeout(() => e.target.textContent = "Enregistrer ma présentation", 1600);
+  };
+  $("pSeePub").onclick = () => openPub(me, () => goTab("profile"));
+  const priv = async (args) => { const { error } = await rpc("set_privacy", { p_status:null, p_allow_msgs:null, p_allow_requests:null, p_show_stats:null, ...args });
+    if(error) toast(esc(errMsg(error))); await loadProfile(); MY_ST = undefined; pushStatus(); renderProfileExtra(); };
+  el.querySelectorAll("#pStatus button").forEach(b => b.onclick = () => priv({ p_status: b.dataset.s }));
+  el.querySelectorAll("#pMsgs button").forEach(b => b.onclick = () => priv({ p_allow_msgs: b.dataset.m }));
+  $("pReq").onclick = () => priv({ p_allow_requests: P.allow_requests === false });
+  $("pShow").onclick = () => priv({ p_show_stats: P.show_stats === false });
+  drawPushBtn();
+  if($("pAdmin")) $("pAdmin").onclick = () => openAdmin();
+}
+
+/* ---------- Administration ---------- */
+let IS_ADMIN = false, AD_TAB = "stats";
+async function checkAdmin(){ if(!ONLINE) return; const { data } = await rpc("is_admin", { p: me }); IS_ADMIN = !!data; }
+function openAdmin(){ if(!IS_ADMIN) return; show("admin"); renderAdmin(); }
+$("adBack").onclick = () => goTab("profile");
+async function renderAdmin(){
+  $("adTabs").innerHTML = [["stats","Stats"],["reports","Signalements"],["users","Joueurs"],["questions","Questions"],["events","Événements"]]
+    .map(([k,l]) => `<button data-k="${k}" class="${k===AD_TAB?'on':''}">${l}</button>`).join("");
+  $("adTabs").querySelectorAll("button").forEach(b => b.onclick = () => { AD_TAB = b.dataset.k; renderAdmin(); });
+  const B = $("adBody");
+  B.innerHTML = `<div class="center pl spin" style="padding:10px">Chargement…</div>`;
+  if(AD_TAB === "stats"){
+    const { data: s, error } = await rpc("admin_stats", {});
+    if(error) return B.textContent = errMsg(error);
+    const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+    B.innerHTML = `<div class="stats s3">${stat(s.users, "Joueurs")}${stat(s.users_7d, "Nouveaux (7 j)")}${stat(s.accounts, "Comptes e-mail")}
+        ${stat(s.matches_today, "Duels aujourd'hui")}${stat(s.matches, "Duels au total")}${stat(s.solo, "Parties solo")}
+        ${stat(s.questions, "Questions")}${stat(s.quizzes, "Quiz joueurs")}${stat(s.reports_open, "Signalements")}
+        ${stat(s.rooms, "Salons")}${stat(s.groups, "Groupes")}${stat(s.suspended, "Suspendus")}</div>
+      <div class="label" style="margin-top:12px">Questions par thème</div>
+      <div class="panel">${Object.entries(s.by_theme || {}).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<div class="row"><div class="av" style="background:none;border:0">${art(k, 26)}</div><div class="rn">${THEMES[k] ? THEMES[k].n : esc(k)}</div><div class="rs">${n}</div></div>`).join("")}</div>`;
+  }
+  else if(AD_TAB === "reports"){
+    const handled = B.dataset.handled === "1";
+    const { data, error } = await rpc("admin_reports", { p_handled: handled });
+    if(error) return B.textContent = errMsg(error);
+    const kindL = { user:"Profil", message:"Message privé", room_message:"Message de salon", quiz:"Quiz", room:"Salon / groupe" };
+    B.innerHTML = `<div class="chips"><button data-h="0" class="${handled ? '' : 'on'}">À traiter</button><button data-h="1" class="${handled ? 'on' : ''}">Traités</button></div>` +
+      (data.length ? data.map(r => `<div class="share" data-id="${r.id}"><b>${kindL[r.kind] || esc(r.kind)}</b> · <span class="pl">${ago(r.created_at)} · par ${esc(r.reporter_pseudo || "?")}</span>
+        <div style="margin:6px 0">Visé : <b>${esc(r.target_pseudo || "?")}</b> <span class="pl">(${r.target_reports} signalement${r.target_reports > 1 ? "s" : ""}${r.target_suspended && new Date(r.target_suspended) > Date.now() ? " · suspendu" : ""})</span></div>
+        ${r.excerpt ? `<div class="quote">${esc(r.excerpt)}</div>` : ""}<div class="pl">Motif : ${esc(r.reason)}</div>
+        ${handled ? "" : `<div class="acts" style="justify-content:flex-start;margin-top:8px"><button class="mini" data-a="dismiss">Ignorer</button><button class="mini d" data-a="delete">Supprimer le contenu</button><button class="mini" data-a="suspend1">Suspendre 1 j</button><button class="mini" data-a="suspend7">7 j</button><button class="mini" data-a="suspend30">30 j</button></div>`}</div>`).join("")
+      : `<p class="sub center" style="margin:10px 0">${handled ? "Aucun signalement traité." : "Rien à traiter. Tout est calme !"}</p>`);
+    B.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { B.dataset.handled = b.dataset.h; renderAdmin(); });
+    B.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+      const id = +b.closest("[data-id]").dataset.id, a = b.dataset.a;
+      if(a !== "dismiss" && !confirm("Confirmer cette action ?")) return;
+      const { error } = await rpc("admin_handle_report", { p_id:id, p_action:a });
+      if(error) toast(esc(errMsg(error))); renderAdmin();
+    });
+  }
+  else if(AD_TAB === "users"){
+    const q = B.dataset.q || "", susp = B.dataset.s === "1";
+    const { data, error } = await rpc("admin_users", { p_q:q, p_suspended:susp });
+    if(error) return B.textContent = errMsg(error);
+    B.innerHTML = `<div class="sbar"><i data-ic="search"></i><input id="adUq" value="${esc(q)}" placeholder="Pseudo ou code ami"></div>
+      <div class="chips"><button data-s="0" class="${susp ? '' : 'on'}">Tous</button><button data-s="1" class="${susp ? 'on' : ''}">Suspendus</button></div>
+      <div class="panel">${data.map(u => { const s = u.suspended_until && new Date(u.suspended_until) > Date.now();
+        return `<div class="row"><div class="rn">${esc(u.pseudo)}${u.is_admin ? ' <span class="role">Admin</span>' : ""}<br><span class="pl">Niveau ${lvlOf(u.xp).l} · ${u.wins} V · ${u.reports} signalement${u.reports > 1 ? "s" : ""} · ${ago(u.created_at)}${s ? ` · <b style="color:var(--bad)">suspendu jusqu'au ${new Date(u.suspended_until).toLocaleDateString("fr-FR")}</b>` : ""}</span></div>
+          <div class="acts"><button class="mini" data-pub="${u.id}">Profil</button>${u.is_admin ? "" : s ? `<button class="mini p" data-u="${u.id}" data-d="0">Lever</button>` : `<button class="mini d" data-u="${u.id}" data-d="?">Suspendre</button>`}</div></div>`; }).join("") || `<p class="sub center">Aucun joueur.</p>`}</div>`;
+    hydrateIcons(B);
+    let t = null; $("adUq").oninput = e => { clearTimeout(t); t = setTimeout(() => { B.dataset.q = e.target.value.trim(); renderAdmin(); }, 400); };
+    B.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { B.dataset.s = b.dataset.s; renderAdmin(); });
+    B.querySelectorAll("[data-pub]").forEach(b => b.onclick = () => openPub(b.dataset.pub, () => openAdmin()));
+    B.querySelectorAll("[data-u]").forEach(b => b.onclick = async () => {
+      let d = b.dataset.d;
+      if(d === "?"){ d = prompt("Suspendre combien de jours ?", "7"); if(d === null) return; }
+      const { error } = await rpc("admin_suspend", { p_user:b.dataset.u, p_days: parseInt(d) || 0 });
+      if(error) toast(esc(errMsg(error))); renderAdmin();
+    });
+  }
+  else if(AD_TAB === "questions"){
+    const q = B.dataset.q || "", th = B.dataset.t || "";
+    const { data, error } = await rpc("admin_questions", { p_q:q, p_theme: th || null, p_inactive:true });
+    if(error) return B.textContent = errMsg(error);
+    B.innerHTML = `<button class="btn p" id="adNewQ">+ Nouvelle question</button>
+      <div class="sbar"><i data-ic="search"></i><input id="adQq" value="${esc(q)}" placeholder="Chercher dans les questions"></div>
+      <div class="chips"><button data-t="" class="${th ? '' : 'on'}">Tous</button>${Object.entries(THEMES).map(([k]) => `<button data-t="${k}" class="${k===th?'on':''}">${art(k, 18)}</button>`).join("")}</div>
+      <div class="panel">${data.map((x, i) => `<div class="row qrow" data-i="${i}" style="${x.active ? "" : "opacity:.5"}"><div class="av" style="background:none;border:0">${art(x.theme, 24)}</div><div class="rn" style="font-weight:600">${esc(x.question)}<br><span class="pl">✔ ${esc(x.answer)} · niv. ${x.difficulty}${x.active ? "" : " · désactivée"}</span></div></div>`).join("") || `<p class="sub center">Aucune question.</p>`}</div>`;
+    hydrateIcons(B);
+    let t = null; $("adQq").oninput = e => { clearTimeout(t); t = setTimeout(() => { B.dataset.q = e.target.value.trim(); renderAdmin(); }, 400); };
+    B.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { B.dataset.t = b.dataset.t; renderAdmin(); });
+    $("adNewQ").onclick = () => editQuestion(null);
+    B.querySelectorAll(".qrow").forEach(r => r.onclick = () => editQuestion(data[+r.dataset.i]));
+  }
+  else if(AD_TAB === "events"){
+    const { data, error } = await rpc("list_events", {});
+    if(error) return B.textContent = errMsg(error);
+    const dt = d => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
+    const s0 = new Date(); s0.setMinutes(0, 0, 0); s0.setHours(s0.getHours() + 1); const e0 = new Date(s0.getTime() + 2 * 864e5);
+    B.innerHTML = `<div class="share"><b>Créer un événement</b>
+        <input class="field" id="aeT" maxlength="60" placeholder="Titre (ex. : Championnat d'Halloween)" style="margin:6px 0">
+        <input class="field" id="aeD" maxlength="200" placeholder="Description (facultatif)" style="margin:4px 0">
+        <div class="chips wrap" id="aeTh"><button data-k="" class="on">Mélange</button>${Object.entries(THEMES).map(([k,t]) => `<button data-k="${k}">${art(k, 18)} ${t.n}</button>`).join("")}</div>
+        <div class="pl">Début</div><input class="field" type="datetime-local" id="aeS" value="${dt(s0)}" style="margin:2px 0 6px">
+        <div class="pl">Fin</div><input class="field" type="datetime-local" id="aeE" value="${dt(e0)}" style="margin:2px 0 6px">
+        <div style="display:flex;gap:8px"><label class="pl" style="flex:1">Questions<input class="field" type="number" id="aeN" value="10" min="5" max="20"></label><label class="pl" style="flex:1">Essais<input class="field" type="number" id="aeA" value="3" min="1" max="10"></label></div>
+        <button class="btn p" id="aeGo">Créer</button></div>
+      <div class="panel">${data.map(e => `<div class="row"><div class="av" style="background:none;border:0">${art(e.theme || "daily", 26)}</div><div class="rn">${esc(e.title)}<br><span class="pl">${new Date(e.starts_at).toLocaleString("fr-FR")} → ${new Date(e.ends_at).toLocaleString("fr-FR")} · ${e.players} joueurs</span></div><div class="acts"><button class="mini d" data-del="${e.id}">${ic("x",14)}</button></div></div>`).join("")}</div>`;
+    let th = "";
+    B.querySelectorAll("#aeTh button").forEach(b => b.onclick = () => { th = b.dataset.k; B.querySelectorAll("#aeTh button").forEach(x => x.classList.toggle("on", x === b)); });
+    $("aeGo").onclick = async () => {
+      const { error } = await rpc("admin_create_event", { p_title: $("aeT").value, p_description: $("aeD").value, p_theme: th,
+        p_starts: new Date($("aeS").value).toISOString(), p_ends: new Date($("aeE").value).toISOString(), p_n: +$("aeN").value, p_attempts: +$("aeA").value });
+      if(error) return toast(esc(errMsg(error))); toast("Événement créé : il apparaît dans le calendrier de tous les joueurs."); renderAdmin();
+    };
+    B.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => { if(!confirm("Supprimer cet événement et ses résultats ?")) return; await rpc("admin_delete_event", { p_id:b.dataset.del }); renderAdmin(); });
+  }
+}
+function editQuestion(x){
+  const B = $("adBody");
+  x = x || { id:null, theme:"culture", difficulty:1, question:"", answer:"", wrong:["","",""], active:true };
+  B.innerHTML = `<div class="share"><b>${x.id ? "Modifier la question" : "Nouvelle question"}</b>
+    <div class="chips wrap" id="eqT">${Object.entries(THEMES).map(([k,t]) => `<button data-k="${k}" class="${k===x.theme?'on':''}">${art(k, 18)} ${t.n}</button>`).join("")}</div>
+    <div class="chips" id="eqD">${[1,2,3].map(d => `<button data-d="${d}" class="${d===x.difficulty?'on':''}">${["","Facile","Intermédiaire","Difficile"][d]}</button>`).join("")}</div>
+    <textarea class="field" id="eqQ" rows="2" maxlength="200" placeholder="Question">${esc(x.question)}</textarea>
+    <input class="field good" id="eqA" maxlength="80" placeholder="Bonne réponse" value="${esc(x.answer)}">
+    ${[0,1,2].map(j => `<input class="field bad" id="eqW${j}" maxlength="80" placeholder="Mauvaise réponse ${j + 1}" value="${esc(x.wrong[j] || "")}">`).join("")}
+    <button class="switch ${x.active ? 'on' : ''}" id="eqAct" style="background:var(--card2)"><span>Question active</span><span class="k"></span></button>
+    <div class="err" id="eqErr"></div>
+    <button class="btn p" id="eqSave">Enregistrer</button><button class="btn s" id="eqCancel">Annuler</button></div>`;
+  let th = x.theme, d = x.difficulty, act = x.active;
+  B.querySelectorAll("#eqT button").forEach(b => b.onclick = () => { th = b.dataset.k; B.querySelectorAll("#eqT button").forEach(y => y.classList.toggle("on", y === b)); });
+  B.querySelectorAll("#eqD button").forEach(b => b.onclick = () => { d = +b.dataset.d; B.querySelectorAll("#eqD button").forEach(y => y.classList.toggle("on", y === b)); });
+  $("eqAct").onclick = () => { act = !act; $("eqAct").classList.toggle("on", act); };
+  $("eqCancel").onclick = () => renderAdmin();
+  $("eqSave").onclick = async () => {
+    hideErr("eqErr");
+    const { error } = await rpc("admin_save_question", { p_id:x.id, p_theme:th, p_difficulty:d, p_question:$("eqQ").value, p_answer:$("eqA").value,
+      p_wrong:[0,1,2].map(j => $("eqW" + j).value), p_active:act });
+    if(error) return showErr("eqErr", error);
+    toast("Question enregistrée."); renderAdmin();
+  };
+}
+
+/* ---------- Mot de passe oublié, Google ---------- */
+async function forgotPassword(email){
+  if(!/^\S+@\S+\.\S+$/.test(email || "")) return toast("Entre d'abord ton adresse e-mail dans le champ au-dessus.");
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  toast(error ? "Envoi impossible : " + esc(authMsg(error)) : `Si un compte existe pour ${esc(email)}, un lien pour changer de mot de passe vient d'être envoyé.`, [], 9000);
+}
+async function googleLogin(link){
+  const opts = { provider:"google", options:{ redirectTo: location.origin + location.pathname } };
+  const { error } = link && sb.auth.linkIdentity ? await sb.auth.linkIdentity(opts) : await sb.auth.signInWithOAuth(opts);
+  if(error) toast(/provider is not enabled|Unsupported provider|not enabled/i.test(errMsg(error))
+    ? "La connexion Google n'est pas encore activée sur Défi Quiz. Utilise ton e-mail en attendant."
+    : "Connexion Google impossible : " + esc(errMsg(error)), [], 8000);
+}
+function watchRecovery(){
+  sb.auth.onAuthStateChange(async (ev) => {
+    if(ev !== "PASSWORD_RECOVERY") return;
+    const pw = prompt("Choisis ton nouveau mot de passe (6 caractères minimum) :");
+    if(!pw) return;
+    const { error } = await sb.auth.updateUser({ password: pw });
+    toast(error ? "Erreur : " + esc(authMsg(error)) : "Mot de passe changé, tu es connecté.");
+    if(!error) switchAccount();
+  });
+}
+
 /* ---------------- COMPTE ---------------- */
 const authMsg = e => {
   const m = errMsg(e);
@@ -1729,7 +2642,9 @@ async function renderAccount(){
     <input class="field" id="aPass" type="password" placeholder="Mot de passe (6 caractères min.)" autocomplete="new-password" style="margin:4px 0 8px">
     <div class="err" id="aErr"></div>
     <button class="btn p" id="aSave">Créer mon compte</button>
-    <button class="btn s" id="aLogin" style="font-size:15px">J'ai déjà un compte : me connecter</button>`;
+    <button class="btn s" id="aLogin" style="font-size:15px">J'ai déjà un compte : me connecter</button>
+    <button class="btn s" id="aGoogle" style="font-size:15px">Continuer avec Google</button>
+    <button class="linkbtn" id="aForgot">Mot de passe oublié ?</button>`;
   const vals = () => ({ email: $("aEmail").value.trim().toLowerCase(), password: $("aPass").value });
   const fail = e => { $("aErr").textContent = "" + authMsg(e); $("aErr").style.display = "block"; };
   $("aSave").onclick = async e => {
@@ -1752,6 +2667,8 @@ async function renderAccount(){
     toast("Compte créé ! Ta progression est sauvegardée.");
     renderAccount();
   };
+  $("aGoogle").onclick = () => googleLogin(true);
+  $("aForgot").onclick = () => forgotPassword($("aEmail").value.trim().toLowerCase());
   $("aLogin").onclick = async e => {
     hideErr("aErr");
     const { email, password } = vals();
@@ -1834,7 +2751,7 @@ async function finishDaily(M, G){
 const QUICK = { slt:"Salut !", gg:"GG !", bj:"Bien joué !", rev:"Revanche ?", fort:"Trop fort", serre:"C'était serré !",
                 chance:"Coup de chance…", pret:"Prêt quand tu veux", go:"On fait un duel ?", merci:"Merci !", haha:"Haha", bn:"Bonne nuit" };
 let CHAT = null, UNREAD_BY = {};
-const msgText = m => m.code === "duel"
+const msgText = m => m.code === "txt" ? esc((m.data && m.data.t) || "") : m.code === "duel"
   ? `${ic("swords",16)} Défi lancé${m.data && THEMES[m.data.theme] ? ` en ${THEMES[m.data.theme].n}` : ""}`
   : m.code === "quiz" && m.data
   ? `${ic("swords",16)} Défi sur le quiz « ${esc(m.data.title || "?")} »${m.data.score != null ? `<br><span style="font-weight:500;font-size:13px">Score à battre : ${+m.data.score}</span>` : ""}`
@@ -1844,16 +2761,20 @@ const hhmm = d => { const t = new Date(d), today = new Date().toDateString() ===
 async function openChat(f){
   CHAT = f;
   $("cAv").innerHTML = av(f); $("cName").textContent = f.pseudo;
-  $("cStatus").innerHTML = ONLINE_IDS.has(f.id) ? '<span class="on-dot"></span> en ligne' : "hors ligne";
+  $("cStatus").innerHTML = `${stDot(f.id)} ${stLabel(f.id).toLowerCase()}`;
+  $("cQuick").style.display = "none"; $("cInput").value = ""; CHAT_MSGS = {};
   $("cQuick").innerHTML = Object.entries(QUICK).map(([k,v]) => `<button data-k="${k}">${esc(v)}</button>`).join("");
   $("cQuick").querySelectorAll("button").forEach(b => b.onclick = () => sendMsg(b.dataset.k));
   $("cMsgs").innerHTML = `<div class="center pl spin" style="margin:auto">Chargement…</div>`;
   show("chat");
-  const { data } = await sb.from("messages").select("*")
-    .or(`and(sender.eq.${me},receiver.eq.${f.id}),and(sender.eq.${f.id},receiver.eq.${me})`)
-    .order("created_at", { ascending:false }).limit(80);
+  const { data: clr } = await sb.from("conversation_clears").select("cleared_at").eq("user_id", me).eq("other", f.id).maybeSingle();
+  let qy = sb.from("messages").select("*")
+    .or(`and(sender.eq.${me},receiver.eq.${f.id}),and(sender.eq.${f.id},receiver.eq.${me})`);
+  if(clr && clr.cleared_at) qy = qy.gt("created_at", clr.cleared_at);
+  const { data } = await qy.order("created_at", { ascending:false }).limit(80);
   $("cMsgs").innerHTML = (data && data.length) ? "" : `<p class="sub center" style="margin:auto">Dis bonjour à ${esc(f.pseudo)} !</p>`;
   (data || []).reverse().forEach(addBubble);
+  drawSeen();
   if(UNREAD_BY[f.id]){ await rpc("mark_conversation_read", { p_other: f.id }); delete UNREAD_BY[f.id]; refreshBadges(); }
 }
 function addBubble(m){
@@ -1861,11 +2782,48 @@ function addBubble(m){
   const canJoin = m.code === "duel" && m.sender !== me && m.data && m.data.match_id && Date.now() - new Date(m.created_at) < 15*60*1000;
   const canQuiz = m.code === "quiz" && m.data && m.data.quiz_id;
   const bs = 'style="display:block;margin-top:6px;background:#2a2160;color:#fff"';
-  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}">${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
+  CHAT_MSGS[m.id] = m;
+  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}" data-mid="${m.id}">${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
   el.querySelectorAll("button.join").forEach(b => b.onclick = () => startLive(null, false, b.dataset.m));
   el.querySelectorAll("button.jquiz").forEach(b => b.onclick = () => openQuiz(b.dataset.q));
+  const last = el.lastElementChild;
+  if(last && m.sender !== me && m.code === "txt") last.onclick = () => toast(`<div><b>Message de ${esc(CHAT.pseudo)}</b><br><span class="pl">${esc((m.data.t || "").slice(0, 80))}</span></div>`,
+    [{ label:"Signaler", run: () => reportThing("message", m.id, (m.data.t || "").slice(0, 40)) }, { label:"Fermer", run: () => {} }], 6000);
+  drawSeen();
   el.scrollTop = el.scrollHeight;
 }
+let CHAT_MSGS = {};
+function drawSeen(){
+  const el = $("cMsgs"); if(!el) return;
+  el.querySelectorAll(".seen").forEach(x => x.remove());
+  const mine = [...el.querySelectorAll(".bub.me")].pop(); if(!mine) return;
+  const m = CHAT_MSGS[mine.dataset.mid];
+  if(m && m.read) mine.insertAdjacentHTML("afterend", `<div class="seen">Vu</div>`);
+}
+function onMsgRead(m){
+  if(!m || !CHAT_MSGS[m.id]) return;
+  CHAT_MSGS[m.id] = { ...CHAT_MSGS[m.id], read: m.read };
+  if($("chat").classList.contains("on")) drawSeen();
+}
+const sendTxt = async () => {
+  const t = $("cInput").value.trim(); if(!t || !CHAT) return;
+  $("cInput").value = "";
+  const { data: m, error } = await rpc("send_message", { p_to: CHAT.id, p_code: "txt", p_data: { t } });
+  if(error){ $("cInput").value = t; return toast(esc(errMsg(error))); }
+  if($("chat").classList.contains("on") && m) addBubble(m);
+};
+$("cSend").onclick = sendTxt;
+$("cInput").onkeydown = e => { if(e.key === "Enter"){ e.preventDefault(); sendTxt(); } };
+$("cQuickT").onclick = () => { $("cQuick").style.display = $("cQuick").style.display === "none" ? "flex" : "none"; };
+$("cAv").onclick = () => CHAT && openPub(CHAT.id, () => openChat(CHAT));
+$("cMenu").onclick = () => {
+  const f = CHAT; if(!f) return;
+  toast(`<div><b>${esc(f.pseudo)}</b></div>`, [
+    { label:"Profil", run: () => openPub(f.id, () => openChat(f)) },
+    { label:"Effacer", run: async () => { if(!confirm("Effacer cette conversation de ton côté ?")) return; await rpc("clear_conversation", { p_other: f.id }); openChat(f); } },
+    { label:"Signaler", run: () => reportThing("user", f.id, f.pseudo) },
+    { label:"Bloquer", run: async () => { if(confirm(`Bloquer ${f.pseudo} ?`)){ await rpc("block_user", { p_other: f.id }); CHAT = null; goTab("messages"); } } }], 9000);
+};
 async function sendMsg(code, data){
   if(!CHAT) return;
   const { data: m, error } = await rpc("send_message", { p_to: CHAT.id, p_code: code, p_data: data || {} });
@@ -1874,6 +2832,7 @@ async function sendMsg(code, data){
 }
 async function onMessage(m){
   if(m.sender === me) return;
+  if($("messages").classList.contains("on")) setTimeout(renderMessages, 300);
   if(CHAT && CHAT.id === m.sender && $("chat").classList.contains("on")){
     addBubble(m); rpc("mark_conversation_read", { p_other: m.sender }); return;
   }
@@ -1888,7 +2847,7 @@ async function onMessage(m){
   toast(`<div class="av" style="width:40px;height:40px">${av(a)}</div><div><b>${esc(a.pseudo)}</b><br>${msgText(m)}</div>`,
         [{ label:"Répondre", primary:true, run: () => openChat({ ...a, id: m.sender }) }], 6000);
 }
-$("cBack").onclick = () => { CHAT = null; renderFriends(); show("friends"); };
+$("cBack").onclick = () => { CHAT = null; goTab("messages"); };
 $("cDuel").onclick = () => { if(CHAT) openInvite(CHAT); };
 
 /* ---------------- SUCCÈS ---------------- */
@@ -1980,8 +2939,10 @@ const fold = t => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase
 function guessThemes(q){
   const f = " " + fold(q) + " ";
   if(f.trim().length < 2) return [];
-  return Object.keys(THEME_SYN).filter(k => fold(THEMES[k].n).startsWith(f.trim()) ||
+  const r = Object.keys(THEME_SYN).filter(k => fold(THEMES[k].n).startsWith(f.trim()) ||
     THEME_SYN[k].some(w => f.includes(w.length <= 3 ? " " + w.trim() + " " : w) || (f.trim().length >= 3 && w.startsWith(f.trim()))));
+  if(r.includes("foot") && !r.includes("sport")) r.push("sport");   // les anciens quiz de foot sont rangés en Sport
+  return r;
 }
 let qzQ = "", qzT = null, qzTimer = null, qzSeq = 0;
 $("qzSearch").oninput = () => {
@@ -2168,10 +3129,12 @@ async function renderProfile(){
   $("pFile").disabled = !ONLINE; $("pPhotoDel").style.display = P.avatar_url && ONLINE ? "block" : "none";
   $("pName").disabled = $("pSave").disabled = !ONLINE;
   const drawAv = () => {
-    $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}" data-a="${a}" title="${AV_DEFS[a].n}" style="padding:0;overflow:hidden;border-radius:50%">${avatarSVG(a)}</button>`).join("");
-    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ if(ONLINE){ pickAv=b.dataset.a; drawAv(); } });
+    const locked = a => AV_LOCK[a] && !(UNLOCKS && UNLOCKS.avatars && UNLOCKS.avatars.includes(a));
+    $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''} ${locked(a)?'locked':''}" data-a="${a}" title="${AV_DEFS[a].n}${AV_LOCK[a]?` · niveau ${AV_LOCK[a]}`:""}" style="padding:0;overflow:hidden;border-radius:50%;position:relative">${avatarSVG(a)}${locked(a)?`<span class="lk">${ic("lock",14)}<br>${AV_LOCK[a]}</span>`:""}</button>`).join("");
+    [...$("pEmos").children].forEach(b=>b.onclick=()=>{ if(!ONLINE) return; if(b.classList.contains("locked")) return toast(`${esc(AV_DEFS[b.dataset.a].n)} : se débloque au niveau ${AV_LOCK[b.dataset.a]}.`); pickAv=b.dataset.a; drawAv(); });
   };
   drawAv();
+  if(ONLINE) loadUnlocks().then(() => { drawAv(); renderProfileExtra(); });
   let tmap = LS.get("dq_tstats", {});
   if(ONLINE){
     const [{ data: ts }, { data: x }] = await Promise.all([
@@ -2228,8 +3191,8 @@ $("pPhotoDel").onclick = async () => {
   if(old && old.startsWith(me + "/")) sb.storage.from("avatars").remove([old]);
   await loadProfile(); renderProfile();
 };
-$("toProfile").onclick = () => { renderProfile(); show("profile"); };
-$("pBack").onclick = () => { renderHome(); show("home"); };
+$("toProfile").onclick = () => goTab("profile");
+$("pBack").onclick = () => goTab("home");
 
 if("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});

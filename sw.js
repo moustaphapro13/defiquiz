@@ -2,7 +2,7 @@
    - Page (index.html) : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
    - Bibliothèques, polices, icônes : cache d'abord.
    - Appels à Supabase : jamais mis en cache.                                   */
-const CACHE = "defiquiz-v4";
+const CACHE = "defiquiz-v5";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"];
 
@@ -40,5 +40,27 @@ self.addEventListener("fetch", e => {
       if(res.ok || res.type === "opaque"){ const c = await caches.open(CACHE); c.put(req, res.clone()); }
       return res;
     } catch(err){ return Response.error(); }
+  })());
+});
+
+/* Notifications push : duels, messages, demandes d'ami, invitations */
+self.addEventListener("push", e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch(err){ d = { body: e.data && e.data.text() }; }
+  e.waitUntil((async () => {
+    // si l'appli est déjà ouverte et visible, l'alerte s'affiche dans l'appli : pas de doublon
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    if(wins.some(w => w.visibilityState === "visible")) return;
+    await self.registration.showNotification(d.title || "Défi Quiz", {
+      body: d.body || "", icon: "./icon-192.png", badge: "./icon-192.png", tag: d.tag || "defiquiz", renotify: true
+    });
+  })());
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    if(wins.length){ await wins[0].focus(); return; }
+    await self.clients.openWindow("./");
   })());
 });
