@@ -2,7 +2,7 @@
    - Page (index.html) : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
    - Bibliothèques, polices, icônes : cache d'abord.
    - Appels à Supabase : jamais mis en cache.                                   */
-const CACHE = "defiquiz-v8";
+const CACHE = "defiquiz-v9";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"];
 
@@ -58,9 +58,10 @@ self.addEventListener("push", e => {
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close();
+  const go = (e.notification.tag || "").startsWith("go:") ? e.notification.tag : "";
   e.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-    if(wins.length){ await wins[0].focus(); return; }
-    await self.clients.openWindow("./");
+    if(wins.length){ await wins[0].focus(); if(go) wins[0].postMessage({ go }); return; }
+    await self.clients.openWindow(go ? "./?go=" + encodeURIComponent(go) : "./");
   })());
 });
