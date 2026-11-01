@@ -2,7 +2,7 @@
    - Page (index.html) : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
    - Bibliothèques, polices, icônes : cache d'abord.
    - Appels à Supabase : jamais mis en cache.                                   */
-const CACHE = "defiquiz-v6";
+const CACHE = "defiquiz-v8";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"];
 
