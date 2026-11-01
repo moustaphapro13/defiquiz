@@ -153,6 +153,10 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
 .stat small{display:block;font-size:11px;color:var(--mute);margin-top:2px}
 .top{gap:8px}
 .iconbtn{position:relative;flex:none}
+.av{overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-row{display:flex;align-items:center;gap:12px;margin:8px 0 14px}
+.photo-row .av{width:72px;height:72px;font-size:38px}
 .badge{position:absolute;top:-5px;right:-5px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 6px;font-family:Inter,sans-serif}
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(420px,92vw);background:var(--card2);border:1px solid var(--acc);border-radius:16px;padding:14px;z-index:50;box-shadow:0 10px 30px #000a;display:none;animation:fade .25s}
 .toast .tt{display:flex;gap:10px;align-items:center;font-weight:600}
@@ -307,7 +311,15 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;background:none}
     <div class="share" id="pAccount" style="margin:0 0 16px"></div>
     <div class="label">Pseudo</div>
     <input class="field" id="pName" maxlength="16">
-    <div class="label">Avatar</div>
+    <div class="label">Photo de profil</div>
+    <div class="photo-row">
+      <div class="av" id="pPhoto"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="mini p" style="cursor:pointer;text-align:center">📷 Choisir une photo<input type="file" accept="image/*" id="pFile" hidden></label>
+        <button class="mini d" id="pPhotoDel">Retirer la photo</button>
+      </div>
+    </div>
+    <div class="label">Ou un avatar emoji</div>
     <div class="emos" id="pEmos"></div>
     <button class="btn p" id="pSave" style="margin-bottom:18px">Enregistrer</button>
     <div class="label" style="margin-bottom:8px">Niveaux par thème</div>
@@ -338,6 +350,10 @@ const pts = (t, last) => (t==null ? 0 : Math.round(20 - Math.min(10, Math.max(0.
 const errMsg = e => (e && (e.message || e.error_description)) || String(e);
 const showErr = (id, e) => { const el=$(id); el.textContent = "⚠️ " + errMsg(e); el.style.display="block"; };
 const hideErr = id => { $(id).style.display="none"; };
+const AVBASE = SUPABASE_URL + "/storage/v1/object/public/avatars/";
+const av = p => !p ? "❔" : p.avatar_url
+  ? `<img src="${esc(AVBASE + p.avatar_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+  : esc(p.avatar || "👤");
 const duelLink = id => location.origin + location.pathname + "?duel=" + id;
 
 let sb, me, P = null, tab = "lb";
@@ -475,7 +491,7 @@ async function flushQueue(){
 /* ---------------- ACCUEIL ---------------- */
 async function renderHome(){
   const L = lvlOf(P.xp);
-  $("hAv").textContent = P.avatar; $("hName").textContent = P.pseudo;
+  $("hAv").innerHTML = av(P); $("hName").textContent = P.pseudo;
   $("hLvl").textContent = `Niveau ${L.l} · ${P.wins} victoires`;
   $("hXp").style.width = (L.x/L.need*100)+"%";
   let tmap = LS.get("dq_tstats", {});
@@ -507,14 +523,14 @@ async function renderPanel(){
     const chips = `<div class="chips"><button data-f="1" class="${lbFriends?'on':''}">👥 Amis</button>${per.map(([d,l])=>`<button data-d="${d}" class="${d===lbDays?'on':''}">${l}</button>`).join("")}</div>`+
       `<div class="chips"><button data-t="" class="${!lbTheme?'on':''}">Tous</button>${Object.entries(THEMES).map(([k,t])=>`<button data-t="${k}" class="${k===lbTheme?'on':''}">${t.e}</button>`).join("")}</div>`;
     $("panel").innerHTML = chips + `<div class="label" style="margin:4px 0 6px">Points marqués en duel${lbFriends?" · entre amis":""}${lbTheme?` · ${THEMES[lbTheme].n}`:""}</div>` + (data.length ?
-      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="av">${esc(r.avatar)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
+      data.map((r,i)=>`<div class="row ${r.is_me?'me':''}"><div class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="av">${av(r)}</div><div class="rn">${esc(r.pseudo)}${r.is_me?' (toi)':''}<br><span class="pl">Niveau ${lvlOf(r.xp).l} · ${r.wins} victoires</span></div><div class="rs">${r.points}</div></div>`).join("")
       : `<p class="sub center" style="margin:6px 0">Personne n'a encore joué sur cette période. Sois le premier !</p>`);
     $("panel").querySelector("[data-f]").onclick = () => { lbFriends = !lbFriends; renderPanel(); };
     $("panel").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ lbDays = b.dataset.d==="null" ? null : +b.dataset.d; renderPanel(); });
     $("panel").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ lbTheme = b.dataset.t || null; renderPanel(); });
   } else {
     const { data, error } = await sb.from("matches")
-      .select("id,theme,private,p1,p2,p1_score,p2_score,p2_answers,created_at,a:profiles!matches_p1_fkey(pseudo,avatar),b:profiles!matches_p2_fkey(pseudo,avatar)")
+      .select("id,theme,private,p1,p2,p1_score,p2_score,p2_answers,created_at,a:profiles!matches_p1_fkey(pseudo,avatar,avatar_url),b:profiles!matches_p2_fkey(pseudo,avatar,avatar_url)")
       .or(`p1.eq.${me},p2.eq.${me}`).order("created_at", {ascending:false}).limit(30);
     if(error) return $("panel").textContent = errMsg(error);
     const list = (data||[]).filter(m => (m.p1===me ? m.p1_score : m.p2_score) != null);
@@ -523,10 +539,10 @@ async function renderPanel(){
       const iAmP1 = m.p1===me, opp = iAmP1 ? m.b : m.a, th = THEMES[m.theme] || {e:"❓", n:m.theme};
       const mine = iAmP1 ? m.p1_score : m.p2_score, his = iAmP1 ? m.p2_score : m.p1_score;
       if(his==null){
-        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?esc(opp.avatar):"❔"}</div><div class="rn">${m.private?"Défi ami en attente":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private&&iAmP1?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
+        return `<div class="row"><div class="rk">⏳</div><div class="av">${opp?av(opp):"❔"}</div><div class="rn">${m.private?"Défi ami en attente":"En attente d'adversaire"}<br><span class="pl">${th.e} ${th.n} · ton score : ${mine}</span></div>${m.private&&iAmP1?`<button class="mini" data-copy="${m.id}">Copier le lien</button>`:""}</div>`;
       }
       const res = mine>his?"✅":mine<his?"❌":"🤝";
-      return `<div class="row"><div class="rk">${res}</div><div class="av">${esc(opp?.avatar||"❔")}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${th.e} ${th.n}</span></div><div class="rs">${mine} – ${his}</div></div>`;
+      return `<div class="row"><div class="rk">${res}</div><div class="av">${opp?av(opp):"❔"}</div><div class="rn">${esc(opp?.pseudo||"?")}<br><span class="pl">${th.e} ${th.n}</span></div><div class="rs">${mine} – ${his}</div></div>`;
     }).join("");
     $("panel").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(duelLink(b.dataset.copy), b));
   }
@@ -571,7 +587,7 @@ async function finishSolo(M, G){
   const xp = Math.round(score / 2);
   const stars = correct >= 7 ? "⭐⭐⭐" : correct >= 5 ? "⭐⭐" : correct >= 3 ? "⭐" : "";
   $("rTitle").innerHTML = `<span class="${correct>=4?'w':'d'}">${correct===N?"Sans faute !":correct>=5?"Bravo !":correct>=3?"Pas mal !":"Courage !"}</span>`;
-  $("rMe").textContent = P.avatar; $("rMeS").textContent = score;
+  $("rMe").innerHTML = av(P); $("rMeS").textContent = score;
   $("rOpp").textContent = "🎯"; $("rOppS").textContent = `${correct}/${N}`;
   $("rGain").innerHTML = `
     <div class="g"><span>Bonnes réponses</span><b>${correct}/${N} ${stars}</b></div>
@@ -616,13 +632,13 @@ function joinDuel(id){ return startLive(null, false, id); }
 function mmReset(k){
   hideErr("mmErr"); ["mmBack","mmSolo","mmCancel"].forEach(id=>$(id).style.display="none"); $("mmShare").innerHTML = "";
   $("mmTheme").textContent = k ? `${THEMES[k].e} ${THEMES[k].n}` : "⚔️ Défi d'un ami";
-  $("mmMe").textContent = P.avatar; $("mmMeN").textContent = P.pseudo; $("mmMeL").textContent = `Niveau ${lvlOf(P.xp).l}`;
+  $("mmMe").innerHTML = av(P); $("mmMeN").textContent = P.pseudo; $("mmMeL").textContent = `Niveau ${lvlOf(P.xp).l}`;
   $("mmOpp").textContent = "❔"; $("mmOpp").classList.add("spin");
   $("mmOppN").textContent = "Recherche…"; $("mmOppL").innerHTML = "&nbsp;";
   show("match");
 }
 function mmOpp(o){
-  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = o.avatar;
+  $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = av(o);
   $("mmOppN").textContent = o.pseudo; $("mmOppL").textContent = `Niveau ${lvlOf(o.xp).l}`;
 }
 function mmFail(e){ showErr("mmErr", e); $("mmMsg").textContent = ""; $("mmBack").style.display = "block"; }
@@ -695,7 +711,7 @@ function liveLobby(M){
       if(lv.onMsg) lv.onMsg(payload); else lv.buf.push(payload);
     })
     .subscribe(async status => {
-      if(status === "SUBSCRIBED") await ch.track({ pseudo: P.pseudo, avatar: P.avatar, xp: P.xp });
+      if(status === "SUBSCRIBED") await ch.track({ pseudo: P.pseudo, avatar: P.avatar, avatar_url: P.avatar_url || null, xp: P.xp });
       if((status === "CHANNEL_ERROR" || status === "TIMED_OUT") && !lv.started && LV === lv){
         leaveLive(); mmFail("connexion en direct impossible, réessaie");
       }
@@ -778,7 +794,7 @@ function play(M, lv){
   let driver = !lv || lv.host, cur = null;
   const send = p => { if(lv && !lv.oppGone && LV === lv) lv.ch.send({ type:"broadcast", event:"g", payload:p }); };
 
-  $("gMe").textContent = P.avatar; $("gOpp").textContent = opp ? opp.avatar : (M.solo ? "🎯" : "⏳");
+  $("gMe").innerHTML = av(P); $("gOpp").innerHTML = opp ? av(opp) : (M.solo ? "🎯" : "⏳");
   $("gMeS").textContent = 0; $("gOppS").textContent = hasOpp ? 0 : (M.solo ? "" : "?"); $("gOppSt").textContent = M.solo ? "Solo" : "";
   show("game");
 
@@ -898,7 +914,7 @@ async function finishMatch(M, G, opp, lv){
   leaveLive();
   const oldLvl = lvlOf(P.xp).l;
   await loadProfile();
-  $("rMe").textContent = P.avatar; $("rOpp").textContent = opp ? opp.avatar : "⏳";
+  $("rMe").innerHTML = av(P); $("rOpp").innerHTML = opp ? av(opp) : "⏳";
   $("rShare").innerHTML = "";
   const good = G.log.filter(x => x.ok).length;
   if(error){
@@ -946,12 +962,12 @@ function startSocial(){
   NOTIF_CH = sb.channel("notif-" + me)
     .on("postgres_changes", { event:"INSERT", schema:"public", table:"notifications", filter:`user_id=eq.${me}` }, ({ new: n }) => onNotif(n))
     .subscribe();
-  PRES_CH = sb.channel("online", { config: { presence: { key: me } } })
-    .on("presence", { event:"sync" }, () => {
-      ONLINE_IDS = new Set(Object.keys(PRES_CH.presenceState()));
+  const pc = PRES_CH = sb.channel("online", { config: { presence: { key: me } } });
+  pc.on("presence", { event:"sync" }, () => {
+      ONLINE_IDS = new Set(Object.keys(pc.presenceState()));
       if($("friends").classList.contains("on")) renderFriendList();
     })
-    .subscribe(async s => { if(s === "SUBSCRIBED") await PRES_CH.track({ at: Date.now() }); });
+    .subscribe(async s => { if(s === "SUBSCRIBED") await pc.track({ at: Date.now() }); });
   refreshBadges();
 }
 function stopSocial(){
@@ -969,7 +985,7 @@ function setBadge(id, n){ const b = $(id); b.textContent = n > 9 ? "9+" : n; b.s
 async function actorOf(id){
   if(!id) return { pseudo:"Un joueur", avatar:"👤" };
   if(PROFILE_CACHE[id]) return PROFILE_CACHE[id];
-  const { data } = await sb.from("profiles").select("id,pseudo,avatar,xp").eq("id", id).maybeSingle();
+  const { data } = await sb.from("profiles").select("id,pseudo,avatar,avatar_url,xp").eq("id", id).maybeSingle();
   return (PROFILE_CACHE[id] = data || { pseudo:"Un joueur", avatar:"👤" });
 }
 function notifText(n, a){
@@ -1002,7 +1018,7 @@ async function onNotif(n){
   refreshBadges();
   if($("notifs").classList.contains("on")) renderNotifs();
   if($("friends").classList.contains("on")) renderFriendList();
-  const txt = `<div class="av" style="width:40px;height:40px;font-size:22px">${esc(a.avatar)}</div><div>${notifText(n, a)}</div>`;
+  const txt = `<div class="av" style="width:40px;height:40px;font-size:22px">${av(a)}</div><div>${notifText(n, a)}</div>`;
   if(n.type === "duel_invite"){
     if(inGame()) return toast(txt + "", [], 5000);
     return toast(txt, [
@@ -1036,7 +1052,7 @@ async function renderNotifs(){
     let acts = "";
     if(n.type === "duel_invite" && !n.read && fresh) acts = `<button class="mini p" data-act="join" data-i="${i}">Jouer</button>`;
     if(n.type === "friend_request" && !n.read) acts = `<button class="mini p" data-act="acc" data-i="${i}">Accepter</button><button class="mini" data-act="dec" data-i="${i}">Refuser</button>`;
-    return `<div class="row ${n.read?'':'unread'}"><div class="av">${esc(actors[i].avatar)}</div><div class="rn" style="font-weight:500">${notifText(n, actors[i])}<br><span class="pl">${ago(n.created_at)}</span></div><div class="acts">${acts}</div></div>`;
+    return `<div class="row ${n.read?'':'unread'}"><div class="av">${av(actors[i])}</div><div class="rn" style="font-weight:500">${notifText(n, actors[i])}<br><span class="pl">${ago(n.created_at)}</span></div><div class="acts">${acts}</div></div>`;
   }).join("");
   $("nList").querySelectorAll("[data-act]").forEach(b => b.onclick = async () => {
     const n = data[+b.dataset.i];
@@ -1063,7 +1079,7 @@ async function renderFriendList(){
   if(error) return $("fList").textContent = errMsg(error);
   FRIENDS = data || [];
   const by = r => FRIENDS.filter(f => f.relation === r);
-  const row = (f, acts, extra = "") => `<div class="row"><div class="av">${esc(f.avatar)}</div><div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id)?'<span class="on-dot" title="en ligne"></span>':""}<br><span class="pl">Niveau ${lvlOf(f.xp).l}${extra}</span></div><div class="acts">${acts}</div></div>`;
+  const row = (f, acts, extra = "") => `<div class="row"><div class="av">${av(f)}</div><div class="rn">${esc(f.pseudo)}${ONLINE_IDS.has(f.id)?'<span class="on-dot" title="en ligne"></span>':""}<br><span class="pl">Niveau ${lvlOf(f.xp).l}${extra}</span></div><div class="acts">${acts}</div></div>`;
   const friends = by("friend").sort((a,b) => ONLINE_IDS.has(b.id) - ONLINE_IDS.has(a.id));
   let html = "";
   if(by("received").length) html += `<div class="sec">Demandes reçues</div>` + by("received").map(f => row(f,
@@ -1081,8 +1097,14 @@ async function renderFriendList(){
 async function friendAction(act, f, btn){
   if(act === "duel") return openInvite(f);
   if(act === "more"){
-    return toast(`<div class="av" style="width:40px;height:40px;font-size:22px">${esc(f.avatar)}</div><div><b>${esc(f.pseudo)}</b><br><span class="pl">Code ${esc(f.friend_code)}</span></div>`, [
+    return toast(`<div class="av" style="width:40px;height:40px;font-size:22px">${av(f)}</div><div><b>${esc(f.pseudo)}</b><br><span class="pl">Code ${esc(f.friend_code)}</span></div>`, [
       { label:"Retirer des amis", run: async () => { if(confirm(`Retirer ${f.pseudo} de tes amis ?`)){ await rpc("remove_friend", { p_other:f.id }); renderFriendList(); } } },
+      { label:"🚩 Signaler", run: async () => {
+          const why = prompt(`Pourquoi signaler ${f.pseudo} ? (photo déplacée, pseudo insultant…)`);
+          if(why === null) return;
+          const { error } = await rpc("report_user", { p_target:f.id, p_reason: why || "non précisé" });
+          toast(error ? "⚠️ " + esc(errMsg(error)) : "🚩 Merci, le signalement a été envoyé.");
+        } },
       { label:"🚫 Bloquer", run: async () => { if(confirm(`Bloquer ${f.pseudo} ? Il ne pourra plus te trouver ni te défier.`)){ await rpc("block_user", { p_other:f.id }); renderFriendList(); } } }], 10000);
   }
   btn.disabled = true;
@@ -1104,7 +1126,7 @@ $("fSearch").oninput = () => {
     if(!data.length) return $("fResults").innerHTML = `<p class="sub center" style="margin:6px 0">Aucun joueur trouvé.</p>`;
     const lab = { none:`<button class="mini p" data-add>➕ Ajouter</button>`, sent:`<span class="pl">Demande envoyée</span>`,
                   received:`<button class="mini p" data-add>Accepter</button>`, friend:`<span class="pl">Ami ✓</span>` };
-    $("fResults").innerHTML = data.map((p, i) => `<div class="row" data-i="${i}"><div class="av">${esc(p.avatar)}</div><div class="rn">${esc(p.pseudo)}<br><span class="pl">Niveau ${lvlOf(p.xp).l} · code ${esc(p.friend_code)}</span></div><div class="acts">${lab[p.relation]||""}</div></div>`).join("");
+    $("fResults").innerHTML = data.map((p, i) => `<div class="row" data-i="${i}"><div class="av">${av(p)}</div><div class="rn">${esc(p.pseudo)}<br><span class="pl">Niveau ${lvlOf(p.xp).l} · code ${esc(p.friend_code)}</span></div><div class="acts">${lab[p.relation]||""}</div></div>`).join("");
     $("fResults").querySelectorAll("[data-add]").forEach(b => b.onclick = async () => {
       const p = data[+b.closest(".row").dataset.i]; b.disabled = true;
       const { data: st, error } = await rpc("send_friend_request", { p_target: p.id });
@@ -1122,7 +1144,7 @@ $("fBack").onclick = () => { renderHome(); show("home"); };
 let invFriend = null;
 function openInvite(f){
   invFriend = f;
-  $("iAv").textContent = f.avatar; $("iName").textContent = f.pseudo + (ONLINE_IDS.has(f.id) ? " 🟢" : "");
+  $("iAv").innerHTML = av(f); $("iName").textContent = f.pseudo + (ONLINE_IDS.has(f.id) ? " 🟢" : "");
   $("iThemes").innerHTML = Object.entries(THEMES).map(([k,t]) =>
     `<button class="theme" style="--c:${t.c}" data-k="${k}"><div class="emo">${t.e}</div><div class="tn">${t.n}</div></button>`).join("");
   $("iThemes").querySelectorAll(".theme").forEach(b => b.onclick = () => inviteFriend(invFriend, b.dataset.k));
@@ -1132,12 +1154,12 @@ $("iBack").onclick = () => { renderFriends(); show("friends"); };
 async function inviteFriend(f, k){
   leaveLive();
   mmReset(k);
-  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = f.avatar; $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "invitation envoyée";
+  $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = av(f); $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "invitation envoyée";
   $("mmMsg").textContent = "Envoi de l'invitation…";
   const { data: M, error } = await rpc("invite_friend", { p_friend: f.id, p_theme: k });
   if(error) return mmFail(error);
   liveLobby(M);
-  $("mmOpp").classList.remove("spin"); $("mmOpp").textContent = f.avatar; $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "⏳ invité";
+  $("mmOpp").classList.remove("spin"); $("mmOpp").innerHTML = av(f); $("mmOppN").textContent = f.pseudo; $("mmOppL").textContent = "⏳ invité";
   $("mmMsg").textContent = `${f.pseudo} a reçu ton invitation${ONLINE_IDS.has(f.id) ? "" : " (il n'est pas en ligne : il la verra en ouvrant l'appli)"}. Le duel démarre dès qu'il accepte.`;
 }
 
@@ -1254,6 +1276,8 @@ async function renderProfile(){
   };
   drawStats(null);
   $("pName").value = P.pseudo; pickAv = P.avatar;
+  $("pPhoto").innerHTML = av(P);
+  $("pFile").disabled = !ONLINE; $("pPhotoDel").style.display = P.avatar_url && ONLINE ? "block" : "none";
   $("pName").disabled = $("pSave").disabled = !ONLINE;
   const drawAv = () => {
     $("pEmos").innerHTML = AVATARS.map(a=>`<button class="${a===pickAv?'on':''}">${a}</button>`).join("");
@@ -1279,6 +1303,42 @@ $("pSave").onclick = async e => {
   const { error } = await rpc("update_profile", { p_pseudo: $("pName").value, p_avatar: pickAv });
   e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
   await loadProfile(); setTimeout(()=>e.target.textContent="Enregistrer", 1500);
+};
+/* Photo de profil : recadrée en carré 256 px et compressée sur le téléphone avant l'envoi */
+async function loadImage(file){
+  if(window.createImageBitmap){ try { return await createImageBitmap(file, { imageOrientation:"from-image" }); } catch(e){} }
+  return await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = URL.createObjectURL(file); });
+}
+async function squareJpeg(file, size = 256){
+  const img = await loadImage(file);
+  const w = img.width, h = img.height, s = Math.min(w, h);
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  c.getContext("2d").drawImage(img, (w - s) / 2, (h - s) / 2, s, s, 0, 0, size, size);
+  return await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
+}
+$("pFile").onchange = async e => {
+  const file = e.target.files && e.target.files[0]; e.target.value = "";
+  if(!file || !ONLINE) return;
+  if(!/^image\//.test(file.type)) return toast("⚠️ Choisis une image.");
+  $("pPhoto").innerHTML = '<span class="spin">⏳</span>';
+  try {
+    const blob = await squareJpeg(file);
+    const path = `${me}/${Date.now()}.jpg`, old = P.avatar_url;
+    await ensureAuth();
+    const up = await sb.storage.from("avatars").upload(path, blob, { contentType:"image/jpeg", cacheControl:"31536000", upsert:false });
+    if(up.error) throw up.error;
+    const { error } = await rpc("set_avatar", { p_path: path });
+    if(error) throw error;
+    if(old && old.startsWith(me + "/")) sb.storage.from("avatars").remove([old]);
+    await loadProfile(); renderProfile(); toast("📷 Photo de profil mise à jour !");
+  } catch(err){ $("pPhoto").innerHTML = av(P); toast("⚠️ Envoi impossible : " + esc(errMsg(err))); }
+};
+$("pPhotoDel").onclick = async () => {
+  const old = P.avatar_url;
+  const { error } = await rpc("set_avatar", { p_path: null });
+  if(error) return toast("⚠️ " + esc(errMsg(error)));
+  if(old && old.startsWith(me + "/")) sb.storage.from("avatars").remove([old]);
+  await loadProfile(); renderProfile();
 };
 $("toProfile").onclick = () => { renderProfile(); show("profile"); };
 $("pBack").onclick = () => { renderHome(); show("home"); };
