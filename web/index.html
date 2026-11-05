@@ -526,6 +526,11 @@ body.dark .theme .nw,body.dark .role{background:var(--acc)}
 /* mode sombre */
 body.dark{--bg:#14122b;--page:#0f0e22;--card:#1c1a38;--card2:#26234a;--line:#322e5c;--txt:#f1efff;--mute:#a7a3c9;--acc:#8b7dff;--acc2:#2a2560;--sh:0 1px 2px rgba(0,0,0,.3),0 10px 28px -16px rgba(0,0,0,.6)}
 body.dark .bnav{background:rgba(20,18,43,.92)}
+.bub.duel,body.dark .bub.duel{color:#3a2310}
+.pbanner{height:96px;border-radius:18px;margin:0 0 -40px;box-shadow:var(--sh)}
+.bnprev{width:100%;height:46px;border-radius:12px}
+.bbprev{padding:7px 12px;border-radius:14px;font-weight:600;font-size:13px;border-bottom-right-radius:5px}
+.coscat{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
 body.dark .row.unread,body.dark .offbar{background:#3a2f12;color:#ffe3a1}
 body.dark .cd{background:rgba(15,14,34,.85)}
 body.dark .theme .emo{background:color-mix(in srgb,var(--c) 30%,#1c1a38)}
@@ -2522,7 +2527,8 @@ const FX = (() => {
     o.querySelector("button").onclick = () => o.remove();
   }
   function rarity(id){
-    const k = id.replace(/^(frame|title):/, "");
+    const k = id.replace(/^(frame|title|banner|bubble):/, "");
+    if(cosParts(k)){ const t = k.split("_")[1]; return ["eto","aur","eclat","bri"].includes(t) ? [3, "Épique"] : ["vag","dam","spirale","neo","dia"].includes(t) ? [2, "Rare"] : [1, "Commun"]; }
     if(["holo","prisme","legende_saison","goat"].includes(k)) return [4, "Légendaire"];
     if(["sakura","lave","matrix","glace","vip","cerveau","galaxie"].includes(k)) return [3, "Épique"];
     if(["pixel","nuit","or_rose","neon","encyclo","aura"].includes(k)) return [2, "Rare"];
@@ -2752,6 +2758,39 @@ const TITLES = {
   vip: ["VIP", "Pass Premium · palier 4"], goat: ["GOAT", "Pass Premium · palier 12"], cerveau: ["Gros cerveau", "Pass Premium · palier 20"],
   legende_saison: ["Légende de la saison", "Pass Premium · palier 28"]
 };
+const COS_PAL = {"ocean":["Océan",["#0ea5e9","#22d3ee","#1e3a8a"]],"foret":["Forêt",["#166534","#4ade80","#14532d"]],"sunset":["Coucher de soleil",["#f97316","#f43f5e","#7c2d12"]],"lavande":["Lavande",["#a78bfa","#e9d5ff","#5b21b6"]],"citron":["Citron",["#facc15","#fef08a","#a16207"]],"cerise":["Cerise",["#e11d48","#fda4af","#881337"]],"menthol":["Menthol",["#2dd4bf","#ccfbf1","#0f766e"]],"cafe":["Café",["#92400e","#d6a77a","#451a03"]],"minuit":["Minuit",["#1e1b4b","#6366f1","#020617"]],"bubblegum":["Chewing-gum",["#f472b6","#fbcfe8","#9d174d"]],"lagon":["Lagon",["#06b6d4","#a7f3d0","#155e75"]],"braise":["Braise",["#dc2626","#fb923c","#450a0a"]],"aurore":["Aurore",["#34d399","#818cf8","#0f172a"]],"peche":["Pêche",["#fdba74","#fecdd3","#c2410c"]],"acier":["Acier",["#64748b","#cbd5e1","#1e293b"]],"emeraude":["Émeraude",["#059669","#6ee7b7","#064e3b"]],"royal":["Royal",["#4338ca","#facc15","#1e1b4b"]],"cosmos":["Cosmos",["#7e22ce","#ec4899","#0b0420"]],"sable":["Sable",["#d6b77a","#fef3c7","#78552b"]],"glacier":["Glacier",["#bae6fd","#ffffff","#0284c7"]],"toxique":["Toxique",["#84cc16","#d9f99d","#1a2e05"]],"rubis":["Rubis",["#be123c","#f59e0b","#4c0519"]],"arctique":["Arctique",["#67e8f9","#e0f2fe","#0e7490"]],"vinyle":["Vinyle",["#18181b","#a1a1aa","#000000"]]};
+const COS_BAN = {"deg": "Dégradé", "ray": "Rayures", "poi": "Pois", "dia": "Diagonales", "vag": "Vagues", "dam": "Damier", "eto": "Étoiles", "aur": "Halo"}, COS_BUB = {"dou": "Douce", "pas": "Pastel", "neo": "Néon", "bri": "Brillante"}, COS_FRS = {"anneau": "Anneau", "spirale": "Spirale", "eclat": "Éclat"};
+const cosLum = h => { const n = parseInt(h.slice(1), 16), f = c => (c /= 255) <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); };
+const cosFg = (...bg) => { const cr = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05), dark = .012;   // texte toujours lisible
+  return Math.min(...bg.map(c => cr(cosLum(c), dark))) >= Math.min(...bg.map(c => cr(cosLum(c), 1))) ? "#16143a" : "#ffffff"; };
+const cosParts = id => { const [p, k] = String(id || "").split("_"); return COS_PAL[p] ? [COS_PAL[p], k] : null; };
+function bannerCss(id){
+  const x = cosParts(id); if(!x) return ""; const [a, c, d] = x[0][1];
+  return ({ deg:`linear-gradient(120deg,${a},${c})`, ray:`repeating-linear-gradient(90deg,${a} 0 18px,${d} 18px 36px)`,
+    poi:`radial-gradient(${c} 18%,transparent 21%) 0 0/22px 22px,linear-gradient(135deg,${a},${d})`,
+    dia:`repeating-linear-gradient(45deg,${a} 0 14px,${c} 14px 28px)`,
+    vag:`radial-gradient(circle at 50% 120%,${c} 0 32%,transparent 33%) 0 0/60px 36px,linear-gradient(${a},${d})`,
+    dam:`conic-gradient(${a} 25%,${d} 0 50%,${a} 0 75%,${d} 0) 0 0/32px 32px`,
+    eto:`radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#fff,transparent),radial-gradient(2px 2px at 45% 80%,${c},transparent),radial-gradient(1px 1px at 85% 20%,#fff,transparent) 0 0/90px 70px,linear-gradient(160deg,${d},${a})`,
+    aur:`radial-gradient(ellipse at 20% 0%,${c},transparent 60%),radial-gradient(ellipse at 90% 100%,${a},transparent 60%),${d}` })[x[1]] || "";
+}
+function bubbleStyle(id){
+  const x = cosParts(id); if(!x) return ""; const [a, c, d] = x[0][1];
+  return ({ dou:`background:linear-gradient(135deg,${a},${d});color:${cosFg(a, d)}`,
+    pas:`background:${c};color:${cosFg(c)};border:1px solid ${a}`,
+    neo:`background:${d};color:${cosFg(d)};border:2px solid ${a};box-shadow:0 0 10px ${a}88`,
+    bri:`background:linear-gradient(135deg,${c},${a});color:${cosFg(c, a)};box-shadow:inset 0 2px 0 #ffffff66` })[x[1]] || "";
+}
+const cosName = id => { const [kind, key] = id.split(":"), x = cosParts(key); if(!x) return "";
+  return `${x[0][0]} · ${(kind === "banner" ? COS_BAN : kind === "bubble" ? COS_BUB : COS_FRS)[x[1]] || ""}`; };
+(function(){   // cadres générés : une classe CSS par palette et par style
+  let css = "";
+  for(const [p, [, [a, c, d]]] of Object.entries(COS_PAL)){
+    css += `.fr-${p}_anneau{background:conic-gradient(${a},${c},${d},${a})}.fr-${p}_spirale{background:repeating-conic-gradient(${a} 0 10%,${c} 0 20%,${d} 0 30%)}.fr-${p}_eclat{background:conic-gradient(from 45deg,${c},${a},${c},${d},${c},${a},${c})}`;
+    for(const k of Object.keys(COS_FRS)) FRAMES[`${p}_${k}`] = [cosName(`frame:${p}_${k}`), "Boutique"];
+  }
+  const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+})();
 const titleName = t => !t ? "" : t.startsWith("m:") ? `Maître · ${THEMES[t.slice(2)] ? THEMES[t.slice(2)].n : t.slice(2)}` : (TITLES[t] ? TITLES[t][0] : "");
 const AV_LOCK = { a13:4, a14:8, a15:12, a16:16, a17:22, a18:28 };
 let UNLOCKS = null;
@@ -2819,7 +2858,8 @@ async function openPub(id, back){
   PUB_BACK = back || (() => goTab("home"));
   show("pub");
   $("pbBody").innerHTML = `<div class="center pl spin" style="padding:30px">Chargement…</div>`;
-  const { data: p, error } = await rpc("get_public_profile", { p_id: id });
+  const [{ data: p, error }, { data: cx }] = await Promise.all([rpc("get_public_profile", { p_id: id }),
+    sb.from("profiles").select("banner").eq("id", id).maybeSingle().then(r => r, () => ({ data:null }))]);
   if(error) return $("pbBody").innerHTML = `<p class="sub center">${esc(errMsg(error))}</p>`;
   const s = p.stats, n = s ? s.wins + s.losses + s.draws : 0;
   const stat = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
@@ -2832,9 +2872,10 @@ async function openPub(id, back){
     else acts = `<p class="note center">Ce joueur n'accepte pas les demandes d'ami.</p>`;
     acts += `<div style="display:flex;gap:8px;margin-top:8px"><button class="btn s" data-a="report" style="font-size:14px">${ic("flag",16)} Signaler</button><button class="btn s" data-a="block" style="font-size:14px;color:var(--bad)">Bloquer</button></div>`;
   } else acts = `<button class="btn s" data-a="edit">Modifier mon profil</button>`;
-  $("pbBody").innerHTML = `
-    <div class="center" style="padding:6px 0 10px">
-      <div class="av big" style="margin:0 auto 8px">${av(p)}</div>
+  const bn = cx && cx.banner ? bannerCss(cx.banner) : "";
+  $("pbBody").innerHTML = `${bn ? `<div class="pbanner" style="background:${bn}"></div>` : ""}
+    <div class="center" style="padding:6px 0 10px;position:relative">
+      <div class="av big" style="margin:0 auto 8px${bn ? ";box-shadow:0 0 0 4px var(--page)" : ""}">${av(p)}</div>
       <h2 style="font-size:26px">${esc(p.pseudo)}</h2>
       ${p.title ? `<div class="ttl">${esc(titleName(p.title))}</div>` : ""}
       <div class="pl" style="margin-top:4px">${stDot(p.id)} ${stLabel(p.id)} · Niveau ${p.level} · ${p.friends} ami${p.friends > 1 ? "s" : ""} · inscrit ${new Date(p.created_at).toLocaleDateString("fr-FR", { month:"long", year:"numeric" })}</div>
@@ -3271,19 +3312,27 @@ async function drawPushBtn(){
 async function renderProfileExtra(){
   const el = $("pExtra"); if(!el) return;
   if(!ONLINE){ el.innerHTML = ""; return; }
-  const u = await loadUnlocks() || { frames:[""], titles:["", "debutant"], avatars:[] };
+  const [u0, w] = await Promise.all([loadUnlocks(), rpc("my_wallet", {}).then(r => r.data).catch(() => null)]);
+  const u = u0 || { frames:[""], titles:["", "debutant"], avatars:[] };
   const fr = P.frame || "", tt = P.title || "";
+  const owned = k => ["", ...((w && w.shop) || []).filter(x => x.owned && x.id.startsWith(k + ":")).map(x => x.id.slice(7))];
+  const myBan = owned("banner"), myBub = owned("bubble");
   const allTitles = [...Object.keys(TITLES), ...u.titles.filter(t => t.startsWith("m:"))];
   el.innerHTML = `
     <div class="label">Description</div>
     <textarea class="field" id="pBio" maxlength="140" rows="2" placeholder="Quelques mots sur toi (140 caractères)">${esc(P.bio || "")}</textarea>
     <div class="label">Cadre de profil</div>
-    <div class="frames">${Object.entries(FRAMES).map(([k, [n, c]]) => { const ok = u.frames.includes(k);
+    <div class="frames">${Object.entries(FRAMES).filter(([k]) => !cosParts(k) || u.frames.includes(k)).map(([k, [n, c]]) => { const ok = u.frames.includes(k);
       return `<button class="frb ${k === fr ? 'on' : ''} ${ok ? '' : 'locked'}" data-f="${k}" title="${esc(c)}"><div class="av">${av({ ...P, frame:k })}</div><span>${n}</span>${ok ? "" : `<small>${ic("lock",11)} ${esc(c)}</small>`}</button>`; }).join("")}</div>
     <div class="label">Titre</div>
     <div class="chips wrap" id="pTitles">${allTitles.map(k => { const ok = u.titles.includes(k);
       return `<button data-t="${k}" class="${k === tt ? 'on' : ''} ${ok ? '' : 'locked'}" title="${esc(TITLES[k] ? TITLES[k][1] : "")}">${ok ? "" : ic("lock",11) + " "}${esc(k ? titleName(k) : "Aucun")}</button>`; }).join("")}</div>
     <p class="note" style="margin-top:0">Les titres « Maître » se gagnent en montant un thème au niveau 8 environ (800 XP dans le thème).</p>
+    <div class="label">Bannière de profil</div>
+    <div class="frames" id="pBanners">${myBan.map(k => `<button class="frb ${k === (P.banner || "") ? 'on' : ''}" data-b="${k}"><div class="bnprev" style="background:${k ? bannerCss(k) : "var(--card2)"}"></div><span>${k ? esc(cosName("banner:" + k)) : "Aucune"}</span></button>`).join("")}</div>
+    <div class="label">Bulle de message</div>
+    <div class="frames" id="pBubbles">${myBub.map(k => `<button class="frb ${k === (P.bubble || "") ? 'on' : ''}" data-u="${k}"><div class="bbprev" style="${k ? bubbleStyle(k) : "background:var(--acc);color:#fff"}">Salut !</div><span>${k ? esc(cosName("bubble:" + k)) : "Classique"}</span></button>`).join("")}</div>
+    <button class="btn s" id="pCosShop">${ic("star",18)} Plus de bannières, bulles et cadres dans la boutique</button>
     <button class="btn p" id="pSaveExtra">Enregistrer ma présentation</button>
     <button class="btn s" id="pSeePub">Voir mon profil public</button>
     <div class="label" style="margin-top:18px">Statut et confidentialité</div>
@@ -3298,13 +3347,17 @@ async function renderProfileExtra(){
     <div class="share"><div class="pl" style="margin-bottom:6px">Apparence</div><div class="chips" id="pDark">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"]].map(([k,l]) => `<button data-d="${k}" class="${THEME_MODE === k ? 'on' : ''}">${l}</button>`).join("")}</div></div>
     <button class="switch" id="pPush"><span style="display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:center;gap:8px">${ic("bell",20)} Notifications</span><span class="pl" style="font-weight:500"></span></span><span class="k"></span></button>
     ${IS_ADMIN ? `<button class="btn s" id="pAdmin" style="border:1px solid var(--acc)">${ic("lock",18)} Administration</button>` : ""}`;
-  let sel = { frame: fr, title: tt };
-  el.querySelectorAll(".frb").forEach(b => b.onclick = () => { if(b.classList.contains("locked")){ const c = FRAMES[b.dataset.f][1]; return /^(Boutique|Pass)/.test(c) ? openShop(c.startsWith("Boutique") ? "shop" : "pass", () => goTab("profile")) : toast(`Cadre verrouillé : ${esc(c)}.`); }
-    sel.frame = b.dataset.f; el.querySelectorAll(".frb").forEach(x => x.classList.toggle("on", x === b)); });
+  let sel = { frame: fr, title: tt, banner: P.banner || "", bubble: P.bubble || "" };
+  el.querySelectorAll("#pBanners .frb").forEach(b => b.onclick = () => { sel.banner = b.dataset.b; el.querySelectorAll("#pBanners .frb").forEach(x => x.classList.toggle("on", x === b)); });
+  el.querySelectorAll("#pBubbles .frb").forEach(b => b.onclick = () => { sel.bubble = b.dataset.u; el.querySelectorAll("#pBubbles .frb").forEach(x => x.classList.toggle("on", x === b)); });
+  $("pCosShop").onclick = () => { SHOP_CAT = "banner"; openShop("shop", () => goTab("profile")); };
+  el.querySelectorAll(".frb[data-f]").forEach(b => b.onclick = () => { if(b.classList.contains("locked")){ const c = FRAMES[b.dataset.f][1]; return /^(Boutique|Pass)/.test(c) ? openShop(c.startsWith("Boutique") ? "shop" : "pass", () => goTab("profile")) : toast(`Cadre verrouillé : ${esc(c)}.`); }
+    sel.frame = b.dataset.f; el.querySelectorAll(".frb[data-f]").forEach(x => x.classList.toggle("on", x === b)); });
   el.querySelectorAll("#pTitles button").forEach(b => b.onclick = () => { if(b.classList.contains("locked")) return toast(`Titre verrouillé : ${esc(TITLES[b.dataset.t] ? TITLES[b.dataset.t][1] : "")}.`);
     sel.title = b.dataset.t; el.querySelectorAll("#pTitles button").forEach(x => x.classList.toggle("on", x === b)); });
   $("pSaveExtra").onclick = async e => {
-    const { error } = await rpc("set_profile_extra", { p_bio: $("pBio").value, p_frame: sel.frame, p_title: sel.title });
+    let { error } = await rpc("set_profile_extra", { p_bio: $("pBio").value, p_frame: sel.frame, p_title: sel.title });
+    if(!error) ({ error } = await rpc("set_cosmetics", { p_banner: sel.banner, p_bubble: sel.bubble }));
     e.target.textContent = error ? "Erreur : " + errMsg(error) : "Enregistré ✔";
     await loadProfile(); $("pPhoto").innerHTML = av(P); setTimeout(() => e.target.textContent = "Enregistrer ma présentation", 1600);
   };
@@ -3346,11 +3399,14 @@ function drawCoins(){
     for(let t = 1; t <= p.tier; t++){ if(!p.claimed.includes(t)) n++; if(p.premium && !p.claimed_p.includes(t)) n++; }
     const hc = $("hCoins"); hc.dataset.n = n; hc.style.setProperty("--pp", (p.tier >= p.tiers ? 100 : Math.round((p.pxp - p.tier * p.per_tier) / p.per_tier * 100)) + "%"); }
 }
+let SHOP_CAT = "banner", SHOP_MAX = 24;
 function openShop(tab, back){ if(tab) SHOP_TAB = tab; SHOP_BACK = back || null; show("shop"); renderShop(); }
 $("shBack").onclick = () => SHOP_BACK ? SHOP_BACK() : goTab("home");
 $("hCoins").onclick = () => openShop("pass", () => goTab("home"));
 const itemKey = id => id.slice(6);
 const itemPrev = id => id.startsWith("frame:") ? `<div class="av">${av({ ...P, frame: itemKey(id) })}</div>`
+  : id.startsWith("banner:") ? `<div class="bnprev" style="background:${bannerCss(id.slice(7))}"></div>`
+  : id.startsWith("bubble:") ? `<div class="bbprev" style="${bubbleStyle(id.slice(7))}">GG, bien joué !</div>`
   : `<span class="ttl">${esc(TITLES[itemKey(id)] ? TITLES[itemKey(id)][0] : itemKey(id))}</span>`;
 async function renderShop(){
   const B = $("shBody");
@@ -3416,14 +3472,20 @@ async function renderShop(){
     };
     if($("pcPrem")) $("pcPrem").onclick = () => buyPremium();
   } else {
-    const items = data.shop || [];
-    B.innerHTML = `<p class="sub" style="margin:0 0 12px">Des cadres et des titres pour te démarquer. Gagne des pièces avec le pass de saison, en jouant chaque jour.</p>
-      <div class="shopgrid">${items.map(it => { const [rn, rl] = FX.rarity(it.id); return `<div class="shopit tilt" data-3d="${esc(it.id)}">${it.id.startsWith("frame:") ? itemPrev(it.id) : `<div class="tprev">${itemPrev(it.id)}</div>`}
+    const all = data.shop || [], CATS = [["banner","Bannières"],["bubble","Bulles"],["frame","Cadres"],["title","Titres"]];
+    if(!CATS.some(c => c[0] === SHOP_CAT)) SHOP_CAT = "banner";
+    const items = all.filter(it => it.id.startsWith(SHOP_CAT + ":")), shown = items.slice(0, SHOP_MAX);
+    B.innerHTML = `<p class="sub" style="margin:0 0 10px">${all.length} objets pour personnaliser ton profil et tes messages. Gagne des pièces avec le pass de saison, en jouant chaque jour.</p>
+      <div class="coscat chips">${CATS.map(([k, l]) => `<button data-c="${k}" class="${k === SHOP_CAT ? 'on' : ''}">${l} <span class="pl">${all.filter(x => x.id.startsWith(k + ":")).length}</span></button>`).join("")}</div>
+      <div class="shopgrid">${shown.map(it => { const [rn, rl] = FX.rarity(it.id); return `<div class="shopit tilt" data-3d="${esc(it.id)}">${/^(frame|banner|bubble):/.test(it.id) ? itemPrev(it.id) : `<div class="tprev">${itemPrev(it.id)}</div>`}
         <span class="rar r${rn}">${rl}</span><b>${esc(it.name)}</b>
         ${it.owned ? `<button class="mini" data-eq="1">${ic("check",14)} Possédé · équiper</button>`
           : `<button class="mini ${data.coins >= it.price ? 'p' : ''}" data-buy="${esc(it.id)}"><i class="coin"></i> ${it.price}</button>`}</div>`; }).join("")}</div>
-      <p class="note">Touche un objet pour le voir en 3D.</p>`;
-    B.querySelectorAll("[data-3d] .av,[data-3d] .tprev").forEach(a => a.onclick = () => { const id = a.closest("[data-3d]").dataset["3d"]; view3dReal(id.startsWith("frame:") ? "frame" : "title", id.slice(6), (items.find(x => x.id === id) || {}).name || ""); });
+      ${items.length > shown.length ? `<button class="btn s" id="shMore">Voir plus (${items.length - shown.length})</button>` : ""}
+      <p class="note">${SHOP_CAT === "frame" || SHOP_CAT === "title" ? "Touche un objet pour le voir en 3D." : "Équipe tes bannières et bulles depuis ton profil."}</p>`;
+    B.querySelectorAll(".coscat button").forEach(b => b.onclick = () => { SHOP_CAT = b.dataset.c; SHOP_MAX = 24; renderShop(); });
+    if($("shMore")) $("shMore").onclick = () => { SHOP_MAX += 24; renderShop(); };
+    B.querySelectorAll("[data-3d] .av,[data-3d] .tprev").forEach(a => a.onclick = () => { const id = a.closest("[data-3d]").dataset["3d"]; if(!/^(frame|title):/.test(id)) return; view3dReal(id.startsWith("frame:") ? "frame" : "title", id.slice(6), (items.find(x => x.id === id) || {}).name || ""); });
     B.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { goTab("profile"); setTimeout(() => $("pExtra") && $("pExtra").scrollIntoView({ behavior:"smooth" }), 400); });
     B.querySelectorAll("[data-buy]").forEach(b => b.onclick = async () => {
       const it = items.find(x => x.id === b.dataset.buy);
@@ -3816,6 +3878,7 @@ async function openChat(f){
   $("cQuick").querySelectorAll("button").forEach(b => b.onclick = () => sendMsg(b.dataset.k));
   $("cMsgs").innerHTML = `<div class="center pl spin" style="margin:auto">Chargement…</div>`;
   show("chat");
+  try { const { data: bx } = await sb.from("profiles").select("bubble").eq("id", f.id).maybeSingle(); if(CHAT === f) f.bubble = (bx && bx.bubble) || ""; } catch(e){}
   const { data: clr } = await sb.from("conversation_clears").select("cleared_at").eq("user_id", me).eq("other", f.id).maybeSingle();
   let qy = sb.from("messages").select("*")
     .or(`and(sender.eq.${me},receiver.eq.${f.id}),and(sender.eq.${f.id},receiver.eq.${me})`);
@@ -3833,7 +3896,8 @@ function addBubble(m){
   const pc = partyCodeOf(m), canParty = pc && m.sender !== me && Date.now() - new Date(m.created_at) < 60*60*1000;
   const bs = 'style="display:block;margin-top:6px;background:#2a2160;color:#fff"';
   CHAT_MSGS[m.id] = m;
-  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}" data-mid="${m.id}">${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canParty ? `<button class="mini p jparty" data-c="${esc(pc || "")}" ${bs}>Rejoindre le salon</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
+  const bst = m.code === "duel" || m.code === "quiz" ? "" : bubbleStyle(m.sender === me ? P.bubble : CHAT && CHAT.bubble);
+  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}" data-mid="${m.id}" ${bst ? `style="${bst}"` : ""}>${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canParty ? `<button class="mini p jparty" data-c="${esc(pc || "")}" ${bs}>Rejoindre le salon</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
   el.querySelectorAll("button.join").forEach(b => b.onclick = () => startLive(null, false, b.dataset.m));
   el.querySelectorAll("button.jparty").forEach(b => b.onclick = () => partyEnter("join_party", { p_code: b.dataset.c }));
   el.querySelectorAll("button.jquiz").forEach(b => b.onclick = () => openQuiz(b.dataset.q));
