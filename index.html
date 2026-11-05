@@ -565,6 +565,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     <div class="err" id="hErr"></div>
     <button class="daily" id="dailyCard"></button>
     <button class="daily comm" id="commCard" style="display:none"></button>
+    <button class="btn s" id="hParty" style="margin:2px 0 10px"><i data-ic="users"></i> Partie à plusieurs · rejoindre avec un code</button>
     <div class="hhead"><h3 id="thTitle">Tes thèmes</h3><button class="linkbtn" id="thAll"></button></div>
     <div class="grid" id="themes"></div>
     <div id="hQuiz"></div>
@@ -592,6 +593,9 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     <div class="label" style="margin-top:22px"><i data-ic="swords"></i> Duel en direct</div>
     <button class="btn s" id="mRandom"><i data-ic="bolt"></i> Adversaire au hasard</button>
     <button class="btn s" id="mFriend"><i data-ic="friend"></i> Défier un ami</button>
+    <div class="label" style="margin-top:22px"><i data-ic="users"></i> Partie à plusieurs · 2 à 10 joueurs</div>
+    <button class="btn s" id="mPartyQuick"><i data-ic="bolt"></i> Partie publique</button>
+    <button class="btn s" id="mPartyRoom"><i data-ic="users"></i> Créer un salon privé (code à partager)</button>
     <p class="note" id="mNote">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
   </section>
 
@@ -611,6 +615,13 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
       <button class="btn s" id="mmCancel" style="display:none">Annuler</button>
       <button class="btn s" id="mmBack" style="display:none">Accueil</button>
     </div>
+  </section>
+
+  <!-- PARTIE À PLUSIEURS -->
+  <section class="screen" id="party">
+    <button class="back" id="ptBack">← Quitter</button>
+    <div class="disp center" style="font-size:20px;font-weight:700;margin:4px 0 6px" id="ptTheme"></div>
+    <div id="ptBody"></div>
   </section>
 
   <!-- JEU -->
@@ -1244,6 +1255,8 @@ async function boot(){
   setOnline(true);
   await loadProfile();
   startSocial(); refreshBank(); flushQueue(); checkAdmin();
+  const party = new URLSearchParams(location.search).get("party");
+  if(party){ history.replaceState(null, "", location.pathname); renderHome(); return partyEnter("join_party", { p_code: party }); }
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   const sp = new URLSearchParams(location.search), quiz = sp.get("quiz"), go = sp.get("go"), prem = sp.get("premium");
@@ -1289,6 +1302,8 @@ async function reconnect(){
   try { await withTimeout(ensureAuth(), 8000); } catch(e){ return; }
   setOnline(true);
   await loadProfile(); startSocial(); await flushQueue(); refreshBank(); checkAdmin();
+  const party = new URLSearchParams(location.search).get("party");
+  if(party){ history.replaceState(null, "", location.pathname); renderHome(); return partyEnter("join_party", { p_code: party }); }
   const duel = new URLSearchParams(location.search).get("duel");
   if(duel){ history.replaceState(null, "", location.pathname); return joinDuel(duel); }
   if($("home").classList.contains("on")) renderHome();
@@ -1529,7 +1544,7 @@ function openMode(k){
   renderDiff(); renderLen();
   const bt = LOC.solo && LOC.solo.byTheme && LOC.solo.byTheme[k];
   $("mInfo").innerHTML = `10 questions · 10 secondes chacune · dernière question à points doublés${bt && bt.best ? `<br><b style="color:var(--acc)">${ic("trophy",14)} Ton record en solo : ${bt.best} pts</b>` : ""}`;
-  $("mRandom").disabled = $("mFriend").disabled = !ONLINE;
+  $("mRandom").disabled = $("mFriend").disabled = $("mPartyQuick").disabled = $("mPartyRoom").disabled = !ONLINE;
   $("mNote").textContent = ONLINE ? "Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite."
                                   : "Les duels demandent une connexion Internet. Le solo, lui, marche partout.";
   show("mode");
@@ -1621,6 +1636,175 @@ function wireShare(root, link){
     copy(link, b);
   });
 }
+
+/* ---------------- PARTIE À PLUSIEURS (2 à 10 joueurs) ---------------- */
+let PT = null;
+const partyCodeOf = m => { const x = m && m.code === "txt" && m.data && /Code du salon : ([A-Z0-9]{5})$/.exec(m.data.t || ""); return x ? x[1] : null; };
+const partyLink = code => `${location.origin}${location.pathname}?party=${code}`;
+function partyStop(){ if(PT){ clearInterval(PT.poll); clearInterval(PT.loop); } PT = null; }
+async function partyEnter(call, args){
+  if(!ONLINE) return toast("Les parties à plusieurs demandent une connexion Internet.");
+  partyStop(); $("ptBody").innerHTML = `<div class="center pl spin" style="margin:40px auto">Connexion au salon…</div>`; show("party");
+  const { data: pid, error } = await rpc(call, args);
+  if(error){ $("ptBody").innerHTML = `<div class="err" style="display:block">${esc(errMsg(error))}</div><button class="btn s" onclick="partyQuit()">Retour</button>`; return; }
+  partyOpen(pid);
+}
+function partyOpen(pid){
+  partyStop();
+  const pt = PT = { pid, st:null, off:0, q:{}, mine:{}, view:"", busy:false };
+  show("party"); partyPoll();
+  pt.poll = setInterval(partyPoll, 1500);
+  pt.loop = setInterval(() => partyDraw(pt), 200);
+}
+async function partyPoll(){
+  const pt = PT; if(!pt || pt.busy) return; pt.busy = true;
+  const t0 = Date.now(), { data, error } = await rpc("party_state", { p_id: pt.pid });
+  pt.busy = false; if(PT !== pt) return;
+  if(error){ if(!pt.st){ partyStop(); $("ptBody").innerHTML = `<div class="err" style="display:block">${esc(errMsg(error))}</div><button class="btn s" onclick="partyQuit()">Retour</button>`; } return; }
+  pt.off = Date.parse(data.now) - (t0 + Date.now()) / 2;
+  const prev = pt.st; pt.st = data;
+  if(data.status === "lobby" && (!prev || prev.players.length !== data.players.length || prev.host !== data.host)) pt.view = "";
+  if(data.status === "done" && prev && prev.status !== "done") pt.view = "";
+  if(data.status === "done"){ clearInterval(pt.poll); clearInterval(pt.loop); pt.view = ""; partyDraw(pt); loadProfile && setTimeout(loadProfile, 800); }
+  else partyDraw(pt);
+}
+function partyClock(pt){
+  const s = pt.st, slot = s.q_secs + s.gap_secs, el = (Date.now() + pt.off - Date.parse(s.started_at)) / 1000;
+  if(el < 0) return { phase:"count", left: Math.ceil(-el) };
+  const idx = Math.floor(el / slot), w = el - idx * slot;
+  if(idx >= s.n) return { phase:"end" };
+  return w < s.q_secs ? { phase:"q", idx, left: s.q_secs - w } : { phase:"rank", idx, left: slot - w };
+}
+const ptRows = (s, lim) => s.players.slice(0, lim || 10).map((p, i) =>
+  `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
+function partyDraw(pt){
+  if(PT !== pt || !pt.st) return;
+  const s = pt.st, body = $("ptBody");
+  $("ptTheme").innerHTML = `${tname(s.theme)} <span class="pl">· ${s.n} questions</span>`;
+  if(s.status === "lobby"){
+    if(pt.view === "lobby") return; pt.view = "lobby";
+    const host = s.host === s.me, n = s.players.length;
+    body.innerHTML = `<div class="center" style="margin:6px 0 14px">
+        <div class="pl">${s.public ? "Partie publique" : "Code du salon"}</div>
+        ${s.public ? `<div class="sub" style="margin-top:6px">En attente de joueurs… La partie démarre toute seule dès qu'il y a assez de monde.</div>`
+                   : `<div class="disp" style="font-size:44px;letter-spacing:6px;font-weight:800">${esc(s.code)}</div>`}
+        <div class="pl spin" style="margin-top:6px">${n}/10 joueur${n > 1 ? "s" : ""}</div></div>
+      <div>${ptRows(s)}</div>
+      ${s.public ? "" : `${shareBox(partyLink(s.code)).replace("Il arrivera directement dans ce duel.", "Il arrivera directement dans ce salon.")}<div id="ptFr"></div>`}
+      ${host && !s.public ? `<button class="btn p" id="ptGo" ${n < 2 ? "disabled" : ""}>${ic("play",18)} Lancer la partie${n < 2 ? " (2 joueurs min.)" : ` à ${n}`}</button>` : !s.public ? `<p class="sub center">L'hôte lance la partie quand tout le monde est là.</p>` : ""}
+      <button class="btn s" onclick="partyQuit()">Quitter le salon</button>`;
+    if(!s.public){ wireShare(body, partyLink(s.code)); partyFriends($("ptFr"), s); }
+    const go = $("ptGo"); if(go) go.onclick = async () => { go.disabled = true; const { error } = await rpc("start_party", { p_id: s.id }); if(error){ go.disabled = false; toast(esc(errMsg(error))); } else partyPoll(); };
+    return;
+  }
+  if(s.status === "done") return partyPodium(pt);
+  const c = partyClock(pt);
+  if(c.phase === "count"){
+    const v = "count" + c.left; if(pt.view === v) return; pt.view = v;
+    body.innerHTML = `<div class="center" style="padding-top:50px"><div class="pl">C'est parti dans</div><div class="disp" style="font-size:90px;font-weight:800">${c.left}</div><div class="sub">${s.players.length} joueurs · ${s.n} questions · ${s.q_secs} s par question</div></div>`;
+    sfx("tick"); return;
+  }
+  if(c.phase === "end"){ if(pt.view !== "wait"){ pt.view = "wait"; body.innerHTML = `<div class="center pl spin" style="margin:60px auto">Calcul du classement…</div>`; } return; }
+  const key = c.phase + c.idx;
+  if(pt.view !== key){
+    pt.view = key;
+    if(c.phase === "q") partyQ(pt, c.idx); else partyRank(pt, c.idx);
+  }
+  const tb = $("ptBar"), tt = $("ptT");
+  if(tb){ const f = c.phase === "q" ? c.left / s.q_secs : c.left / s.gap_secs; tb.style.width = Math.max(0, f * 100) + "%"; tb.parentNode.className = "tbar" + (c.phase === "q" && c.left < 3 ? " danger" : c.phase === "q" && c.left < 5 ? " warn" : ""); }
+  if(tt) tt.textContent = Math.ceil(c.left);
+}
+async function partyGetQ(pt, idx, fresh){
+  if(!fresh && pt.q[idx]) return pt.q[idx];
+  const { data, error } = await rpc("party_question", { p_id: pt.pid, p_idx: idx });
+  if(error) return null;
+  return pt.q[idx] = data;
+}
+async function partyQ(pt, idx){
+  const s = pt.st, body = $("ptBody");
+  const me = s.players.find(p => p.id === s.me) || { score:0 };
+  body.innerHTML = `<div class="hud" style="display:flex;align-items:center;justify-content:space-between"><div class="qn">Question ${idx + 1}/${s.n}${idx === s.n - 1 ? ' · <b style="color:var(--acc)">points ×2</b>' : ''}</div><div class="timer" id="ptT">${s.q_secs}</div><div class="sc" id="ptS" style="color:var(--me)">${me.score}</div></div>
+    <div class="tbar"><i id="ptBar"></i></div><div class="question" id="ptQ"><span class="pl spin">…</span></div><div class="answers" id="ptA"></div>`;
+  const q = await partyGetQ(pt, idx);
+  if(PT !== pt || pt.view !== "q" + idx || !q) return;
+  $("ptQ").textContent = q.question;
+  $("ptA").innerHTML = q.options.map(o => `<button class="ans" data-o="${esc(o)}">${esc(o)}</button>`).join("");
+  const done = q.mine || pt.mine[idx];
+  $("ptA").querySelectorAll(".ans").forEach(b => {
+    if(done){ b.disabled = true; if(b.dataset.o === (done.choice || done)) b.classList.add("mine"); return; }
+    b.onclick = async () => {
+      $("ptA").querySelectorAll(".ans").forEach(x => x.disabled = true); b.classList.add("mine");
+      const { data: r, error } = await rpc("submit_party_answer", { p_id: pt.pid, p_idx: idx, p_choice: b.dataset.o });
+      if(error){ toast(esc(errMsg(error))); return; }
+      pt.mine[idx] = { choice: b.dataset.o, ...r };
+      if(PT !== pt || pt.view !== "q" + idx) return;
+      b.classList.add(r.ok ? "good" : "bad"); sfx(r.ok ? "good" : "bad"); if($("ptS")) $("ptS").textContent = +$("ptS").textContent + (r.points || 0);
+      if(!r.ok) $("ptA").querySelectorAll(".ans").forEach(x => { if(x.dataset.o === r.answer) x.classList.add("good"); });
+      if(r.points){ const p = document.createElement("div"); p.className = "pop"; p.textContent = "+" + r.points; body.appendChild(p); setTimeout(() => p.remove(), 900); }
+    };
+  });
+}
+async function partyRank(pt, idx){
+  const s = pt.st, body = $("ptBody"), mine = pt.mine[idx];
+  body.innerHTML = `<div class="center" style="margin:4px 0 10px"><div class="pl">Réponse ${idx + 1}/${s.n}</div><div class="question" style="min-height:0;margin:8px 0;padding:14px" id="ptRA"><span class="pl spin">…</span></div>
+      <div class="sub" style="font-weight:700;color:${mine ? (mine.ok ? "var(--good)" : "var(--bad)") : "var(--mute)"}">${mine ? (mine.ok ? `Bonne réponse · +${mine.points}` : "Raté !") : "Pas de réponse"}</div></div>
+    <div class="label">${ic("trophy",14)} Classement en direct</div><div id="ptLB">${ptRows(s)}</div>
+    <div class="tbar"><i id="ptBar"></i></div><div class="pl center" style="margin-top:6px">${idx + 1 < s.n ? "Question suivante dans <b id=\"ptT\"></b> s" : "Fin de la partie…"}</div>`;
+  const q = await partyGetQ(pt, idx, true);
+  if(PT !== pt || pt.view !== "rank" + idx) return;
+  if(q) $("ptRA").innerHTML = `${esc(q.question)}<br><b style="color:var(--good)">${esc(q.answer || "")}</b>`;
+  setTimeout(() => { if(PT === pt && pt.view === "rank" + idx && $("ptLB")) $("ptLB").innerHTML = ptRows(pt.st); }, 1600);
+}
+function partyPodium(pt){
+  if(pt.view === "done") return; pt.view = "done";
+  const s = pt.st, P3 = s.players.slice(0, 3), place = s.players.findIndex(p => p.id === s.me) + 1;
+  const col = (p, i, h) => p ? `<div class="center" style="flex:1"><div class="av" style="width:${i ? 50 : 66}px;height:${i ? 50 : 66}px;margin:0 auto 4px">${av(p)}</div><div class="rn" style="font-size:13px">${esc(p.pseudo)}</div><b>${p.score}</b>
+      <div style="height:${h}px;margin-top:6px;border-radius:12px 12px 0 0;background:${["var(--acc)","#c7c9d9","#d99a5b"][i]};display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font-weight:800;color:#fff;font-size:22px">${i + 1}</div></div>` : `<div style="flex:1"></div>`;
+  $("ptBody").innerHTML = `<h2 class="center" style="margin:6px 0 2px">${place === 1 ? "Victoire !" : place ? `${place}<sup>e</sup> place` : "Partie terminée"}</h2>
+    <p class="sub center">${s.players.length} joueurs · XP ajoutée à ton profil</p>
+    <div style="display:flex;align-items:flex-end;gap:8px;margin:16px 0">${col(P3[1], 1, 70)}${col(P3[0], 0, 100)}${col(P3[2], 2, 50)}</div>
+    <div>${ptRows(s)}</div>
+    ${s.public ? `<button class="btn p" id="ptAgain">${ic("bolt",18)} Nouvelle partie publique</button>` : `<button class="btn p" id="ptAgain">${ic("users",18)} Nouveau salon</button>`}
+    <button class="btn s" onclick="partyQuit()">Accueil</button>`;
+  sfx(place === 1 ? "good" : "tick");
+  $("ptAgain").onclick = () => s.public ? partyEnter("quick_party", { p_theme: s.theme, p_n: s.n })
+                                         : partyEnter("create_party", { p_theme: s.theme, p_n: s.n, p_public: false });
+}
+async function partyFriends(root, s){
+  if(!root) return;
+  const { data } = await rpc("list_friends", {});
+  const fr = (data || []).filter(f => f.relation === "friend").sort((a, b) => ONLINE_IDS.has(b.id) - ONLINE_IDS.has(a.id));
+  if(!fr.length) return;
+  root.innerHTML = `<div class="share"><b>${ic("users",18)} Invite tes amis :</b><div class="fp" style="margin-top:6px">${fr.map(f => `<div class="row"><div class="av">${av(f)}</div><div class="rn">${esc(f.pseudo)}${stDot(f.id)}</div><button class="mini p" data-id="${f.id}">Inviter</button></div>`).join("")}</div></div>`;
+  root.querySelectorAll("button").forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await rpc("send_message", { p_to: b.dataset.id, p_code: "txt", p_data: { t: `Rejoins ma partie à plusieurs${THEMES[s.theme] ? " en " + THEMES[s.theme].n : ""} ! Code du salon : ${s.code}` } });
+    if(error){ b.disabled = false; return toast(esc(errMsg(error))); }
+    b.textContent = "Invité ✓";
+  });
+}
+function partyQuit(){
+  const pt = PT; partyStop();
+  if(pt && pt.st && pt.st.status === "lobby") rpc("leave_party", { p_id: pt.pid });
+  renderHome(); show("home");
+}
+function partyJoinView(){
+  if(!ONLINE) return toast("Les parties à plusieurs demandent une connexion Internet.");
+  partyStop(); $("ptTheme").innerHTML = `${ic("users")} Partie à plusieurs`;
+  $("ptBody").innerHTML = `<p class="sub center" style="margin:10px 0 16px">De 2 à 10 joueurs, mêmes questions au même moment, classement en direct.</p>
+    <div class="label">Rejoindre un salon</div>
+    <div class="sbar" style="margin:8px 0"><input id="ptCode" placeholder="Code du salon (ex. K7QXP)" maxlength="8" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px" enterkeyhint="go"></div>
+    <button class="btn p" id="ptJoin">${ic("play",18)} Rejoindre</button>
+    <p class="note">Pour créer un salon ou trouver une partie publique, choisis un thème puis « Partie à plusieurs ».</p>
+    <button class="btn s" onclick="partyQuit()">Retour</button>`;
+  const go = () => { const c = $("ptCode").value.trim(); if(c.length >= 4) partyEnter("join_party", { p_code: c }); };
+  $("ptJoin").onclick = go; $("ptCode").onkeydown = e => { if(e.key === "Enter") go(); };
+  show("party"); setTimeout(() => $("ptCode").focus(), 200);
+}
+$("mPartyQuick").onclick = () => partyEnter("quick_party", { p_theme: curTheme, p_n: soloLen });
+$("mPartyRoom").onclick = () => partyEnter("create_party", { p_theme: curTheme, p_n: soloLen, p_public: false });
+$("hParty").onclick = partyJoinView;
+$("ptBack").onclick = () => { if(PT && PT.st && PT.st.status === "playing") return toast("Partie en cours…", [{ label:"Quitter quand même", run: partyQuit }, { label:"Rester", primary:true, run: () => {} }], 5000); partyQuit(); };
 
 /* ---------------- SALON EN DIRECT ---------------- */
 function liveLobby(M){
@@ -1932,7 +2116,7 @@ $("gQuit").onclick = () => QUIT && QUIT();
 let NOTIF_CH = null, PRES_CH = null, ONLINE_IDS = new Set(), PROFILE_CACHE = {};
 const ago = d => { const s = (Date.now() - new Date(d)) / 1000;
   return s < 60 ? "à l'instant" : s < 3600 ? `il y a ${Math.floor(s/60)} min` : s < 86400 ? `il y a ${Math.floor(s/3600)} h` : `il y a ${Math.floor(s/86400)} j`; };
-const inGame = () => ["game","match"].some(id => $(id).classList.contains("on"));
+const inGame = () => ["game","match","party"].some(id => $(id).classList.contains("on"));
 
 function startSocial(){
   try { startSocialInner(); } catch(e){ console.warn("temps réel indisponible", e); }
@@ -3591,6 +3775,8 @@ const QUICK = { slt:"Salut !", gg:"GG !", bj:"Bien joué !", rev:"Revanche ?", f
 let CHAT = null, UNREAD_BY = {};
 const msgText = m => m.code === "txt" ? esc((m.data && m.data.t) || "") : m.code === "duel"
   ? `${ic("swords",16)} Défi lancé${m.data && THEMES[m.data.theme] ? ` en ${THEMES[m.data.theme].n}` : ""}`
+  : m.code === "party" && m.data
+  ? `${ic("users",16)} Invitation à une partie à plusieurs${THEMES[m.data.theme] ? ` en ${THEMES[m.data.theme].n}` : ""} · code <b>${esc(m.data.code || "")}</b>`
   : m.code === "quiz" && m.data
   ? `${ic("swords",16)} Défi sur le quiz « ${esc(m.data.title || "?")} »${m.data.score != null ? `<br><span style="font-weight:500;font-size:13px">Score à battre : ${+m.data.score}</span>` : ""}`
   : esc(QUICK[m.code] || "…");
@@ -3619,10 +3805,12 @@ function addBubble(m){
   const el = $("cMsgs"), p = el.querySelector("p.sub, .spin"); if(p) p.remove();
   const canJoin = m.code === "duel" && m.sender !== me && m.data && m.data.match_id && Date.now() - new Date(m.created_at) < 15*60*1000;
   const canQuiz = m.code === "quiz" && m.data && m.data.quiz_id;
+  const pc = partyCodeOf(m), canParty = pc && m.sender !== me && Date.now() - new Date(m.created_at) < 60*60*1000;
   const bs = 'style="display:block;margin-top:6px;background:#2a2160;color:#fff"';
   CHAT_MSGS[m.id] = m;
-  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}" data-mid="${m.id}">${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
+  el.insertAdjacentHTML("beforeend", `<div class="bub ${m.sender===me?'me':''} ${m.code==='duel'||m.code==='quiz'?'duel':''}" data-mid="${m.id}">${msgText(m)}${canJoin ? `<button class="mini p join" data-m="${esc(m.data.match_id)}" ${bs}>Rejoindre le duel</button>` : ""}${canParty ? `<button class="mini p jparty" data-c="${esc(pc || "")}" ${bs}>Rejoindre le salon</button>` : ""}${canQuiz ? `<button class="mini p jquiz" data-q="${esc(m.data.quiz_id)}" ${bs}>${m.sender===me ? "Voir le quiz" : "Jouer"}</button>` : ""}<small>${hhmm(m.created_at)}</small></div>`);
   el.querySelectorAll("button.join").forEach(b => b.onclick = () => startLive(null, false, b.dataset.m));
+  el.querySelectorAll("button.jparty").forEach(b => b.onclick = () => partyEnter("join_party", { p_code: b.dataset.c }));
   el.querySelectorAll("button.jquiz").forEach(b => b.onclick = () => openQuiz(b.dataset.q));
   const last = el.lastElementChild;
   if(last && m.sender !== me && m.code === "txt") last.onclick = () => toast(`<div><b>Message de ${esc(CHAT.pseudo)}</b><br><span class="pl">${esc((m.data.t || "").slice(0, 80))}</span></div>`,
@@ -3678,6 +3866,10 @@ async function onMessage(m){
   if($("friends").classList.contains("on")) renderFriendList();
   if(inGame() || m.code === "duel") return;   // l'invitation a déjà sa propre alerte
   const a = await actorOf(m.sender);
+  if(partyCodeOf(m)){
+    return toast(`<div class="av" style="width:40px;height:40px">${av(a)}</div><div><b>${esc(a.pseudo)}</b><br>${msgText(m)}</div>`,
+      [{ label:"Rejoindre", primary:true, run:() => partyEnter("join_party", { p_code: partyCodeOf(m) }) }, { label:"Plus tard", run:() => {} }], 12000);
+  }
   if(m.code === "quiz" && m.data && m.data.quiz_id){
     return toast(`<div class="av" style="width:40px;height:40px">${av(a)}</div><div><b>${esc(a.pseudo)}</b><br>${msgText(m)}</div>`,
       [{ label:"Jouer", primary:true, run:() => openQuiz(m.data.quiz_id) }, { label:"Plus tard", run:() => {} }], 9000);
