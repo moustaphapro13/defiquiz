@@ -594,6 +594,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     <button class="btn s" id="mRandom"><i data-ic="bolt"></i> Adversaire au hasard</button>
     <button class="btn s" id="mFriend"><i data-ic="friend"></i> Défier un ami</button>
     <div class="label" style="margin-top:22px"><i data-ic="users"></i> Partie à plusieurs · 2 à 10 joueurs</div>
+    <div class="chips" id="mPlayers"></div>
     <button class="btn s" id="mPartyQuick"><i data-ic="bolt"></i> Partie publique</button>
     <button class="btn s" id="mPartyRoom"><i data-ic="users"></i> Créer un salon privé (code à partager)</button>
     <p class="note" id="mNote">Les deux joueurs reçoivent les mêmes questions au même moment. Si personne n'est dispo, tu joues en premier et ton adversaire jouera ensuite.</p>
@@ -1467,6 +1468,11 @@ function renderDiff(){
   $("mDiff").querySelectorAll("button").forEach(b=>b.onclick=()=>{ soloDiff=+b.dataset.d; LS.set("dq_diff", soloDiff); renderDiff(); });
 }
 let soloLen = LS.get("dq_len", 10);
+let partyMax = LS.get("dq_pmax", 4);
+function renderPlayers(){
+  $("mPlayers").innerHTML = `<span class="pl" style="align-self:center;white-space:nowrap">Joueurs :</span>` + [2,3,4,5,6,8,10].map(n=>`<button data-n="${n}" class="${n===partyMax?'on':''}">${n}</button>`).join("");
+  $("mPlayers").querySelectorAll("button").forEach(b=>b.onclick=()=>{ partyMax=+b.dataset.n; LS.set("dq_pmax", partyMax); renderPlayers(); });
+}
 function renderLen(){
   $("mLen").innerHTML = [[10,"Normale · 10"],[15,"Longue · 15"],[20,"Marathon · 20"]].map(([n,l])=>`<button data-n="${n}" class="${n===soloLen?'on':''}">${l}</button>`).join("");
   $("mLen").querySelectorAll("button").forEach(b=>b.onclick=()=>{ soloLen=+b.dataset.n; LS.set("dq_len", soloLen); renderLen(); });
@@ -1541,7 +1547,7 @@ function openMode(k){
   const grp = THEMES[k].p || k, subs = visSubs(grp);
   $("mSubs").innerHTML = subs.length ? [grp, ...subs].map(x => `<button data-s="${x}" class="${x === k ? 'on' : ''}" style="display:flex;align-items:center;gap:6px">${art(x, 18)} ${x === grp ? "Tout " + THEMES[x].n.toLowerCase() : THEMES[x].n}</button>`).join("") : "";
   $("mSubs").querySelectorAll("button").forEach(b => b.onclick = () => { if(b.dataset.s !== curTheme) openMode(b.dataset.s); });
-  renderDiff(); renderLen();
+  renderDiff(); renderLen(); renderPlayers();
   const bt = LOC.solo && LOC.solo.byTheme && LOC.solo.byTheme[k];
   $("mInfo").innerHTML = `10 questions · 10 secondes chacune · dernière question à points doublés${bt && bt.best ? `<br><b style="color:var(--acc)">${ic("trophy",14)} Ton record en solo : ${bt.best} pts</b>` : ""}`;
   $("mRandom").disabled = $("mFriend").disabled = $("mPartyQuick").disabled = $("mPartyRoom").disabled = !ONLINE;
@@ -1686,12 +1692,12 @@ function partyDraw(pt){
     const host = s.host === s.me, n = s.players.length;
     body.innerHTML = `<div class="center" style="margin:6px 0 14px">
         <div class="pl">${s.public ? "Partie publique" : "Code du salon"}</div>
-        ${s.public ? `<div class="sub" style="margin-top:6px">En attente de joueurs… La partie démarre toute seule dès qu'il y a assez de monde.</div>`
+        ${s.public ? `<div class="sub" style="margin-top:6px">En attente de joueurs… La partie démarre dès que le salon est plein${host ? ", ou quand tu la lances" : " ou quand l'hôte la lance"}.</div>`
                    : `<div class="disp" style="font-size:44px;letter-spacing:6px;font-weight:800">${esc(s.code)}</div>`}
-        <div class="pl spin" style="margin-top:6px">${n}/10 joueur${n > 1 ? "s" : ""}</div></div>
+        <div class="pl spin" style="margin-top:6px">${n}/${s.max || 10} joueur${n > 1 ? "s" : ""}</div></div>
       <div>${ptRows(s)}</div>
       ${s.public ? "" : `${shareBox(partyLink(s.code)).replace("Il arrivera directement dans ce duel.", "Il arrivera directement dans ce salon.")}<div id="ptFr"></div>`}
-      ${host && !s.public ? `<button class="btn p" id="ptGo" ${n < 2 ? "disabled" : ""}>${ic("play",18)} Lancer la partie${n < 2 ? " (2 joueurs min.)" : ` à ${n}`}</button>` : !s.public ? `<p class="sub center">L'hôte lance la partie quand tout le monde est là.</p>` : ""}
+      ${host ? `<button class="btn p" id="ptGo" ${n < 2 ? "disabled" : ""}>${ic("play",18)} Lancer la partie${n < 2 ? " (2 joueurs min.)" : ` à ${n}`}</button>` : !s.public ? `<p class="sub center">L'hôte lance la partie quand il veut. Elle démarre aussi dès que le salon est plein.</p>` : ""}
       <button class="btn s" onclick="partyQuit()">Quitter le salon</button>`;
     if(!s.public){ wireShare(body, partyLink(s.code)); partyFriends($("ptFr"), s); }
     const go = $("ptGo"); if(go) go.onclick = async () => { go.disabled = true; const { error } = await rpc("start_party", { p_id: s.id }); if(error){ go.disabled = false; toast(esc(errMsg(error))); } else partyPoll(); };
@@ -1767,8 +1773,8 @@ function partyPodium(pt){
     ${s.public ? `<button class="btn p" id="ptAgain">${ic("bolt",18)} Nouvelle partie publique</button>` : `<button class="btn p" id="ptAgain">${ic("users",18)} Nouveau salon</button>`}
     <button class="btn s" onclick="partyQuit()">Accueil</button>`;
   sfx(place === 1 ? "good" : "tick");
-  $("ptAgain").onclick = () => s.public ? partyEnter("quick_party", { p_theme: s.theme, p_n: s.n })
-                                         : partyEnter("create_party", { p_theme: s.theme, p_n: s.n, p_public: false });
+  $("ptAgain").onclick = () => s.public ? partyEnter("quick_party", { p_theme: s.theme, p_n: s.n, p_max: s.max })
+                                         : partyEnter("create_party", { p_theme: s.theme, p_n: s.n, p_public: false, p_max: s.max });
 }
 async function partyFriends(root, s){
   if(!root) return;
@@ -1791,7 +1797,7 @@ function partyQuit(){
 function partyJoinView(){
   if(!ONLINE) return toast("Les parties à plusieurs demandent une connexion Internet.");
   partyStop(); $("ptTheme").innerHTML = `${ic("users")} Partie à plusieurs`;
-  $("ptBody").innerHTML = `<p class="sub center" style="margin:10px 0 16px">De 2 à 10 joueurs, mêmes questions au même moment, classement en direct.</p>
+  $("ptBody").innerHTML = `<p class="sub center" style="margin:10px 0 16px">De 2 à 10 joueurs (au choix), mêmes questions au même moment, classement en direct.</p>
     <div class="label">Rejoindre un salon</div>
     <div class="sbar" style="margin:8px 0"><input id="ptCode" placeholder="Code du salon (ex. K7QXP)" maxlength="8" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px" enterkeyhint="go"></div>
     <button class="btn p" id="ptJoin">${ic("play",18)} Rejoindre</button>
@@ -1801,8 +1807,8 @@ function partyJoinView(){
   $("ptJoin").onclick = go; $("ptCode").onkeydown = e => { if(e.key === "Enter") go(); };
   show("party"); setTimeout(() => $("ptCode").focus(), 200);
 }
-$("mPartyQuick").onclick = () => partyEnter("quick_party", { p_theme: curTheme, p_n: soloLen });
-$("mPartyRoom").onclick = () => partyEnter("create_party", { p_theme: curTheme, p_n: soloLen, p_public: false });
+$("mPartyQuick").onclick = () => partyEnter("quick_party", { p_theme: curTheme, p_n: soloLen, p_max: partyMax });
+$("mPartyRoom").onclick = () => partyEnter("create_party", { p_theme: curTheme, p_n: soloLen, p_public: false, p_max: partyMax });
 $("hParty").onclick = partyJoinView;
 $("ptBack").onclick = () => { if(PT && PT.st && PT.st.status === "playing") return toast("Partie en cours…", [{ label:"Quitter quand même", run: partyQuit }, { label:"Rester", primary:true, run: () => {} }], 5000); partyQuit(); };
 
