@@ -603,6 +603,32 @@ body.dark .theme .nw,body.dark .role{background:var(--acc)}
 body.dark{--bg:#14122b;--page:#0f0e22;--card:#1c1a38;--card2:#26234a;--line:#322e5c;--txt:#f1efff;--mute:#a7a3c9;--acc:#8b7dff;--acc2:#2a2560;--sh:0 1px 2px rgba(0,0,0,.3),0 10px 28px -16px rgba(0,0,0,.6)}
 body.dark .bnav{background:rgba(20,18,43,.92)}
 .bub.duel,body.dark .bub.duel{color:#3a2310}
+.stories{display:flex;gap:12px;overflow-x:auto;margin:4px -4px 12px;padding:2px 4px;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.stb{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;font-size:11.5px;font-weight:600;color:var(--txt);cursor:pointer}
+.stb span{max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stb .ring{position:relative;padding:3px;border-radius:50%;background:var(--line)}
+.stb .ring.on{background:conic-gradient(#ffcc3d,#ff5d73,#8b7dff,#ffcc3d)}
+.stb .ring.none{background:none;border:2px dashed var(--line);padding:1px}
+.stb .av{width:54px;height:54px;font-size:28px;border:2px solid var(--page);border-width:2px}
+.stb .plus{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;font-style:normal;font-weight:800;line-height:19px;text-align:center;border:2px solid var(--page)}
+.stv{position:fixed;inset:0;z-index:300;background:rgba(5,4,15,.94);display:flex;justify-content:center;align-items:center;padding:10px}
+.stc{width:100%;max-width:440px;color:#fff}
+.stc .pl{color:#cfcbe8}
+.stbar{display:flex;align-items:center;gap:10px;margin:8px 0}
+.stbar .mini{background:rgba(255,255,255,.15);color:#fff;border:0}
+.stprog{display:flex;gap:4px}
+.stprog i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+.stprog b{display:block;height:100%;background:#fff}
+.stcard{position:relative;border-radius:18px;height:min(66vh,620px);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stcard img{width:100%;height:100%;object-fit:contain}
+.stcard textarea{width:86%;min-height:40%;background:none;border:0;color:#fff;font:700 24px/1.3 Figtree,system-ui,sans-serif;text-align:center;resize:none;outline:none}
+.stcard textarea::placeholder{color:rgba(255,255,255,.7)}
+.sttext{padding:24px;font:700 26px/1.3 Figtree,system-ui,sans-serif;text-align:center;white-space:pre-wrap;word-break:break-word}
+.stcap{position:absolute;left:12px;right:12px;bottom:14px;background:rgba(0,0,0,.45);padding:8px 12px;border-radius:12px;text-align:center;font-weight:600}
+.stnav{position:absolute;top:0;bottom:0;width:35%;background:none;border:0;cursor:pointer}
+.stnav.l{left:0}.stnav.r{right:0}
+.stc #scBg button.on{outline:3px solid #fff;outline-offset:2px}
 .pbanner{height:96px;border-radius:18px;margin:0 0 -40px;box-shadow:var(--sh)}
 .bnprev{width:100%;height:46px;border-radius:12px}
 .bbprev{padding:7px 12px;border-radius:14px;font-weight:600;font-size:13px;border-bottom-right-radius:5px}
@@ -641,6 +667,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     </div>
     <div class="brand" data-notr>Défi<span>Quiz</span></div>
     <p class="sub">Choisis un thème, joue en solo ou défie quelqu'un. Plus tu réponds vite, plus tu marques.</p>
+    <div class="stories" id="hStories" style="display:none"></div>
     <div class="sbar hsearch"><i data-ic="search"></i><input id="hSearch" placeholder="Quel thème ? foot, Pokémon, séries…" autocomplete="off" enterkeyhint="search"><button id="hClear" aria-label="Effacer" style="display:none"><i data-ic="x"></i></button></div>
     <div class="offbar" id="offbar" style="display:none">Hors ligne : le mode solo reste disponible, ta progression sera synchronisée au retour de la connexion.</div>
     <div class="err" id="hErr"></div>
@@ -1488,7 +1515,7 @@ async function renderHome(){
   }
   TMAP = tmap; renderThemes();
   if(ONLINE) refreshBadges();
-  renderDaily(); renderCommCard();
+  renderDaily(); renderCommCard(); loadStories();
   renderPanel();
 }
 let lbDays = 7, lbTheme = null, lbFriends = false;
@@ -1724,6 +1751,138 @@ function wireShare(root, link){
     copy(link, b);
   });
 }
+
+/* ---------------- STORIES (24 h, amis) ---------------- */
+let STORIES = [], SV = null;
+const STORY_BG = ["cosmos","sunset","ocean","foret","bubblegum","citron","minuit","braise","lagon","lavande"];
+const storyBg = k => { const p = COS_PAL[k] || COS_PAL.cosmos; return `linear-gradient(160deg,${p[1][0]},${p[1][2]})`; };
+async function storyJpeg(file, max = 1080){
+  const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+  c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src);
+  for(const q of [0.8, 0.65, 0.5]){ const b = await new Promise(r => c.toBlob(r, "image/jpeg", q)); if(b && b.size < 950000) return b; }
+  throw new Error("image trop lourde");
+}
+async function loadStories(){
+  const el = $("hStories"); if(!el) return;
+  if(!ONLINE){ el.style.display = "none"; return; }
+  const { data, error } = await rpc("story_feed", {});
+  if(error){ el.style.display = "none"; return; }
+  STORIES = data || [];
+  const mine = STORIES.find(g => g.mine);
+  el.style.display = "";
+  el.innerHTML = `<button class="stb add" id="stAdd"><div class="ring ${mine ? (mine.all_seen ? "" : "on") : "none"}"><div class="av">${av(P)}</div>${mine ? "" : `<i class="plus">+</i>`}</div><span>${mine ? "Ta story" : "Ajouter"}</span></button>` +
+    STORIES.filter(g => !g.mine).map(g => `<button class="stb" data-u="${g.user.id}"><div class="ring ${g.all_seen ? "" : "on"}"><div class="av">${av(g.user)}</div></div><span>${esc(g.user.pseudo)}</span></button>`).join("");
+  $("stAdd").onclick = () => mine ? openStories(STORIES.indexOf(mine)) : storyCompose();
+  if(mine) $("stAdd").oncontextmenu = e => { e.preventDefault(); storyCompose(); };
+  el.querySelectorAll(".stb[data-u]").forEach(b => b.onclick = () => openStories(STORIES.findIndex(g => g.user.id === b.dataset.u)));
+}
+function storyCompose(){
+  if(!ONLINE) return toast("Les stories demandent une connexion.");
+  let bg = "cosmos";
+  const o = document.createElement("div"); o.className = "stv"; o.innerHTML = `
+    <div class="stc">
+      <div class="stbar"><button class="mini" id="scX">${ic("x",16)}</button><b style="flex:1;text-align:center">Nouvelle story</b><span style="width:34px"></span></div>
+      <div class="stcard" id="scCard" style="background:${storyBg(bg)}"><textarea id="scText" maxlength="200" placeholder="Écris quelque chose…"></textarea></div>
+      <div class="chips" id="scBg" style="justify-content:center">${STORY_BG.map(k => `<button data-b="${k}" class="${k === bg ? "on" : ""}" style="background:${storyBg(k)};width:30px;height:30px;padding:0;border-radius:50%"></button>`).join("")}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <label class="btn s" style="flex:1;margin:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">${ic("camera",18)} Photo<input type="file" accept="image/*" id="scFile" hidden></label>
+        <button class="btn p" id="scGo" style="flex:1;margin:0">${ic("send",18)} Publier</button>
+      </div>
+      <p class="note center">Visible par tes amis pendant 24 h.</p>
+    </div>`;
+  document.body.appendChild(o);
+  const close = () => o.remove();
+  o.querySelector("#scX").onclick = close;
+  o.querySelectorAll("#scBg button").forEach(b => b.onclick = () => { bg = b.dataset.b; o.querySelector("#scCard").style.background = storyBg(bg); o.querySelectorAll("#scBg button").forEach(x => x.classList.toggle("on", x === b)); });
+  const post = async (kind, image) => {
+    const body = o.querySelector("#scText").value;
+    const { error } = await rpc("post_story", { p_kind: kind, p_image: image || null, p_body: body, p_bg: bg });
+    if(error) return toast(esc(errMsg(error)));
+    close(); sfx("good"); toast("Story publiée !"); loadStories();
+  };
+  o.querySelector("#scGo").onclick = e => { if(!o.querySelector("#scText").value.trim()) return toast("Écris quelque chose ou choisis une photo."); e.target.disabled = true; post("text"); };
+  o.querySelector("#scFile").onchange = async e => {
+    const file = e.target.files && e.target.files[0]; e.target.value = "";
+    if(!file) return; if(!/^image\//.test(file.type)) return toast("Choisis une image.");
+    const card = o.querySelector("#scCard"); card.innerHTML = `<span class="pl spin" style="color:#fff">Envoi…</span>`;
+    try {
+      const blob = await storyJpeg(file); await ensureAuth();
+      const path = `${me}/story_${Date.now()}.jpg`;
+      const up = await sb.storage.from("avatars").upload(path, blob, { contentType:"image/jpeg", cacheControl:"86400", upsert:false });
+      if(up.error) throw up.error;
+      await post("photo", path);
+    } catch(err){ card.innerHTML = `<textarea id="scText" maxlength="200" placeholder="Écris quelque chose…"></textarea>`; toast("Envoi impossible : " + esc(errMsg(err))); }
+  };
+  setTimeout(() => { const t = o.querySelector("#scText"); if(t) t.focus(); }, 150);
+}
+function openStories(gi){
+  if(gi < 0 || !STORIES[gi]) return;
+  closeStories();
+  const o = document.createElement("div"); o.className = "stv"; document.body.appendChild(o);
+  SV = { o, gi, si: Math.max(0, STORIES[gi].stories.findIndex(s => !s.seen)), t0: 0, paused: false, timer: null, dur: 5500 };
+  storyShow();
+}
+function closeStories(){ if(SV){ clearInterval(SV.timer); SV.o.remove(); SV = null; loadStories(); } }
+function storyStep(d){
+  if(!SV) return;
+  const g = STORIES[SV.gi]; let si = SV.si + d, gi = SV.gi;
+  if(si >= g.stories.length){ gi++; si = 0; }
+  if(si < 0){ gi--; if(gi < 0) { gi = 0; si = 0; } else si = STORIES[gi].stories.length - 1; }
+  if(gi >= STORIES.length) return closeStories();
+  SV.gi = gi; SV.si = si; storyShow();
+}
+function storyShow(){
+  const v = SV, g = STORIES[v.gi], s = g.stories[v.si];
+  clearInterval(v.timer);
+  const ago = Math.max(1, Math.round((Date.now() - new Date(s.created_at)) / 60000));
+  v.o.innerHTML = `<div class="stc">
+    <div class="stprog">${g.stories.map((x, i) => `<i><b style="width:${i < v.si ? 100 : 0}%"></b></i>`).join("")}</div>
+    <div class="stbar"><div class="av" style="width:34px;height:34px">${av(g.user)}</div><div style="flex:1;min-width:0"><b>${esc(g.mine ? "Ta story" : g.user.pseudo)}</b> <span class="pl">${ago < 60 ? `il y a ${ago} min` : `il y a ${Math.round(ago / 60)} h`}</span></div><button class="mini" id="svX">${ic("x",16)}</button></div>
+    <div class="stcard view" style="${s.kind === "text" ? `background:${storyBg(s.bg)}` : "background:#000"}">
+      ${s.kind === "photo" ? `<img src="${esc(AVBASE + s.image)}" alt="">${s.body ? `<div class="stcap">${esc(s.body)}</div>` : ""}` : `<div class="sttext" data-notr>${esc(s.body || "")}</div>`}
+      <button class="stnav l" aria-label="Précédente"></button><button class="stnav r" aria-label="Suivante"></button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">${g.mine
+      ? `<button class="btn s" id="svViews" style="flex:1;margin:0">${ic("user",16)} Vues</button><button class="btn s" id="svDel" style="flex:1;margin:0;color:var(--bad)">Supprimer</button>`
+      : `<button class="btn p" id="svReply" style="flex:1;margin:0">${ic("chat",16)} Répondre</button><button class="btn s" id="svRep" style="width:auto;margin:0;padding:0 14px" aria-label="Signaler">${ic("flag",16)}</button>`}</div>
+  </div>`;
+  if(!g.mine && !s.seen){ s.seen = true; rpc("view_story", { p_id: s.id }); g.all_seen = g.stories.every(x => x.seen); }
+  const bar = v.o.querySelectorAll(".stprog b")[v.si];
+  v.t0 = Date.now(); let elapsed = 0, last = Date.now();
+  v.timer = setInterval(() => { const n = Date.now(); if(!v.paused) elapsed += n - last; last = n; bar.style.width = Math.min(100, elapsed / v.dur * 100) + "%"; if(elapsed >= v.dur) storyStep(1); }, 50);
+  v.o.querySelector("#svX").onclick = closeStories;
+  v.o.querySelector(".stnav.l").onclick = () => storyStep(-1);
+  v.o.querySelector(".stnav.r").onclick = () => storyStep(1);
+  const card = v.o.querySelector(".stcard");
+  card.onpointerdown = () => v.paused = true; card.onpointerup = card.onpointerleave = () => v.paused = false;
+  if(g.mine){
+    v.o.querySelector("#svViews").onclick = async () => {
+      v.paused = true;
+      const { data } = await rpc("story_viewers", { p_id: s.id });
+      toast(data && data.length ? `<div><b>Vue par ${data.length}</b><br>${data.slice(0, 12).map(p => esc(p.pseudo)).join(", ")}</div>` : "Personne ne l'a encore vue.", [], 5000);
+      setTimeout(() => { if(SV === v) v.paused = false; }, 1500);
+    };
+    v.o.querySelector("#svDel").onclick = async () => {
+      if(!confirm("Supprimer cette story ?")) return;
+      const { data: img } = await rpc("remove_story", { p_id: s.id });
+      if(img && String(img).startsWith(me + "/")) sb.storage.from("avatars").remove([img]);
+      g.stories.splice(v.si, 1);
+      if(!g.stories.length){ STORIES.splice(v.gi, 1); return closeStories(); }
+      v.si = Math.min(v.si, g.stories.length - 1); storyShow();
+    };
+  } else {
+    v.o.querySelector("#svReply").onclick = () => { const u = g.user; closeStories(); openChat({ id:u.id, pseudo:u.pseudo, avatar:u.avatar, avatar_url:u.avatar_url, frame:u.frame }); };
+    v.o.querySelector("#svRep").onclick = async () => {
+      v.paused = true;
+      const why = prompt(`Pourquoi signaler ${g.user.pseudo} ? (insulte, harcèlement, contenu choquant…)`);
+      if(why){ await rpc("report_user", { p_target: g.user.id, p_reason: "Story : " + why + (s.image ? " · " + AVBASE + s.image : " · " + (s.body || "")) }); toast("Merci, le signalement a été envoyé."); }
+      v.paused = false;
+    };
+  }
+}
+document.addEventListener("keydown", e => { if(!SV) return; if(e.key === "Escape") closeStories(); if(e.key === "ArrowRight") storyStep(1); if(e.key === "ArrowLeft") storyStep(-1); });
 
 /* ---------------- PARTIE À PLUSIEURS (2 à 10 joueurs) ---------------- */
 let PT = null;
