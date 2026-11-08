@@ -13,6 +13,82 @@
 <meta name="description" content="Défi Quiz : quiz en duel et en solo, défi du jour, salons et pass de saison. Gratuit, sans pub.">
 <link rel="icon" href="icon-192.png">
 <title>Défi Quiz</title>
+<script>
+/* ---------- Langues : l'interface est écrite en français, traduite à l'affichage ---------- */
+const LANGS = { fr:"Français", en:"English", es:"Español", it:"Italiano", de:"Deutsch", pt:"Português", tr:"Türkçe", ar:"العربية" };
+const LANG = (() => { try { const s = JSON.parse(localStorage.getItem("dq_lang") || "null"); if(s && LANGS[s]) return s; } catch(e){}
+  for(const l of (navigator.languages || [navigator.language || "fr"])){ const k = String(l).slice(0, 2).toLowerCase(); if(LANGS[k]) return k; }
+  return "en"; })();
+document.documentElement.lang = LANG; if(LANG === "ar") document.documentElement.dir = "rtl";
+const LOCALE = { fr:"fr-FR", en:"en-GB", es:"es-ES", it:"it-IT", de:"de-DE", pt:"pt-PT", tr:"tr-TR", ar:"ar-u-nu-latn" }[LANG] || "fr-FR";
+let I18N = null;
+const I18N_NUM = /\d+(?:[  .,]\d+)*/g;
+let I18N_PAT = [], I18N_MEMO = new Map();
+function i18nLoad(d){
+  I18N = d || {}; I18N_MEMO.clear();
+  const esc = t => t.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
+  I18N_PAT = Object.keys(I18N).filter(k => k.includes("{}")).map(k => {
+    const fixed = k.replace(/\{\}/g, "").replace(/#/g, "");
+    return [new RegExp("^" + k.split("{}").map(x => esc(x).replace(/\{/g, "\\{").replace(/#/g, "(\\d+(?:[  .,]\\d+)*)")).join("(.*?)") + "$"), k, fixed.length];
+  }).filter(p => /[A-Za-zÀ-ÿ]{2}/.test(p[1].replace(/\{\}/g, ""))).sort((a, b) => b[2] - a[2]);
+}
+function i18nFind(k, depth){
+  if(I18N[k] != null) return I18N[k];
+  const nums = k.match(I18N_NUM);
+  if(nums){ const t = I18N[k.replace(I18N_NUM, "#")]; if(t != null){ let i = 0; return t.replace(/#/g, () => nums[i++] ?? ""); } }
+  if(depth > 2) return null;
+  for(const [re, key] of I18N_PAT){
+    const m = re.exec(k); if(!m) continue;
+    // ordre des groupes : on remet chaque {} et # dans l'ordre du texte original
+    const marks = key.match(/\{\}|#/g) || [], vals = m.slice(1);
+    let i = 0, out = I18N[key];
+    const caps = marks.map((mk, n) => [mk, vals[n] ?? ""]);
+    let ci = 0, ni = 0;
+    const brace = caps.filter(c => c[0] === "{}").map(c => c[1]), hash = caps.filter(c => c[0] === "#").map(c => c[1]);
+    out = out.replace(/\{-?\}|#/g, mk => mk === "#" ? (hash[ni++] ?? "") : mk === "{-}" ? (ci++, "") : (() => { const v = brace[ci++] ?? ""; const t = v.trim() ? i18nFind(v.trim(), depth + 1) : null; return t != null ? v.replace(v.trim(), t) : v; })());
+    return out;
+  }
+  if(/^[a-zà-ÿ]/.test(k)){ const up = i18nFind(k[0].toUpperCase() + k.slice(1), depth + 1); if(up != null) return up[0].toLowerCase() + up.slice(1); }
+  if(k.includes(" · ")){ const parts = k.split(" · "); const tr = parts.map(x => i18nFind(x, depth + 1)); if(tr.some(x => x != null)) return parts.map((x, n) => tr[n] ?? x).join(" · "); }
+  return null;
+}
+function T(s){
+  if(LANG === "fr" || s == null) return s;
+  const str = String(s), core = str.trim(); if(!core) return str;
+  const k = core.replace(/\s+/g, " ");
+  let out = null;
+  if(I18N){ if(I18N_MEMO.has(k)) out = I18N_MEMO.get(k); else { out = i18nFind(k, 0); if(I18N_MEMO.size < 5000) I18N_MEMO.set(k, out); } }
+  if(out == null){ if(window.__i18nSeen && /[A-Za-zÀ-ÿ]{2}/.test(k)) window.__i18nSeen(k); return str; }
+  const lead = str.match(/^\s*/)[0], trail = str.match(/\s*$/)[0];
+  return lead + out + trail;
+}
+(function(){
+  const ATTR = ["placeholder", "title", "aria-label"];
+  const skip = n => { const p = n.parentElement; return !p || p.closest("script,style,textarea,[data-notr],.notr"); };
+  function doText(n){ if(skip(n)) return; const v = n.nodeValue; if(n.__tr === v) return; const t = T(v); n.__tr = t; if(t !== v) n.nodeValue = t; }
+  function doEl(el){ for(const a of ATTR){ const v = el.getAttribute && el.getAttribute(a); if(v && el["__tr_" + a] !== v){ const t = T(v); el["__tr_" + a] = t; if(t !== v) el.setAttribute(a, t); } } }
+  function walk(root){
+    if(root.nodeType === 3) return doText(root);
+    if(root.nodeType !== 1 || root.closest && root.closest("script,style,[data-notr],.notr")) return;
+    doEl(root);
+    const it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let n; while((n = it.nextNode())){ if(n.nodeType === 3) doText(n); else doEl(n); }
+  }
+  window.i18nWalk = walk;
+  if(LANG === "fr") return;
+  const start = () => {
+    walk(document.body); document.title = T(document.title);
+    new MutationObserver(ms => { for(const m of ms){
+      if(m.type === "characterData") doText(m.target);
+      else if(m.type === "attributes") doEl(m.target);
+      else m.addedNodes.forEach(walk);
+    } }).observe(document.body, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:ATTR });
+  };
+  const ready = new Promise(r => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", r) : r());
+  fetch(`i18n/${LANG}.json`).then(r => r.ok ? r.json() : {}).catch(() => ({})).then(d => { i18nLoad(d); return ready; }).then(start);
+  for(const f of ["alert", "confirm", "prompt"]){ const o = window[f].bind(window); window[f] = (m, ...a) => o(T(m), ...a); }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -563,7 +639,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
       <button class="iconbtn" id="toNotifs" aria-label="Notifications"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="bell"></svg><span class="badge" id="nBadge" style="display:none">0</span></button>
       <button class="iconbtn" id="toProfile" aria-label="Profil"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="user"></svg></button>
     </div>
-    <div class="brand">Défi<span>Quiz</span></div>
+    <div class="brand" data-notr>Défi<span>Quiz</span></div>
     <p class="sub">Choisis un thème, joue en solo ou défie quelqu'un. Plus tu réponds vite, plus tu marques.</p>
     <div class="sbar hsearch"><i data-ic="search"></i><input id="hSearch" placeholder="Quel thème ? foot, Pokémon, séries…" autocomplete="off" enterkeyhint="search"><button id="hClear" aria-label="Effacer" style="display:none"><i data-ic="x"></i></button></div>
     <div class="offbar" id="offbar" style="display:none">Hors ligne : le mode solo reste disponible, ta progression sera synchronisée au retour de la connexion.</div>
@@ -645,7 +721,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     </div>
     <div class="tbar"><i id="gTbar"></i></div>
     <div class="question" id="gQ"></div>
-    <div class="answers" id="gA"></div>
+    <div class="answers" id="gA" data-notr></div>
   </section>
 
   <!-- RÉSULTAT -->
@@ -1533,7 +1609,7 @@ async function finishSolo(M, G){
     copy(shareTxt + " " + link, e.target);
   };
   $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
-    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · +${x.mp}</div>`).join("");
+    `<div class="rq"><b>${esc(x.tq ?? x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.tmine ?? x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.tgood ?? x.good)}`} · +${x.mp}</div>`).join("");
   $("rAgain").textContent = "Rejouer ce thème";
   $("rAgain").onclick = () => startSolo(M.theme);
   checkAch();
@@ -1736,11 +1812,12 @@ async function partyQ(pt, idx){
   const s = pt.st, body = $("ptBody");
   const me = s.players.find(p => p.id === s.me) || { score:0 };
   body.innerHTML = `<div class="hud" style="display:flex;align-items:center;justify-content:space-between"><div class="qn">Question ${idx + 1}/${s.n}${idx === s.n - 1 ? ' · <b style="color:var(--acc)">points ×2</b>' : ''}</div><div class="timer" id="ptT">${s.q_secs}</div><div class="sc" id="ptS" style="color:var(--me)">${me.score}</div></div>
-    <div class="tbar"><i id="ptBar"></i></div><div class="question" id="ptQ"><span class="pl spin">…</span></div><div class="answers" id="ptA"></div>`;
+    <div class="tbar"><i id="ptBar"></i></div><div class="question" id="ptQ"><span class="pl spin">…</span></div><div class="answers" id="ptA" data-notr></div>`;
   const q = await partyGetQ(pt, idx);
+  if(q && q.id) await qtrLoad([q]);
   if(PT !== pt || pt.view !== "q" + idx || !q) return;
-  $("ptQ").textContent = q.question;
-  $("ptA").innerHTML = q.options.map(o => `<button class="ans" data-o="${esc(o)}">${esc(o)}</button>`).join("");
+  $("ptQ").textContent = qq(q);
+  $("ptA").innerHTML = q.options.map(o => `<button class="ans" data-o="${esc(o)}">${esc(qo(q, o))}</button>`).join("");
   const done = q.mine || pt.mine[idx];
   $("ptA").querySelectorAll(".ans").forEach(b => {
     if(done){ b.disabled = true; if(b.dataset.o === (done.choice || done)) b.classList.add("mine"); return; }
@@ -1764,7 +1841,7 @@ async function partyRank(pt, idx){
     <div class="tbar"><i id="ptBar"></i></div><div class="pl center" style="margin-top:6px">${idx + 1 < s.n ? "Question suivante dans <b id=\"ptT\"></b> s" : "Fin de la partie…"}</div>`;
   const q = await partyGetQ(pt, idx, true);
   if(PT !== pt || pt.view !== "rank" + idx) return;
-  if(q) $("ptRA").innerHTML = `${esc(q.question)}<br><b style="color:var(--good)">${esc(q.answer || "")}</b>`;
+  if(q) $("ptRA").innerHTML = `${esc(qq(q))}<br><b style="color:var(--good)">${esc(qo(q, q.answer) || "")}</b>`;
   setTimeout(() => { if(PT === pt && pt.view === "rank" + idx && $("ptLB")) $("ptLB").innerHTML = ptRows(pt.st); }, 1600);
 }
 function partyPodium(pt){
@@ -1931,8 +2008,25 @@ function seededShuffle(arr, seed){
   return a;
 }
 
+/* ---------- Traduction des questions : seul l'affichage change, la partie garde le texte d'origine ---------- */
+const QTR = {};
+async function qtrLoad(qs){
+  if(LANG === "fr" || !ONLINE || !qs) return;
+  const ids = [...new Set(qs.map(q => q && q.id).filter(id => id && !(id in QTR)))];
+  for(let k = 0; k < ids.length; k += 60){
+    const part = ids.slice(k, k + 60); part.forEach(id => QTR[id] = null);
+    try {
+      const r = await Promise.race([rpc("get_question_i18n", { p_ids: part, p_lang: LANG }), sleep(3000).then(() => ({}))]);
+      if(r && r.data) for(const [id, v] of Object.entries(r.data)) QTR[id] = v;
+    } catch(e){}
+  }
+}
+const qq = Q => { const t = Q && QTR[Q.id]; return t ? t.q : Q.question; };
+const qo = (Q, o) => { const t = Q && QTR[Q.id]; if(!t || o == null) return o; if(o === (t.oa ?? Q.answer)) return t.a; const k = (t.ow || Q.wrong || []).indexOf(o); return k >= 0 && t.w[k] != null ? t.w[k] : o; };
+
 let tick = null, QUIT = null;
 function play(M, lv){
+  if(LANG !== "fr" && ONLINE && !M.__qtr){ M.__qtr = true; return qtrLoad(M.questions).then(() => play(M, lv)); }
   const qs = M.questions, N = qs.length, ghost = M.ghost;
   const opp = lv ? lv.opp : M.opponent;
   const hasOpp = !!(lv || ghost);
@@ -1953,9 +2047,9 @@ function play(M, lv){
     const meta = [];
     if(Q.theme && Q.theme !== M.theme && THEMES[Q.theme] && !M.daily) meta.push(`<span>${esc(THEMES[Q.theme].n)}</span>`);
     if(Q.difficulty) meta.push(`<span class="d${Q.difficulty}">${["","Facile","Moyen","Difficile"][Q.difficulty]}</span>`);
-    $("gQ").innerHTML = (meta.length ? `<div class="qmeta">${meta.join("")}</div>` : "") + (M.daily && Q.theme ? `<div><span class="qtheme">${tname(Q.theme)}</span>` : "") + (last ? `<div><span class="dbl">DERNIÈRE QUESTION · POINTS × 2</span>` : "<div>") + esc(Q.question) + "</div>";
+    $("gQ").innerHTML = (meta.length ? `<div class="qmeta">${meta.join("")}</div>` : "") + (M.daily && Q.theme ? `<div><span class="qtheme">${tname(Q.theme)}</span>` : "") + (last ? `<div><span class="dbl">DERNIÈRE QUESTION · POINTS × 2</span>` : "<div>") + esc(qq(Q)) + "</div>";
     $("gQ").style.animation = "none"; void $("gQ").offsetWidth; $("gQ").style.animation = "";
-    $("gA").innerHTML = opts.map((o,j) => `<button class="ans" data-j="${j}">${esc(o)}</button>`).join("");
+    $("gA").innerHTML = opts.map((o,j) => `<button class="ans" data-j="${j}">${esc(qo(Q, o))}</button>`).join("");
     $("gOppSt").textContent = (lv && lv.oppGone) ? "Adversaire déconnecté" : "";
     const btns = [...document.querySelectorAll(".ans")];
     cur = { i, Q, last, good, opts, btns, mine:null, revealed:false, next:false, start: performance.now() };
@@ -2004,7 +2098,7 @@ function play(M, lv){
     sfx(ans.c === good ? "good" : "bad");
     G.answers[i] = { c: ans.c, t: Math.round(Math.min(ans.t, TIME) * 100) / 100 };
     G.me += mp; G.op += op;
-    G.log[i] = { q: Q.question, good, mine: ans.c, ok: ans.c === good, mp, op, id: Q.id };
+    G.log[i] = { q: Q.question, good, mine: ans.c, ok: ans.c === good, mp, op, id: Q.id, tq: qq(Q), tgood: qo(Q, good), tmine: qo(Q, ans.c) };
     const gb = btns[opts.indexOf(good)];
     if(ans.c === good){
       G.streak = (G.streak || 0) + 1;
@@ -2132,7 +2226,7 @@ async function finishMatch(M, G, opp, lv){
   if(opp && opp.id && opp.id !== me && !error) revengeBox(opp, M.theme);
   const hasOpp = !!(lv || M.ghost);
   $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
-    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${hasOpp?` / adv. +${x.op}`:""}</div>`).join("");
+    `<div class="rq"><b>${esc(x.tq ?? x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.tmine ?? x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.tgood ?? x.good)}`} · toi +${x.mp}${hasOpp?` / adv. +${x.op}`:""}</div>`).join("");
   $("rAgain").textContent = "Rejouer ce thème";
   $("rAgain").onclick = () => openMode(M.theme);
   checkAch();
@@ -2878,7 +2972,7 @@ async function openPub(id, back){
       <div class="av big" style="margin:0 auto 8px${bn ? ";box-shadow:0 0 0 4px var(--page)" : ""}">${av(p)}</div>
       <h2 style="font-size:26px">${esc(p.pseudo)}</h2>
       ${p.title ? `<div class="ttl">${esc(titleName(p.title))}</div>` : ""}
-      <div class="pl" style="margin-top:4px">${stDot(p.id)} ${stLabel(p.id)} · Niveau ${p.level} · ${p.friends} ami${p.friends > 1 ? "s" : ""} · inscrit ${new Date(p.created_at).toLocaleDateString("fr-FR", { month:"long", year:"numeric" })}</div>
+      <div class="pl" style="margin-top:4px">${stDot(p.id)} ${stLabel(p.id)} · Niveau ${p.level} · ${p.friends} ami${p.friends > 1 ? "s" : ""} · inscrit ${new Date(p.created_at).toLocaleDateString(LOCALE, { month:"long", year:"numeric" })}</div>
       ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
     </div>
     ${p.vs && (p.vs.wins || p.vs.losses) ? `<div class="share center" style="margin:6px 0"><b>Vos duels :</b> ${p.vs.wins} victoire${p.vs.wins > 1 ? "s" : ""} pour toi · ${p.vs.losses} pour ${esc(p.pseudo)}</div>` : ""}
@@ -3259,7 +3353,7 @@ async function renderPlay(){
   $("plQuiz").onclick = () => openQuizzes();
   if($("plPass")) $("plPass").onclick = () => openShop("pass", () => goTab("play"));
   // calendrier
-  const fmt = d => new Date(d).toLocaleDateString("fr-FR", { weekday:"short", day:"numeric", month:"short" });
+  const fmt = d => new Date(d).toLocaleDateString(LOCALE, { weekday:"short", day:"numeric", month:"short" });
   const cal = [];
   list.forEach(e => cal.push({ at: new Date(e.starts_at), end: new Date(e.ends_at), html: `<div class="row calrow" data-ev="${e.id}"><div class="av" style="background:none;border:0">${art(e.theme || "daily", 30)}</div><div class="rn">${esc(e.title)}${e.theme && THEMES[e.theme] ? " · " + THEMES[e.theme].n : ""}<br><span class="pl">${fmt(e.starts_at)} → ${fmt(new Date(new Date(e.ends_at) - 1))}${e.players ? ` · ${e.players} joueur${e.players > 1 ? "s" : ""}` : ""}</span></div><div class="rs">${new Date(e.ends_at) < now ? (e.my_rank ? nth(e.my_rank) : "Fini") : new Date(e.starts_at) > now ? "À venir" : `<span class="live">En cours</span>`}</div></div>` }));
   if(si) cal.push({ at: new Date(si.ends_at), end: new Date(si.ends_at), html: `<div class="row"><div class="av" style="background:none;border:0">${art("solo", 30)}</div><div class="rn">Fin de la saison de ${MONTHS[m - 1]}<br><span class="pl">${fmt(si.ends_at)} · remise à zéro du classement de saison</span></div><div class="rs">${untilDate(si.ends_at)}</div></div>` });
@@ -3344,10 +3438,12 @@ async function renderProfileExtra(){
       <button class="switch ${P.allow_requests !== false ? 'on' : ''}" id="pReq" style="margin:10px 0 6px;background:var(--card2)"><span>Accepter les demandes d'ami</span><span class="k"></span></button>
       <button class="switch ${P.show_stats !== false ? 'on' : ''}" id="pShow" style="margin:0;background:var(--card2)"><span>Statistiques visibles sur mon profil</span><span class="k"></span></button>
     </div>
+    <div class="share"><div class="pl" style="margin-bottom:6px">Langue de l'appli</div><div class="chips wrap" id="pLang" data-notr>${Object.entries(LANGS).map(([k,l]) => `<button data-l="${k}" class="${LANG === k ? 'on' : ''}">${l}</button>`).join("")}</div></div>
     <div class="share"><div class="pl" style="margin-bottom:6px">Apparence</div><div class="chips" id="pDark">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"]].map(([k,l]) => `<button data-d="${k}" class="${THEME_MODE === k ? 'on' : ''}">${l}</button>`).join("")}</div></div>
     <button class="switch" id="pPush"><span style="display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:center;gap:8px">${ic("bell",20)} Notifications</span><span class="pl" style="font-weight:500"></span></span><span class="k"></span></button>
     ${IS_ADMIN ? `<button class="btn s" id="pAdmin" style="border:1px solid var(--acc)">${ic("lock",18)} Administration</button>` : ""}`;
   let sel = { frame: fr, title: tt, banner: P.banner || "", bubble: P.bubble || "" };
+  el.querySelectorAll("#pLang button").forEach(b => b.onclick = () => { if(b.dataset.l === LANG) return; LS.set("dq_lang", b.dataset.l); location.reload(); });
   el.querySelectorAll("#pBanners .frb").forEach(b => b.onclick = () => { sel.banner = b.dataset.b; el.querySelectorAll("#pBanners .frb").forEach(x => x.classList.toggle("on", x === b)); });
   el.querySelectorAll("#pBubbles .frb").forEach(b => b.onclick = () => { sel.bubble = b.dataset.u; el.querySelectorAll("#pBubbles .frb").forEach(x => x.classList.toggle("on", x === b)); });
   $("pCosShop").onclick = () => { SHOP_CAT = "banner"; openShop("shop", () => goTab("profile")); };
@@ -3549,7 +3645,7 @@ async function renderAdmin(){
     B.innerHTML = `<div class="sbar"><i data-ic="search"></i><input id="adUq" value="${esc(q)}" placeholder="Pseudo ou code ami"></div>
       <div class="chips"><button data-s="0" class="${susp ? '' : 'on'}">Tous</button><button data-s="1" class="${susp ? 'on' : ''}">Suspendus</button></div>
       <div class="panel">${data.map(u => { const s = u.suspended_until && new Date(u.suspended_until) > Date.now();
-        return `<div class="row"><div class="rn">${esc(u.pseudo)}${u.is_admin ? ' <span class="role">Admin</span>' : ""}<br><span class="pl">Niveau ${lvlOf(u.xp).l} · ${u.wins} V · ${u.reports} signalement${u.reports > 1 ? "s" : ""} · ${ago(u.created_at)}${s ? ` · <b style="color:var(--bad)">suspendu jusqu'au ${new Date(u.suspended_until).toLocaleDateString("fr-FR")}</b>` : ""}</span></div>
+        return `<div class="row"><div class="rn">${esc(u.pseudo)}${u.is_admin ? ' <span class="role">Admin</span>' : ""}<br><span class="pl">Niveau ${lvlOf(u.xp).l} · ${u.wins} V · ${u.reports} signalement${u.reports > 1 ? "s" : ""} · ${ago(u.created_at)}${s ? ` · <b style="color:var(--bad)">suspendu jusqu'au ${new Date(u.suspended_until).toLocaleDateString(LOCALE)}</b>` : ""}</span></div>
           <div class="acts"><button class="mini" data-pub="${u.id}">Profil</button><button class="mini" data-prem="${u.id}" title="Offrir le Pass Premium du mois">${ic("star",13)} Premium</button>${u.is_admin ? "" : s ? `<button class="mini p" data-u="${u.id}" data-d="0">Lever</button>` : `<button class="mini d" data-u="${u.id}" data-d="?">Suspendre</button>`}</div></div>`; }).join("") || `<p class="sub center">Aucun joueur.</p>`}</div>`;
     hydrateIcons(B);
     let t = null; $("adUq").oninput = e => { clearTimeout(t); t = setTimeout(() => { B.dataset.q = e.target.value.trim(); renderAdmin(); }, 400); };
@@ -3624,7 +3720,7 @@ async function renderAdmin(){
         <div class="pl">Fin</div><input class="field" type="datetime-local" id="aeE" value="${dt(e0)}" style="margin:2px 0 6px">
         <div style="display:flex;gap:8px"><label class="pl" style="flex:1">Questions<input class="field" type="number" id="aeN" value="10" min="5" max="20"></label><label class="pl" style="flex:1">Essais<input class="field" type="number" id="aeA" value="3" min="1" max="10"></label></div>
         <button class="btn p" id="aeGo">Créer</button></div>
-      <div class="panel">${data.map(e => `<div class="row"><div class="av" style="background:none;border:0">${art(e.theme || "daily", 26)}</div><div class="rn">${esc(e.title)}<br><span class="pl">${new Date(e.starts_at).toLocaleString("fr-FR")} → ${new Date(e.ends_at).toLocaleString("fr-FR")} · ${e.players} joueurs</span></div><div class="acts"><button class="mini d" data-del="${e.id}">${ic("x",14)}</button></div></div>`).join("")}</div>`;
+      <div class="panel">${data.map(e => `<div class="row"><div class="av" style="background:none;border:0">${art(e.theme || "daily", 26)}</div><div class="rn">${esc(e.title)}<br><span class="pl">${new Date(e.starts_at).toLocaleString(LOCALE)} → ${new Date(e.ends_at).toLocaleString(LOCALE)} · ${e.players} joueurs</span></div><div class="acts"><button class="mini d" data-del="${e.id}">${ic("x",14)}</button></div></div>`).join("")}</div>`;
     let th = "";
     B.querySelectorAll("#aeTh button").forEach(b => b.onclick = () => { th = b.dataset.k; B.querySelectorAll("#aeTh button").forEach(x => x.classList.toggle("on", x === b)); });
     $("aeGo").onclick = async () => {
@@ -3801,7 +3897,7 @@ const untilMidnight = () => {
 const nth = r => `${r}${r === 1 ? "er" : "e"}`;
 function recapHtml(log, withOpp){
   return `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + log.map(x =>
-    `<div class="rq"><b>${esc(x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.good)}`} · toi +${x.mp}${withOpp?` / adv. +${x.op}`:""}</div>`).join("");
+    `<div class="rq"><b>${esc(x.tq ?? x.q)}</b><span class="${x.ok?'ok':'ko'}">${x.ok?'✔':'✘'} ${esc(x.tmine ?? x.mine ?? 'Pas de réponse')}</span>${x.ok?'':` · bonne réponse : ${esc(x.tgood ?? x.good)}`} · toi +${x.mp}${withOpp?` / adv. +${x.op}`:""}</div>`).join("");
 }
 async function renderDaily(){
   const c = $("dailyCard");
@@ -3868,7 +3964,7 @@ const msgText = m => m.code === "txt" ? esc((m.data && m.data.t) || "") : m.code
   ? `${ic("swords",16)} Défi sur le quiz « ${esc(m.data.title || "?")} »${m.data.score != null ? `<br><span style="font-weight:500;font-size:13px">Score à battre : ${+m.data.score}</span>` : ""}`
   : esc(QUICK[m.code] || "…");
 const hhmm = d => { const t = new Date(d), today = new Date().toDateString() === t.toDateString();
-  return (today ? "" : t.toLocaleDateString("fr-FR", { day:"numeric", month:"short" }) + " · ") + t.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit" }); };
+  return (today ? "" : t.toLocaleDateString(LOCALE, { day:"numeric", month:"short" }) + " · ") + t.toLocaleTimeString(LOCALE, { hour:"2-digit", minute:"2-digit" }); };
 async function openChat(f){
   CHAT = f;
   $("cAv").innerHTML = av(f); $("cName").textContent = f.pseudo;
