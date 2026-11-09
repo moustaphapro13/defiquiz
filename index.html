@@ -629,6 +629,8 @@ body.dark .bnav{background:rgba(20,18,43,.92)}
 .stnav{position:absolute;top:0;bottom:0;width:35%;background:none;border:0;cursor:pointer}
 .stnav.l{left:0}.stnav.r{right:0}
 .stc #scBg button.on{outline:3px solid #fff;outline-offset:2px}
+#adRail{position:fixed;top:90px;right:max(16px,calc(50% - 220px - 210px));width:160px;z-index:1;opacity:.85}
+#adRail .adlbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:4px;text-align:center}
 .pbanner{height:96px;border-radius:18px;margin:0 0 -40px;box-shadow:var(--sh)}
 .bnprev{width:100%;height:46px;border-radius:12px}
 .bbprev{padding:7px 12px;border-radius:14px;font-weight:600;font-size:13px;border-bottom-right-radius:5px}
@@ -642,6 +644,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
 </style>
 </head>
 <body>
+<div id="adRail" style="display:none" data-notr></div>
 <div id="app">
 
   <section class="screen on" id="boot"><div class="loading spin">Connexion…</div></section>
@@ -1752,6 +1755,26 @@ function wireShare(root, link){
   });
 }
 
+/* ---------------- PUBLICITÉ : ordinateur uniquement, discrète, jamais pendant une partie ---------------- */
+const ADS = { client: "", slot: "" };   // à remplir avec l'identifiant AdSense (ca-pub-…) et l'identifiant du bloc
+const ADS_PC = () => matchMedia("(hover:hover) and (pointer:fine) and (min-width:1100px)").matches
+  && !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) && !IN_STORE;
+let adsLoaded = false;
+function adsSync(screen){
+  const rail = $("adRail"); if(!rail) return;
+  const play = ["game", "match", "party", "onb"].includes(screen || (document.querySelector(".screen.on") || {}).id);
+  const on = !!ADS.client && ADS_PC() && ONLINE && !LS.get("dq_prem", false) && !play;
+  rail.style.display = on ? "" : "none";
+  if(!on || adsLoaded) return;
+  adsLoaded = true;
+  rail.innerHTML = `<div class="adlbl">Publicité</div><ins class="adsbygoogle" style="display:block;width:160px;height:600px" data-ad-client="${ADS.client}" data-ad-slot="${ADS.slot}"></ins>`;
+  const s = document.createElement("script"); s.async = true; s.crossOrigin = "anonymous";
+  s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS.client}`;
+  s.onload = () => { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){} };
+  document.head.appendChild(s);
+}
+document.addEventListener("screen", e => adsSync(e.detail));
+addEventListener("resize", () => adsSync());
 /* ---------------- STORIES (24 h, amis) ---------------- */
 let STORIES = [], SV = null;
 const STORY_BG = ["cosmos","sunset","ocean","foret","bubblegum","citron","minuit","braise","lagon","lavande"];
@@ -3650,7 +3673,7 @@ let SHOP_TAB = "pass", SHOP_BACK = null, WALLET = null;
 function drawCoins(){
   const c = WALLET ? WALLET.coins : (P && P.coins != null ? P.coins : 0);
   document.querySelectorAll("#hCoins span,#shCoins span").forEach(x => x.textContent = c);
-  if(WALLET && WALLET.pass){ const p = WALLET.pass; let n = 0;
+  if(WALLET && WALLET.pass){ const p = WALLET.pass; let n = 0; LS.set("dq_prem", !!p.premium);
     for(let t = 1; t <= p.tier; t++){ if(!p.claimed.includes(t)) n++; if(p.premium && !p.claimed_p.includes(t)) n++; }
     const hc = $("hCoins"); hc.dataset.n = n; hc.style.setProperty("--pp", (p.tier >= p.tiers ? 100 : Math.round((p.pxp - p.tier * p.per_tier) / p.per_tier * 100)) + "%"); }
 }
