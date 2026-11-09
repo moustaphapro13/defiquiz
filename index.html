@@ -7,12 +7,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Défi Quiz">
+<meta name="apple-mobile-web-app-title" content="Kwiz">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="description" content="Défi Quiz : quiz en duel et en solo, défi du jour, salons et pass de saison. Gratuit, sans pub.">
+<meta name="description" content="Kwiz : quiz en duel et en solo, défi du jour, salons et pass de saison. Gratuit, sans pub.">
 <link rel="icon" href="icon-192.png">
-<title>Défi Quiz</title>
+<title>Kwiz</title>
 <script>
 /* ---------- Langues : l'interface est écrite en français, traduite à l'affichage ---------- */
 const LANGS = { fr:"Français", en:"English", es:"Español", it:"Italiano", de:"Deutsch", pt:"Português", tr:"Türkçe", ar:"العربية" };
@@ -665,7 +665,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
       <button class="iconbtn" id="toNotifs" aria-label="Notifications"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="bell"></svg><span class="badge" id="nBadge" style="display:none">0</span></button>
       <button class="iconbtn" id="toProfile" aria-label="Profil"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-ic="user"></svg></button>
     </div>
-    <div class="brand" data-notr>Défi<span>Quiz</span></div>
+    <div class="brand" data-notr>K<span>wiz</span></div>
     <p class="sub">Choisis un thème, joue en solo ou défie quelqu'un. Plus tu réponds vite, plus tu marques.</p>
     <div class="stories" id="hStories" style="display:none"></div>
     <div class="sbar hsearch"><i data-ic="search"></i><input id="hSearch" placeholder="Quel thème ? foot, Pokémon, séries…" autocomplete="off" enterkeyhint="search"><button id="hClear" aria-label="Effacer" style="display:none"><i data-ic="x"></i></button></div>
@@ -883,7 +883,7 @@ body.dark .streak{background:#3a2412;color:#ffb27a}
     <div class="panel" id="pThemes"></div>
     <div class="label" style="margin:18px 0 8px" id="pAchTitle">Succès</div>
     <div class="achs" id="pAchs"></div>
-    <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Défi Quiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
+    <p class="note">Compte invité lié à ce téléphone. Astuce : ajoute Kwiz à ton écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'ouvrir comme une vraie appli, même hors ligne.</p>
     <p class="note" style="text-align:center"><a href="legal.html#mentions" target="_blank" rel="noopener">Mentions légales</a> · <a href="legal.html#confidentialite" target="_blank" rel="noopener">Confidentialité</a> · <a href="legal.html#cgu" target="_blank" rel="noopener">CGU</a> · <a href="legal.html#cgv" target="_blank" rel="noopener">CGV</a> · <a href="legal.html#suppression" target="_blank" rel="noopener">Supprimer mon compte</a></p>
   </section>
 
@@ -1628,11 +1628,11 @@ async function finishSolo(M, G){
     <div class="g"><span>Difficulté</span><b>${(DIFFS.find(d=>d[0]===soloDiff)||DIFFS[0])[1]}</b></div>
     <div class="g"><span>Record solo ${THEMES[M.theme].n}</span><b>${bt.best}${record?" · nouveau record !":""}</b></div>
     <div class="g"><span>XP</span><b>${!syncable ? "non comptée (banque de secours)" : synced ? `+${xp} XP ✔` : `+${xp} XP · au retour du réseau`}</b></div>`;
-  const shareTxt = `J'ai fait ${score} points (${correct}/${N}) en ${THEMES[M.theme].n} sur Défi Quiz. Tu fais mieux ?`;
+  const shareTxt = `J'ai fait ${score} points (${correct}/${N}) en ${THEMES[M.theme].n} sur Kwiz. Tu fais mieux ?`;
   const link = location.origin + location.pathname;
   $("rShare").innerHTML = `<button class="btn s" id="rBrag">${ic("share",18)} Partager mon score</button>`;
   $("rBrag").onclick = async e => {
-    if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:shareTxt, url:link }); return; } catch(er){ if(er && er.name==="AbortError") return; } }
+    if(navigator.share){ try { await navigator.share({ title:"Kwiz", text:shareTxt, url:link }); return; } catch(er){ if(er && er.name==="AbortError") return; } }
     copy(shareTxt + " " + link, e.target);
   };
   $("rRecap").innerHTML = `<div class="label" style="margin:14px 0 8px">Récap des questions</div>` + G.log.map(x =>
@@ -1745,7 +1745,7 @@ function shareBox(link){
 function wireShare(root, link){
   root.querySelectorAll("[data-act=share]").forEach(b => b.onclick = async () => {
     if(navigator.share){
-      try { await navigator.share({ title:"Défi Quiz", text:"Je te défie sur Défi Quiz !", url: link }); return; }
+      try { await navigator.share({ title:"Kwiz", text:"Je te défie sur Kwiz !", url: link }); return; }
       catch(e){ if(e && e.name === "AbortError") return; }
     }
     copy(link, b);
@@ -2686,8 +2686,8 @@ function pickQuizFriend(q, score, back){
       b.textContent = "Envoyé ✓";
     }, back,
     otherLabel: "Envoyer le quiz à quelqu'un qui n'a pas l'appli", other: async e => {
-      const link = quizLink(q.id), txt = score != null ? `J'ai fait ${score} points au quiz « ${q.title} » sur Défi Quiz. À toi !` : `Joue au quiz « ${q.title} » sur Défi Quiz !`;
-      if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:txt, url:link }); return; } catch(er){ if(er && er.name === "AbortError") return; } }
+      const link = quizLink(q.id), txt = score != null ? `J'ai fait ${score} points au quiz « ${q.title} » sur Kwiz. À toi !` : `Joue au quiz « ${q.title} » sur Kwiz !`;
+      if(navigator.share){ try { await navigator.share({ title:"Kwiz", text:txt, url:link }); return; } catch(er){ if(er && er.name === "AbortError") return; } }
       copy(txt + " " + link, e.target);
     } });
 }
@@ -2903,11 +2903,11 @@ function onResult(){
   const t = $("rTitle").textContent, win = !!$("rTitle").querySelector(".w");
   if(/record/i.test(t)) $("rTitle").classList.add("rec"); else $("rTitle").classList.remove("rec");
   if(/Victoire/.test(t) || ratio >= .8) setTimeout(() => FX.confetti(L.correct === L.n ? 140 : 80), 300);
-  const grid = L.log.map(x => x.ok ? "🟩" : "🟥").join(""), th = THEMES[L.theme] ? THEMES[L.theme].n : "Défi Quiz";
+  const grid = L.log.map(x => x.ok ? "🟩" : "🟥").join(""), th = THEMES[L.theme] ? THEMES[L.theme].n : "Kwiz";
   if($("rShare").textContent.trim()) return addFlags(L);
   $("rAgain").insertAdjacentHTML("beforebegin", `<button class="btn s shbtn">${ic("share",18)} Partager mon score</button>`);
   document.querySelector("#result .shbtn").onclick = async () => {
-    const txt = `Défi Quiz · ${th}\n${grid}  ${L.correct}/${L.n} · ${$("rMeS").textContent} pts\nhttps://moustaphapro13.github.io/defiquiz/`;
+    const txt = `Kwiz · ${th}\n${grid}  ${L.correct}/${L.n} · ${$("rMeS").textContent} pts\nhttps://moustaphapro13.github.io/defiquiz/`;
     try { if(navigator.share) await navigator.share({ text: txt }); else { await navigator.clipboard.writeText(txt); toast("Résultat copié, colle-le où tu veux !"); } } catch(e){}
   };
   addFlags(L);
@@ -3534,7 +3534,7 @@ async function pushState(){
   try { const reg = await navigator.serviceWorker.ready; const s = await reg.pushManager.getSubscription(); return s ? "on" : "off"; } catch(e){ return "off"; }
 }
 async function enablePush(){
-  if(!PUSH_OK) return toast("Ton navigateur ne gère pas les notifications. Sur iPhone : ajoute d'abord Défi Quiz à l'écran d'accueil.");
+  if(!PUSH_OK) return toast("Ton navigateur ne gère pas les notifications. Sur iPhone : ajoute d'abord Kwiz à l'écran d'accueil.");
   const perm = await Notification.requestPermission();
   if(perm !== "granted") return toast("Notifications refusées. Tu peux les réactiver dans les réglages du navigateur.");
   try {
@@ -3926,7 +3926,7 @@ async function googleLogin(link){
   const opts = { provider:"google", options:{ redirectTo: location.origin + location.pathname } };
   const { error } = link && sb.auth.linkIdentity ? await sb.auth.linkIdentity(opts) : await sb.auth.signInWithOAuth(opts);
   if(error) toast(/provider is not enabled|Unsupported provider|not enabled/i.test(errMsg(error))
-    ? "La connexion Google n'est pas encore activée sur Défi Quiz. Utilise ton e-mail en attendant."
+    ? "La connexion Google n'est pas encore activée sur Kwiz. Utilise ton e-mail en attendant."
     : "Connexion Google impossible : " + esc(errMsg(error)), [], 8000);
 }
 function watchRecovery(){
@@ -4096,11 +4096,11 @@ async function finishDaily(M, G){
       <div class="g"><span>Classement du jour</span><b>${nth(R.rank)} sur ${R.players}</b></div>
       <div class="g"><span>XP (bonus du défi inclus)</span><b>+${R.xp} XP</b></div>
       <div class="g"><span>Prochain défi</span><b>dans ${untilMidnight()}</b></div>`;
-    const txt = `Défi du jour sur Défi Quiz : ${R.score} points (${R.correct}/${N}), ${nth(R.rank)} sur ${R.players}. À toi !`;
+    const txt = `Défi du jour sur Kwiz : ${R.score} points (${R.correct}/${N}), ${nth(R.rank)} sur ${R.players}. À toi !`;
     const link = location.origin + location.pathname;
     $("rShare").innerHTML = `<button class="btn s" id="rBrag">${ic("share",18)} Partager mon score</button>`;
     $("rBrag").onclick = async e => {
-      if(navigator.share){ try { await navigator.share({ title:"Défi Quiz", text:txt, url:link }); return; } catch(er){ if(er && er.name === "AbortError") return; } }
+      if(navigator.share){ try { await navigator.share({ title:"Kwiz", text:txt, url:link }); return; } catch(er){ if(er && er.name === "AbortError") return; } }
       copy(txt + " " + link, e.target);
     };
   }
@@ -4624,7 +4624,7 @@ function onboarding(){
   const draw = () => {
     const dots = `<div class="pts">${[0,1,2].map(i => `<i class="${i===step?'on':''}"></i>`).join("")}</div>`;
     const pages = [
-      `<div class="big">${art("culture", 84)}</div><h2>Bienvenue sur Défi Quiz</h2><p class="sub">Des milliers de questions, des duels en direct et un défi chaque jour. Gratuit et sans pub.</p>`,
+      `<div class="big">${art("culture", 84)}</div><h2>Bienvenue sur Kwiz</h2><p class="sub">Des milliers de questions, des duels en direct et un défi chaque jour. Gratuit et sans pub.</p>`,
       `<h2>Ton thème préféré ?</h2><p class="sub">Réponds vite : plus tu es rapide, plus tu marques. La dernière question compte double.</p>
        <div class="obg">${picks.map(k => `<button data-k="${k}" class="${fav===k?'on':''}">${art(k, 40)}<span>${THEMES[k].n}</span></button>`).join("")}</div>`,
       `<h2>Choisis ton pseudo</h2><p class="sub">Tu pourras le changer quand tu veux dans ton profil.</p>

@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Défi Quiz",
-  "short_name": "Défi Quiz",
+  "name": "Kwiz",
+  "short_name": "Kwiz",
   "description": "Quiz en duel et en solo : des milliers de questions, défis du jour, salons et pass de saison.",
   "lang": "fr",
   "dir": "ltr",

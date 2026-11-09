@@ -1,8 +1,8 @@
-/* Défi Quiz — service worker : l'appli s'ouvre et le solo fonctionne sans Internet.
+/* Kwiz — service worker : l'appli s'ouvre et le solo fonctionne sans Internet.
    - Page (index.html) : réseau d'abord (pour recevoir les mises à jour), cache si hors ligne.
    - Bibliothèques, polices, icônes : cache d'abord.
    - Appels à Supabase : jamais mis en cache.                                   */
-const CACHE = "defiquiz-v20";
+const CACHE = "defiquiz-v21";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./legal.html",
                "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"];
 
@@ -51,7 +51,7 @@ self.addEventListener("push", e => {
     // si l'appli est déjà ouverte et visible, l'alerte s'affiche dans l'appli : pas de doublon
     const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     if(wins.some(w => w.visibilityState === "visible")) return;
-    await self.registration.showNotification(d.title || "Défi Quiz", {
+    await self.registration.showNotification(d.title || "Kwiz", {
       body: d.body || "", icon: "./icon-192.png", badge: "./icon-192.png", tag: d.tag || "defiquiz", renotify: true
     });
   })());
