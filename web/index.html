@@ -1940,14 +1940,21 @@ async function partyPoll(){
   else partyDraw(pt);
 }
 function partyClock(pt){
-  const s = pt.st, slot = s.q_secs + s.gap_secs, el = (Date.now() + pt.off - Date.parse(s.started_at)) / 1000;
+  const s = pt.st, el = (Date.now() + pt.off - Date.parse(s.started_at)) / 1000;
   if(el < 0) return { phase:"count", left: Math.ceil(-el) };
-  const idx = Math.floor(el / slot), w = el - idx * slot;
-  if(idx >= s.n) return { phase:"end" };
-  return w < s.q_secs ? { phase:"q", idx, left: s.q_secs - w } : { phase:"rank", idx, left: slot - w };
+  if(pt.cur == null){ const me = s.players.find(p => p.id === s.me); pt.cur = me ? me.cur || 0 : 0; }
+  if(pt.cur >= s.n) return { phase:"fin" };
+  return { phase:"q", idx: pt.cur };
 }
 const ptRows = (s, lim) => s.players.slice(0, lim || 10).map((p, i) =>
   `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
+const ptLive = s => s.players.map((p, i) =>
+  `<div class="row" style="padding:6px 8px${p.id === s.me ? ";outline:2px solid var(--me);border-radius:12px" : ""}${p.away ? ";opacity:.5" : ""}"><b style="width:20px;text-align:center">${i + 1}</b><div class="av" style="width:30px;height:30px">${av(p)}</div><div style="flex:1;min-width:0"><div class="rn" style="font-size:14px">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}</div><div class="tbar" style="height:5px;margin:4px 0 0"><i style="width:${Math.min(100, (p.cur || 0) / s.n * 100)}%;transition:width .4s"></i></div></div><span class="pl" style="font-size:12px;width:44px;text-align:right">${p.cur >= s.n ? "fini" : `${(p.cur || 0) + 1}/${s.n}`}</span><b style="width:40px;text-align:right">${p.score}</b></div>`).join("");
+function partyLiveSync(pt){
+  const el = $("ptLive"); if(!el) return;
+  const sig = JSON.stringify(pt.st.players.map(p => [p.id, p.score, p.cur, p.away]));
+  if(el.dataset.sig !== sig){ el.dataset.sig = sig; el.innerHTML = ptLive(pt.st); }
+}
 function partyDraw(pt){
   if(PT !== pt || !pt.st) return;
   const s = pt.st, body = $("ptBody");
@@ -1975,15 +1982,23 @@ function partyDraw(pt){
     body.innerHTML = `<div class="center" style="padding-top:50px"><div class="pl">C'est parti dans</div><div class="disp" style="font-size:90px;font-weight:800">${c.left}</div><div class="sub">${s.players.length} joueurs · ${s.n} questions · ${s.q_secs} s par question</div></div>`;
     sfx("tick"); return;
   }
-  if(c.phase === "end"){ if(pt.view !== "wait"){ pt.view = "wait"; body.innerHTML = `<div class="center pl spin" style="margin:60px auto">Calcul du classement…</div>`; } return; }
-  const key = c.phase + c.idx;
-  if(pt.view !== key){
-    pt.view = key;
-    if(c.phase === "q") partyQ(pt, c.idx); else partyRank(pt, c.idx);
+  if(c.phase === "fin"){
+    if(pt.view !== "fin"){ pt.view = "fin";
+      const me = s.players.find(p => p.id === s.me) || {};
+      body.innerHTML = `<div class="center" style="margin:6px 0 12px"><h2 style="margin:0">Tu as fini !</h2><div class="sub">${me.correct ?? ""}${me.correct != null ? `/${s.n} bonnes réponses · ` : ""}<b>${me.score ?? ""}</b> pts</div><div class="pl spin" style="margin-top:8px">En attente des autres joueurs…</div></div>
+        <div class="label">${ic("trophy",14)} Classement en direct</div><div id="ptLive"></div>`;
+    }
+    return partyLiveSync(pt);
   }
-  const tb = $("ptBar"), tt = $("ptT");
-  if(tb){ const f = c.phase === "q" ? c.left / s.q_secs : c.left / s.gap_secs; tb.style.width = Math.max(0, f * 100) + "%"; tb.parentNode.className = "tbar" + (c.phase === "q" && c.left < 3 ? " danger" : c.phase === "q" && c.left < 5 ? " warn" : ""); }
-  if(tt) tt.textContent = Math.ceil(c.left);
+  if(pt.view === "err") return;
+  const key = "q" + c.idx;
+  if(pt.view !== key){ pt.view = key; pt.qEnd = 0; partyQ(pt, c.idx); }
+  partyLiveSync(pt);
+  if(!pt.qEnd) return;
+  const left = Math.max(0, (pt.qEnd - Date.now()) / 1000), tb = $("ptBar"), tt = $("ptT");
+  if(tb){ tb.style.width = left / s.q_secs * 100 + "%"; tb.parentNode.className = "tbar" + (left < 3 ? " danger" : left < 5 ? " warn" : ""); }
+  if(tt) tt.textContent = Math.ceil(left);
+  if(left <= 0 && !pt.sent) partySend(pt, c.idx, null, null);
 }
 async function partyGetQ(pt, idx, fresh){
   if(!fresh && pt.q[idx]) return pt.q[idx];
@@ -1994,38 +2009,39 @@ async function partyGetQ(pt, idx, fresh){
 async function partyQ(pt, idx){
   const s = pt.st, body = $("ptBody");
   const me = s.players.find(p => p.id === s.me) || { score:0 };
-  body.innerHTML = `<div class="hud" style="display:flex;align-items:center;justify-content:space-between"><div class="qn">Question ${idx + 1}/${s.n}${idx === s.n - 1 ? ' · <b style="color:var(--acc)">points ×2</b>' : ''}</div><div class="timer" id="ptT">${s.q_secs}</div><div class="sc" id="ptS" style="color:var(--me)">${me.score}</div></div>
-    <div class="tbar"><i id="ptBar"></i></div><div class="question" id="ptQ"><span class="pl spin">…</span></div><div class="answers" id="ptA" data-notr></div>`;
-  const q = await partyGetQ(pt, idx);
+  pt.sent = false;
+  body.innerHTML = `<div class="hud" style="display:flex;align-items:center;justify-content:space-between"><div class="qn">Question ${idx + 1}/${s.n}${idx === s.n - 1 ? ' · <b style="color:var(--acc)">points ×2</b>' : ''}</div><div class="timer" id="ptT">${s.q_secs}</div><div class="sc" id="ptS" style="color:var(--me)">${pt.score ?? me.score}</div></div>
+    <div class="tbar"><i id="ptBar"></i></div><div class="question" id="ptQ"><span class="pl spin">…</span></div><div class="answers" id="ptA" data-notr></div>
+    <div class="label" style="margin-top:14px">${ic("trophy",14)} En direct</div><div id="ptLive"></div>`;
+  const q = await partyGetQ(pt, idx, true);
   if(q && q.id) await qtrLoad([q]);
-  if(PT !== pt || pt.view !== "q" + idx || !q) return;
+  if(PT !== pt || pt.view !== "q" + idx) return;
+  if(!q){ pt.view = "err"; setTimeout(() => { if(PT === pt && pt.view === "err"){ pt.cur = null; pt.view = ""; } }, 1500); return; }
+  if(q.left == null){ pt.cur = idx + 1; pt.view = ""; return; }   // déjà répondue (rechargement)
+  pt.qEnd = Date.now() + q.left * 1000;
   $("ptQ").textContent = qq(q);
   $("ptA").innerHTML = q.options.map(o => `<button class="ans" data-o="${esc(o)}">${esc(qo(q, o))}</button>`).join("");
-  const done = q.mine || pt.mine[idx];
-  $("ptA").querySelectorAll(".ans").forEach(b => {
-    if(done){ b.disabled = true; if(b.dataset.o === (done.choice || done)) b.classList.add("mine"); return; }
-    b.onclick = async () => {
-      $("ptA").querySelectorAll(".ans").forEach(x => x.disabled = true); b.classList.add("mine");
-      const { data: r, error } = await rpc("submit_party_answer", { p_id: pt.pid, p_idx: idx, p_choice: b.dataset.o });
-      if(error){ toast(esc(errMsg(error))); return; }
-      pt.mine[idx] = { choice: b.dataset.o, ...r };
-      if(PT !== pt || pt.view !== "q" + idx) return;
-      b.classList.add(r.ok ? "good" : "bad"); sfx(r.ok ? "good" : "bad"); if($("ptS")) $("ptS").textContent = +$("ptS").textContent + (r.points || 0);
-      if(!r.ok) $("ptA").querySelectorAll(".ans").forEach(x => { if(x.dataset.o === r.answer) x.classList.add("good"); });
-      if(r.points){ const p = document.createElement("div"); p.className = "pop"; p.textContent = "+" + r.points; body.appendChild(p); setTimeout(() => p.remove(), 900); }
-    };
-  });
+  $("ptA").querySelectorAll(".ans").forEach(b => b.onclick = () => partySend(pt, idx, b.dataset.o, b));
 }
-async function partyRank(pt, idx){
-  const s = pt.st, body = $("ptBody"), mine = pt.mine[idx];
-  body.innerHTML = `<div class="center" style="margin:4px 0 10px"><div class="pl">Réponse ${idx + 1}/${s.n}</div><div class="question" style="min-height:0;margin:8px 0;padding:14px" id="ptRA"><span class="pl spin">…</span></div>
-      <div class="sub" style="font-weight:700;color:${mine ? (mine.ok ? "var(--good)" : "var(--bad)") : "var(--mute)"}">${mine ? (mine.ok ? `Bonne réponse · +${mine.points}` : "Raté !") : "Pas de réponse"}</div></div>
-    <div class="label">${ic("trophy",14)} Classement en direct</div><div id="ptLB">${ptRows(s)}</div>
-    <div class="tbar"><i id="ptBar"></i></div><div class="pl center" style="margin-top:6px">${idx + 1 < s.n ? "Question suivante dans <b id=\"ptT\"></b> s" : "Fin de la partie…"}</div>`;
-  const q = await partyGetQ(pt, idx, true);
-  if(PT !== pt || pt.view !== "rank" + idx) return;
-  if(q) $("ptRA").innerHTML = `${esc(qq(q))}<br><b style="color:var(--good)">${esc(qo(q, q.answer) || "")}</b>`;
-  setTimeout(() => { if(PT === pt && pt.view === "rank" + idx && $("ptLB")) $("ptLB").innerHTML = ptRows(pt.st); }, 1600);
+async function partySend(pt, idx, choice, b){
+  if(pt.sent) return; pt.sent = true; pt.qEnd = 0;
+  const A = $("ptA"), body = $("ptBody");
+  if(A) A.querySelectorAll(".ans").forEach(x => x.disabled = true);
+  if(b) b.classList.add("mine");
+  const { data: r, error } = await rpc("submit_party_answer", { p_id: pt.pid, p_idx: idx, p_choice: choice });
+  if(PT !== pt) return;
+  if(error){ toast(esc(errMsg(error))); pt.cur = null; setTimeout(() => { if(PT === pt){ pt.view = ""; partyPoll(); } }, 800); return; }
+  pt.mine[idx] = { choice, ...r };
+  if(b) b.classList.add(r.ok ? "good" : "bad");
+  sfx(r.ok ? "good" : "bad");
+  if(A) A.querySelectorAll(".ans").forEach(x => { if(x.dataset.o === r.answer) x.classList.add("good"); });
+  if(!choice && $("ptQ")) $("ptQ").insertAdjacentHTML("beforeend", `<div class="pl" style="margin-top:6px;color:var(--bad)">Temps écoulé !</div>`);
+  pt.score = (pt.score ?? ((pt.st.players.find(p => p.id === pt.st.me) || {}).score || 0)) + (r.points || 0);
+  if($("ptS")) $("ptS").textContent = pt.score;
+  const meRow = pt.st.players.find(p => p.id === pt.st.me);
+  if(meRow){ meRow.score = pt.score; meRow.cur = idx + 1; if(r.ok) meRow.correct = (meRow.correct || 0) + 1; partyLiveSync(pt); }
+  if(r.points){ const p = document.createElement("div"); p.className = "pop"; p.textContent = "+" + r.points; body.appendChild(p); setTimeout(() => p.remove(), 900); }
+  setTimeout(() => { if(PT === pt && pt.view === "q" + idx){ pt.cur = idx + 1; pt.view = ""; partyDraw(pt); partyPoll(); } }, r.ok ? 900 : 1500);
 }
 function partyPodium(pt){
   if(pt.view === "done") return; pt.view = "done";
