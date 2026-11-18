@@ -636,6 +636,7 @@ body.dark .bnav{background:rgba(20,18,43,.92)}
 .pbanner{height:96px;border-radius:18px;margin:0 0 -40px;box-shadow:var(--sh)}
 .bnprev{width:100%;height:46px;border-radius:12px}
 .bbprev{padding:7px 12px;border-radius:14px;font-weight:600;font-size:13px;border-bottom-right-radius:5px}
+.rarcat{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}.rarcat button .rar{font-size:9px}
 .coscat{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
 body.dark .row.unread,body.dark .offbar{background:#3a2f12;color:#ffe3a1}
 body.dark .cd{background:rgba(15,14,34,.85)}
@@ -1946,7 +1947,7 @@ function partyClock(pt){
   return { phase: s.phase || "count", idx: s.idx || 0, left };
 }
 const ptRows = (s, lim) => s.players.slice(0, lim || 10).map((p, i) =>
-  `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.bot ? ' <span class="pl" style="font-size:11px">· bot</span>' : ''}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
+  `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
 function partyDraw(pt){
   if(PT !== pt || !pt.st) return;
   const s = pt.st, body = $("ptBody");
@@ -1958,7 +1959,7 @@ function partyDraw(pt){
         <div class="pl">${s.public ? "Partie publique" : "Code du salon"}</div>
         ${s.public ? `<div class="sub" style="margin-top:6px">En attente de joueurs… La partie démarre dès que le salon est plein${host ? ", ou quand tu la lances" : " ou quand l'hôte la lance"}.</div>`
                    : `<div class="disp" style="font-size:44px;letter-spacing:6px;font-weight:800">${esc(s.code)}</div>`}
-        <div class="pl spin" style="margin-top:6px">${n}/${s.max || 10} joueur${n > 1 ? "s" : ""}</div>${s.players.some(p => p.bot) ? `<div class="sub" style="margin-top:6px">Des bots complètent le salon en attendant d'autres joueurs : chaque vrai joueur qui arrive prend la place d'un bot. Départ automatique au bout d'une minute.</div>` : ""}</div>
+        <div class="pl spin" style="margin-top:6px">${n}/${s.max || 10} joueur${n > 1 ? "s" : ""}</div></div>
       <div>${ptRows(s)}</div>
       ${s.public ? "" : `${shareBox(partyLink(s.code)).replace("Il arrivera directement dans ce duel.", "Il arrivera directement dans ce salon.")}<div id="ptFr"></div>`}
       ${host ? `<button class="btn p" id="ptGo" ${n < 2 ? "disabled" : ""}>${ic("play",18)} Lancer la partie${n < 2 ? " (2 joueurs min.)" : ` à ${n}`}</button>` : !s.public ? `<p class="sub center">L'hôte lance la partie quand il veut. Elle démarre aussi dès que le salon est plein.</p>` : ""}
@@ -1986,7 +1987,7 @@ function partyDraw(pt){
 }
 // classement en direct : pendant la question, ✓ pour ceux qui ont déjà répondu ; à la correction, points gagnés
 const ptLive = s => s.players.map((p, i) =>
-  `<div class="row" style="padding:6px 8px${p.id === s.me ? ";outline:2px solid var(--me);border-radius:12px" : ""}${p.away ? ";opacity:.5" : ""}"><b style="width:20px;text-align:center">${i + 1}</b><div class="av" style="width:32px;height:32px">${av(p)}</div><div class="rn" style="flex:1;font-size:14px">${esc(p.pseudo)}${p.bot ? ' <span class="pl" style="font-size:11px">· bot</span>' : ''}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}</div>`
+  `<div class="row" style="padding:6px 8px${p.id === s.me ? ";outline:2px solid var(--me);border-radius:12px" : ""}${p.away ? ";opacity:.5" : ""}"><b style="width:20px;text-align:center">${i + 1}</b><div class="av" style="width:32px;height:32px">${av(p)}</div><div class="rn" style="flex:1;font-size:14px">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}</div>`
   + (s.phase === "q" ? `<span style="width:70px;text-align:right;font-size:13px;font-weight:700;color:${p.answered ? "var(--good)" : "var(--mute)"}">${p.answered ? "✓ répondu" : `<span class="spin">…</span>`}</span>`
                      : `<span style="width:70px;text-align:right;font-size:13px;font-weight:700;color:${p.ok ? "var(--good)" : "var(--bad)"}">${p.pts ? "+" + p.pts : p.answered ? "✗" : "—"}</span>`)
   + `<b style="width:42px;text-align:right">${p.score}</b></div>`).join("");
@@ -2821,7 +2822,7 @@ const FX = (() => {
   }
   function rarity(id){
     const k = id.replace(/^(frame|title|banner|bubble):/, "");
-    if(cosParts(k)){ const t = k.split("_")[1]; return ["eto","aur","eclat","bri"].includes(t) ? [3, "Épique"] : ["vag","dam","spirale","neo","dia"].includes(t) ? [2, "Rare"] : [1, "Commun"]; }
+    if(cosParts(k)){ const t = k.split("_")[1]; return ["ani","hol","aura"].includes(t) ? [4, "Légendaire"] : ["eto","aur","eclat","bri","pri","cri"].includes(t) ? [3, "Épique"] : ["vag","dam","spirale","neo","dia","zig","ond","viv","ver","quartiers","perles"].includes(t) ? [2, "Rare"] : [1, "Commun"]; }
     if(["holo","prisme","legende_saison","goat"].includes(k)) return [4, "Légendaire"];
     if(["sakura","lave","matrix","glace","vip","cerveau","galaxie"].includes(k)) return [3, "Épique"];
     if(["pixel","nuit","or_rose","neon","encyclo","aura"].includes(k)) return [2, "Rare"];
@@ -3051,8 +3052,8 @@ const TITLES = {
   vip: ["VIP", "Pass Premium · palier 4"], goat: ["GOAT", "Pass Premium · palier 12"], cerveau: ["Gros cerveau", "Pass Premium · palier 20"],
   legende_saison: ["Légende de la saison", "Pass Premium · palier 28"]
 };
-const COS_PAL = {"ocean":["Océan",["#0ea5e9","#22d3ee","#1e3a8a"]],"foret":["Forêt",["#166534","#4ade80","#14532d"]],"sunset":["Coucher de soleil",["#f97316","#f43f5e","#7c2d12"]],"lavande":["Lavande",["#a78bfa","#e9d5ff","#5b21b6"]],"citron":["Citron",["#facc15","#fef08a","#a16207"]],"cerise":["Cerise",["#e11d48","#fda4af","#881337"]],"menthol":["Menthol",["#2dd4bf","#ccfbf1","#0f766e"]],"cafe":["Café",["#92400e","#d6a77a","#451a03"]],"minuit":["Minuit",["#1e1b4b","#6366f1","#020617"]],"bubblegum":["Chewing-gum",["#f472b6","#fbcfe8","#9d174d"]],"lagon":["Lagon",["#06b6d4","#a7f3d0","#155e75"]],"braise":["Braise",["#dc2626","#fb923c","#450a0a"]],"aurore":["Aurore",["#34d399","#818cf8","#0f172a"]],"peche":["Pêche",["#fdba74","#fecdd3","#c2410c"]],"acier":["Acier",["#64748b","#cbd5e1","#1e293b"]],"emeraude":["Émeraude",["#059669","#6ee7b7","#064e3b"]],"royal":["Royal",["#4338ca","#facc15","#1e1b4b"]],"cosmos":["Cosmos",["#7e22ce","#ec4899","#0b0420"]],"sable":["Sable",["#d6b77a","#fef3c7","#78552b"]],"glacier":["Glacier",["#bae6fd","#ffffff","#0284c7"]],"toxique":["Toxique",["#84cc16","#d9f99d","#1a2e05"]],"rubis":["Rubis",["#be123c","#f59e0b","#4c0519"]],"arctique":["Arctique",["#67e8f9","#e0f2fe","#0e7490"]],"vinyle":["Vinyle",["#18181b","#a1a1aa","#000000"]]};
-const COS_BAN = {"deg": "Dégradé", "ray": "Rayures", "poi": "Pois", "dia": "Diagonales", "vag": "Vagues", "dam": "Damier", "eto": "Étoiles", "aur": "Halo"}, COS_BUB = {"dou": "Douce", "pas": "Pastel", "neo": "Néon", "bri": "Brillante"}, COS_FRS = {"anneau": "Anneau", "spirale": "Spirale", "eclat": "Éclat"};
+const COS_PAL = {"ocean":["Océan",["#0ea5e9","#22d3ee","#1e3a8a"]],"foret":["Forêt",["#166534","#4ade80","#14532d"]],"sunset":["Coucher de soleil",["#f97316","#f43f5e","#7c2d12"]],"lavande":["Lavande",["#a78bfa","#e9d5ff","#5b21b6"]],"citron":["Citron",["#facc15","#fef08a","#a16207"]],"cerise":["Cerise",["#e11d48","#fda4af","#881337"]],"menthol":["Menthol",["#2dd4bf","#ccfbf1","#0f766e"]],"cafe":["Café",["#92400e","#d6a77a","#451a03"]],"minuit":["Minuit",["#1e1b4b","#6366f1","#020617"]],"bubblegum":["Chewing-gum",["#f472b6","#fbcfe8","#9d174d"]],"lagon":["Lagon",["#06b6d4","#a7f3d0","#155e75"]],"braise":["Braise",["#dc2626","#fb923c","#450a0a"]],"aurore":["Aurore",["#34d399","#818cf8","#0f172a"]],"peche":["Pêche",["#fdba74","#fecdd3","#c2410c"]],"acier":["Acier",["#64748b","#cbd5e1","#1e293b"]],"emeraude":["Émeraude",["#059669","#6ee7b7","#064e3b"]],"royal":["Royal",["#4338ca","#facc15","#1e1b4b"]],"cosmos":["Cosmos",["#7e22ce","#ec4899","#0b0420"]],"sable":["Sable",["#d6b77a","#fef3c7","#78552b"]],"glacier":["Glacier",["#bae6fd","#ffffff","#0284c7"]],"toxique":["Toxique",["#84cc16","#d9f99d","#1a2e05"]],"rubis":["Rubis",["#be123c","#f59e0b","#4c0519"]],"arctique":["Arctique",["#67e8f9","#e0f2fe","#0e7490"]],"vinyle":["Vinyle",["#18181b","#a1a1aa","#000000"]],"volcan":["Volcan",["#ef4444","#fbbf24","#1c0a05"]],"jungle":["Jungle",["#15803d","#bef264","#052e16"]],"saphir":["Saphir",["#2563eb","#93c5fd","#0b1a4a"]],"amethyste":["Améthyste",["#9333ea","#e9d5ff","#2e1065"]],"ambre":["Ambre",["#d97706","#fde68a","#451a03"]],"ardoise":["Ardoise",["#475569","#94a3b8","#0f172a"]],"grenat":["Grenat",["#9f1239","#fb7185","#3f0012"]],"turquoise":["Turquoise",["#14b8a6","#99f6e4","#083344"]],"prune":["Prune",["#7e22ce","#f0abfc","#3b0764"]],"miel":["Miel",["#eab308","#fef9c3","#713f12"]],"nebuleuse":["Nébuleuse",["#db2777","#60a5fa","#1e0b3a"]],"pistache":["Pistache",["#84cc16","#ecfccb","#365314"]],"crepuscule":["Crépuscule",["#f97316","#a855f7","#1e1b4b"]],"mirage":["Mirage",["#38bdf8","#f9a8d4","#312e81"]],"bonbon":["Bonbon",["#fb7185","#bae6fd","#831843"]],"orchidee":["Orchidée",["#c026d3","#fbcfe8","#4a044e"]]};
+const COS_BAN = {"deg": "Dégradé", "ray": "Rayures", "poi": "Pois", "dia": "Diagonales", "vag": "Vagues", "dam": "Damier", "eto": "Étoiles", "aur": "Halo", "gri": "Grille", "zig": "Zigzag", "ond": "Ondes", "pri": "Prisme", "cri": "Cristal", "ani": "Animée"}, COS_BUB = {"dou": "Douce", "pas": "Pastel", "neo": "Néon", "bri": "Brillante", "con": "Contour", "ver": "Verre", "viv": "Vive", "hol": "Holographique"}, COS_FRS = {"anneau": "Anneau", "spirale": "Spirale", "eclat": "Éclat", "quartiers": "Quartiers", "perles": "Perles", "aura": "Aura"};
 const cosLum = h => { const n = parseInt(h.slice(1), 16), f = c => (c /= 255) <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; return .2126 * f(n >> 16) + .7152 * f(n >> 8 & 255) + .0722 * f(n & 255); };
 const cosFg = (...bg) => { const cr = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05), dark = .012;   // texte toujours lisible
   return Math.min(...bg.map(c => cr(cosLum(c), dark))) >= Math.min(...bg.map(c => cr(cosLum(c), 1))) ? "#16143a" : "#ffffff"; };
@@ -3065,23 +3066,34 @@ function bannerCss(id){
     vag:`radial-gradient(circle at 50% 120%,${c} 0 32%,transparent 33%) 0 0/60px 36px,linear-gradient(${a},${d})`,
     dam:`conic-gradient(${a} 25%,${d} 0 50%,${a} 0 75%,${d} 0) 0 0/32px 32px`,
     eto:`radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 70% 60%,#fff,transparent),radial-gradient(2px 2px at 45% 80%,${c},transparent),radial-gradient(1px 1px at 85% 20%,#fff,transparent) 0 0/90px 70px,linear-gradient(160deg,${d},${a})`,
-    aur:`radial-gradient(ellipse at 20% 0%,${c},transparent 60%),radial-gradient(ellipse at 90% 100%,${a},transparent 60%),${d}` })[x[1]] || "";
+    aur:`radial-gradient(ellipse at 20% 0%,${c},transparent 60%),radial-gradient(ellipse at 90% 100%,${a},transparent 60%),${d}`,
+    gri:`linear-gradient(${c}66 1px,transparent 1px) 0 0/18px 18px,linear-gradient(90deg,${c}66 1px,transparent 1px) 0 0/18px 18px,linear-gradient(135deg,${a},${d})`,
+    zig:`linear-gradient(135deg,${c} 25%,transparent 25%) -14px 0/28px 28px,linear-gradient(225deg,${c} 25%,transparent 25%) -14px 0/28px 28px,linear-gradient(315deg,${c} 25%,transparent 25%) 0 0/28px 28px,linear-gradient(45deg,${c} 25%,${a} 25%) 0 0/28px 28px`,
+    ond:`repeating-radial-gradient(circle at 0 100%,${a} 0 12px,${d} 12px 24px)`,
+    pri:`conic-gradient(from 200deg at 70% 50%,${a},${c},${d},${a})`,
+    cri:`conic-gradient(from 45deg,${a} 0 25%,${c} 0 50%,${d} 0 75%,${c} 0) 0 0/40px 40px`,
+    ani:`linear-gradient(120deg,${a},${c},${d},${c},${a});background-size:300% 300%;animation:cosShift 6s ease infinite` })[x[1]] || "";
 }
 function bubbleStyle(id){
   const x = cosParts(id); if(!x) return ""; const [a, c, d] = x[0][1];
   return ({ dou:`background:linear-gradient(135deg,${a},${d});color:${cosFg(a, d)}`,
     pas:`background:${c};color:${cosFg(c)};border:1px solid ${a}`,
     neo:`background:${d};color:${cosFg(d)};border:2px solid ${a};box-shadow:0 0 10px ${a}88`,
-    bri:`background:linear-gradient(135deg,${c},${a});color:${cosFg(c, a)};box-shadow:inset 0 2px 0 #ffffff66` })[x[1]] || "";
+    bri:`background:linear-gradient(135deg,${c},${a});color:${cosFg(c, a)};box-shadow:inset 0 2px 0 #ffffff66`,
+    con:`background:#ffffff;color:#16143a;border:2px solid ${a}`,
+    ver:`background:linear-gradient(135deg,${c}f0,#ffffffd9);color:${cosFg(c, "#ffffff")};border:1px solid ${a};box-shadow:0 4px 14px ${a}44`,
+    viv:`background:linear-gradient(90deg,${a},${c},${a});color:${cosFg(a, c)}`,
+    hol:`background:linear-gradient(120deg,${a},${c},${d},${c},${a});background-size:300% 300%;animation:cosShift 5s ease infinite;color:#ffffff;text-shadow:0 1px 3px #000a` })[x[1]] || "";
 }
 const cosName = id => { const [kind, key] = id.split(":"), x = cosParts(key); if(!x) return "";
   return `${x[0][0]} · ${(kind === "banner" ? COS_BAN : kind === "bubble" ? COS_BUB : COS_FRS)[x[1]] || ""}`; };
 (function(){   // cadres générés : une classe CSS par palette et par style
   let css = "";
   for(const [p, [, [a, c, d]]] of Object.entries(COS_PAL)){
-    css += `.fr-${p}_anneau{background:conic-gradient(${a},${c},${d},${a})}.fr-${p}_spirale{background:repeating-conic-gradient(${a} 0 10%,${c} 0 20%,${d} 0 30%)}.fr-${p}_eclat{background:conic-gradient(from 45deg,${c},${a},${c},${d},${c},${a},${c})}`;
+    css += `.fr-${p}_anneau{background:conic-gradient(${a},${c},${d},${a})}.fr-${p}_spirale{background:repeating-conic-gradient(${a} 0 10%,${c} 0 20%,${d} 0 30%)}.fr-${p}_eclat{background:conic-gradient(from 45deg,${c},${a},${c},${d},${c},${a},${c})}.fr-${p}_quartiers{background:repeating-conic-gradient(${a} 0 25%,${d} 0 50%)}.fr-${p}_perles{background:repeating-conic-gradient(${c} 0 4%,${d} 0 8%)}.fr-${p}_aura{background:conic-gradient(${a},${c},${d},${c},${a});animation:cosSpin 3s linear infinite}`;
     for(const k of Object.keys(COS_FRS)) FRAMES[`${p}_${k}`] = [cosName(`frame:${p}_${k}`), "Boutique"];
   }
+  css += "@keyframes cosShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}@keyframes cosSpin{to{transform:rotate(1turn)}}";
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 })();
 const titleName = t => !t ? "" : t.startsWith("m:") ? `Maître · ${THEMES[t.slice(2)] ? THEMES[t.slice(2)].n : t.slice(2)}` : (TITLES[t] ? TITLES[t][0] : "");
@@ -3694,7 +3706,7 @@ function drawCoins(){
     for(let t = 1; t <= p.tier; t++){ if(!p.claimed.includes(t)) n++; if(p.premium && !p.claimed_p.includes(t)) n++; }
     const hc = $("hCoins"); hc.dataset.n = n; hc.style.setProperty("--pp", (p.tier >= p.tiers ? 100 : Math.round((p.pxp - p.tier * p.per_tier) / p.per_tier * 100)) + "%"); }
 }
-let SHOP_CAT = "banner", SHOP_MAX = 24;
+let SHOP_CAT = "banner", SHOP_MAX = 24, SHOP_RAR = 0;
 function openShop(tab, back){ if(tab) SHOP_TAB = tab; SHOP_BACK = back || null; show("shop"); renderShop(); }
 $("shBack").onclick = () => SHOP_BACK ? SHOP_BACK() : goTab("home");
 $("hCoins").onclick = () => openShop("pass", () => goTab("home"));
@@ -3769,9 +3781,10 @@ async function renderShop(){
   } else {
     const all = data.shop || [], CATS = [["banner","Bannières"],["bubble","Bulles"],["frame","Cadres"],["title","Titres"]];
     if(!CATS.some(c => c[0] === SHOP_CAT)) SHOP_CAT = "banner";
-    const items = all.filter(it => it.id.startsWith(SHOP_CAT + ":")), shown = items.slice(0, SHOP_MAX);
+    const inCat = all.filter(it => it.id.startsWith(SHOP_CAT + ":")), items = inCat.filter(it => !SHOP_RAR || FX.rarity(it.id)[0] === SHOP_RAR).sort((x, y) => x.price - y.price), shown = items.slice(0, SHOP_MAX);
     B.innerHTML = `<p class="sub" style="margin:0 0 10px">${all.length} objets pour personnaliser ton profil et tes messages. Gagne des pièces avec le pass de saison, en jouant chaque jour.</p>
       <div class="coscat chips">${CATS.map(([k, l]) => `<button data-c="${k}" class="${k === SHOP_CAT ? 'on' : ''}">${l} <span class="pl">${all.filter(x => x.id.startsWith(k + ":")).length}</span></button>`).join("")}</div>
+      <div class="rarcat chips" style="margin-top:-4px">${[[0,"Toutes"],[1,"Commun"],[2,"Rare"],[3,"Épique"],[4,"Légendaire"]].map(([k, l]) => `<button data-r="${k}" class="${k === SHOP_RAR ? 'on' : ''}">${k ? `<span class="rar r${k}">${l}</span>` : l} <span class="pl">${inCat.filter(x => !k || FX.rarity(x.id)[0] === k).length}</span></button>`).join("")}</div>
       <div class="shopgrid">${shown.map(it => { const [rn, rl] = FX.rarity(it.id); return `<div class="shopit tilt" data-3d="${esc(it.id)}">${/^(frame|banner|bubble):/.test(it.id) ? itemPrev(it.id) : `<div class="tprev">${itemPrev(it.id)}</div>`}
         <span class="rar r${rn}">${rl}</span><b>${esc(it.name)}</b>
         ${it.owned ? `<button class="mini" data-eq="1">${ic("check",14)} Possédé · équiper</button>`
@@ -3779,6 +3792,7 @@ async function renderShop(){
       ${items.length > shown.length ? `<button class="btn s" id="shMore">Voir plus (${items.length - shown.length})</button>` : ""}
       <p class="note">${SHOP_CAT === "frame" || SHOP_CAT === "title" ? "Touche un objet pour le voir en 3D." : "Équipe tes bannières et bulles depuis ton profil."}</p>`;
     B.querySelectorAll(".coscat button").forEach(b => b.onclick = () => { SHOP_CAT = b.dataset.c; SHOP_MAX = 24; renderShop(); });
+    B.querySelectorAll(".rarcat button").forEach(b => b.onclick = () => { SHOP_RAR = +b.dataset.r; SHOP_MAX = 24; renderShop(); });
     if($("shMore")) $("shMore").onclick = () => { SHOP_MAX += 24; renderShop(); };
     B.querySelectorAll("[data-3d] .av,[data-3d] .tprev").forEach(a => a.onclick = () => { const id = a.closest("[data-3d]").dataset["3d"]; if(!/^(frame|title):/.test(id)) return; view3dReal(id.startsWith("frame:") ? "frame" : "title", id.slice(6), (items.find(x => x.id === id) || {}).name || ""); });
     B.querySelectorAll("[data-eq]").forEach(b => b.onclick = () => { goTab("profile"); setTimeout(() => $("pExtra") && $("pExtra").scrollIntoView({ behavior:"smooth" }), 400); });
