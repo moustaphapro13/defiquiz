@@ -1936,7 +1936,7 @@ async function partyPoll(){
   pt.off = Date.parse(data.now) - (t0 + Date.now()) / 2;
   const prev = pt.st; pt.st = data;
   if(data.left != null) pt.end = (t0 + Date.now()) / 2 + data.left * 1000;
-  if(data.status === "lobby" && (!prev || prev.players.length !== data.players.length || prev.host !== data.host)) pt.view = "";
+  if(data.status === "lobby" && (!prev || prev.players.map(p => p.id).join() !== data.players.map(p => p.id).join() || prev.host !== data.host)) pt.view = "";
   if(data.status === "done" && prev && prev.status !== "done") pt.view = "";
   if(data.status === "done"){ clearInterval(pt.poll); clearInterval(pt.loop); pt.view = ""; partyDraw(pt); loadProfile && setTimeout(loadProfile, 800); }
   else partyDraw(pt);
@@ -1946,7 +1946,7 @@ function partyClock(pt){
   return { phase: s.phase || "count", idx: s.idx || 0, left };
 }
 const ptRows = (s, lim) => s.players.slice(0, lim || 10).map((p, i) =>
-  `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
+  `<div class="row"><b style="width:22px;text-align:center">${i + 1}</b><div class="av" style="width:36px;height:36px">${av(p)}</div><div class="rn" style="flex:1">${esc(p.pseudo)}${p.bot ? ' <span class="pl" style="font-size:11px">· bot</span>' : ''}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}${p.id === s.host && s.status === "lobby" ? ` <span class="pl">${ic("star",13)} hôte</span>` : ''}</div>${s.status !== "lobby" ? `<b>${p.score}</b>` : ''}</div>`).join("");
 function partyDraw(pt){
   if(PT !== pt || !pt.st) return;
   const s = pt.st, body = $("ptBody");
@@ -1958,7 +1958,7 @@ function partyDraw(pt){
         <div class="pl">${s.public ? "Partie publique" : "Code du salon"}</div>
         ${s.public ? `<div class="sub" style="margin-top:6px">En attente de joueurs… La partie démarre dès que le salon est plein${host ? ", ou quand tu la lances" : " ou quand l'hôte la lance"}.</div>`
                    : `<div class="disp" style="font-size:44px;letter-spacing:6px;font-weight:800">${esc(s.code)}</div>`}
-        <div class="pl spin" style="margin-top:6px">${n}/${s.max || 10} joueur${n > 1 ? "s" : ""}</div></div>
+        <div class="pl spin" style="margin-top:6px">${n}/${s.max || 10} joueur${n > 1 ? "s" : ""}</div>${s.players.some(p => p.bot) ? `<div class="sub" style="margin-top:6px">Des bots complètent le salon en attendant d'autres joueurs : chaque vrai joueur qui arrive prend la place d'un bot. Départ automatique au bout d'une minute.</div>` : ""}</div>
       <div>${ptRows(s)}</div>
       ${s.public ? "" : `${shareBox(partyLink(s.code)).replace("Il arrivera directement dans ce duel.", "Il arrivera directement dans ce salon.")}<div id="ptFr"></div>`}
       ${host ? `<button class="btn p" id="ptGo" ${n < 2 ? "disabled" : ""}>${ic("play",18)} Lancer la partie${n < 2 ? " (2 joueurs min.)" : ` à ${n}`}</button>` : !s.public ? `<p class="sub center">L'hôte lance la partie quand il veut. Elle démarre aussi dès que le salon est plein.</p>` : ""}
@@ -1986,7 +1986,7 @@ function partyDraw(pt){
 }
 // classement en direct : pendant la question, ✓ pour ceux qui ont déjà répondu ; à la correction, points gagnés
 const ptLive = s => s.players.map((p, i) =>
-  `<div class="row" style="padding:6px 8px${p.id === s.me ? ";outline:2px solid var(--me);border-radius:12px" : ""}${p.away ? ";opacity:.5" : ""}"><b style="width:20px;text-align:center">${i + 1}</b><div class="av" style="width:32px;height:32px">${av(p)}</div><div class="rn" style="flex:1;font-size:14px">${esc(p.pseudo)}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}</div>`
+  `<div class="row" style="padding:6px 8px${p.id === s.me ? ";outline:2px solid var(--me);border-radius:12px" : ""}${p.away ? ";opacity:.5" : ""}"><b style="width:20px;text-align:center">${i + 1}</b><div class="av" style="width:32px;height:32px">${av(p)}</div><div class="rn" style="flex:1;font-size:14px">${esc(p.pseudo)}${p.bot ? ' <span class="pl" style="font-size:11px">· bot</span>' : ''}${p.id === s.me ? ' <span class="pl">(toi)</span>' : ''}</div>`
   + (s.phase === "q" ? `<span style="width:70px;text-align:right;font-size:13px;font-weight:700;color:${p.answered ? "var(--good)" : "var(--mute)"}">${p.answered ? "✓ répondu" : `<span class="spin">…</span>`}</span>`
                      : `<span style="width:70px;text-align:right;font-size:13px;font-weight:700;color:${p.ok ? "var(--good)" : "var(--bad)"}">${p.pts ? "+" + p.pts : p.answered ? "✗" : "—"}</span>`)
   + `<b style="width:42px;text-align:right">${p.score}</b></div>`).join("");
